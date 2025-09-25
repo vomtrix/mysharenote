@@ -1,0 +1,60 @@
+{
+  "address": "Введите ваш адрес...",
+  "invalidAddressFormat": "Неверный формат адреса",
+  "invalidAddress": "Неверный адрес",
+  "missingRelayConfig": "Отсутствует конфигурация реле",
+  "addressRequired": "Требуется адрес",
+  "time": "Время",
+  "block": "Блок",
+  "shares": "Доли",
+  "pendingShares": "Ожидающие доли",
+  "totalShares": "Всего долей",
+  "unconfirmedBalance": "Неподтвержденный баланс",
+  "profit": "Прибыль (FLC)",
+  "fee": "Комиссия (LOKI)",
+  "settings": {
+    "title": "Настройки",
+    "relay": "Реле",
+    "relayUrl": "Введите URL реле",
+    "relayUrlRequired": "Требуется URL реле",
+    "invalidRelayFormat": "Неверный формат URL реле",
+    "explorer": "Проводник",
+    "explorerUrl": "Введите URL проводника",
+    "explorerUrlRequired": "Требуется обозреватель",
+    "invalidUrlFormat": "Неверный формат URL",
+    "authorPubKeyRequired": "Необходим открытый ключ автора",
+    "invalidPublicKeyFormat": "Недопустимый формат открытого ключа",
+    "enterNpub": "Введите npub",
+    "payerPublicKey": "Плательщик",
+    "workProviderPublicKey": "Работодатель",
+    "network": "Сеть",
+    "networkTypeRequired": "Требуется тип сети",
+    "invalidNetworkType": "Неверная сеть",
+    "mainnet": "Основная сеть",
+    "testnet": "Тестовая сеть",
+    "regtest": "Регтест",
+    "save": "Сохранить",
+    "reset": "Сброс",
+    "goHome": "На главную",
+    "configError": "Ошибка конфигурации"
+  },
+  "payouts": "Выплаты",
+  "worker": "Рабочий",
+
+  "pageNotFound": "Страница не найдена",
+  "loading": "Загрузка...",
+  "hashrateChart": "Диаграмма хешрейта",
+  "hashrate": "Хешрейт (MH/s)",
+  "previous": "Предыдущая",
+  "next": "Следующая",
+  "paymentHeight": "Расчет. Выплата",
+
+  "languages": {
+    "en": "English",
+    "ru": "Русский",
+    "cn": "中文"
+  },
+  "footer": {
+    "title": "ShareNote - Хранители децентрализации 🚀"
+  }
+}

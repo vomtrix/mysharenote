@@ -1,0 +1,32 @@
+/*---------------------------------
+[Table of contents]
+0. Common
+1. Support
+----------------------------------*/
+/*--------- 1. Common  -----------*/
+$font-base: 'Roboto', 'Open Sans', sans-serif;
+$font-mono: 'Fira Code', 'Fira Mono', 'Roboto Mono', monospace;
+$h: 180;
+$s: 2%;
+$l: 20%;
+$color-bg: #000;
+$color-grey-100: #fff;
+$color-grey-200: #f4f7f6;
+$color-grey-300: #e4e7e7;
+$color-grey-400: #c9cfcf;
+$color-grey-500: #9ea9a9;
+$color-grey-700: #7a8484;
+$color-grey-900: #3b4040;
+$color-grey-950: #272a2a;
+$color-black: #0c0c0c;
+$color-blue: #0052d1;
+$color-primary: hsl(var(--h), var(--s), var(--l));
+$shadow-md: rgba(0, 0, 0, 0.1) 0px 20px 25px -5px, rgba(0, 0, 0, 0.04) 0px 10px 10px -5px;
+$shadow-lg: rgba(0, 0, 0, 0.25) 0px 25px 50px -12px;
+$rounded-sm: 0.5rem;
+$rounded-md: 1.5rem;
+
+/*--------- 1. Support -----------*/
+$phone-breakpoint: 480px;
+$tablet-breakpoint: 768px;
+$desktop-breakpoint: 1024px;

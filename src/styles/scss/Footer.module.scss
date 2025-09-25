@@ -1,0 +1,11 @@
+@use './variables' as vars;
+
+.footer {
+  padding: 10px 15px;
+  font-size: 0.9em;
+  text-align: center;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}

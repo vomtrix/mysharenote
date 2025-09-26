@@ -54,10 +54,12 @@
     "ru": "Русский",
     "cn": "中文"
   },
+  "header": {
+    "shareNote": "What is a sharenote?"
+  },
   "footer": {
     "title": "ShareNote - Guardians of Decentralization 🚀"
   },
-  "track": "Track",
   "faq": {
     "title": "FAQ",
     "linkLabels": {

@@ -40,7 +40,7 @@
   },
   "payouts": "支付",
   "worker": "工人",
-  
+
   "pageNotFound": "无法找到此页面",
   "loading": "加载中...",
   "hashrateChart": "算力图表",
@@ -48,7 +48,7 @@
   "previous": "上一页",
   "next": "下一页",
   "paymentHeight": "预计支付",
-  
+
   "languages": {
     "en": "English",
     "ru": "Русский",
@@ -56,5 +56,33 @@
   },
   "footer": {
     "title": "ShareNote - 去中心化的守护者 🚀"
+  },
+  "track": "跟踪",
+  "faq": {
+    "title": "FAQ",
+    "linkLabels": {
+      "shareNote": "ShareNote",
+      "nostr": "Nostr",
+      "relayGuide": "中继指南",
+      "templateReview": "模板评审频道"
+    },
+    "questions": [
+      {
+        "q": "什么是 ShareNote？",
+        "a": "ShareNote 通过 [[link:nostr:nostr]] 事件，让矿工实时跟踪份额和支付。查看 [[link:shareNote:shareNote]] 规范。"
+      },
+      {
+        "q": "我如何使用 myShareNote？",
+        "a": "输入您的地址即可从所选中继跟踪份额与支付。"
+      },
+      {
+        "q": "如何设置中继和 npub？",
+        "a": "打开 设置 → 粘贴 ws/wss 中继 URL → 粘贴矿池/运营方提供的 付款人 npub 和 工作提供者 npub。参见 [[link:relayGuide:relayGuide]]。"
+      },
+      {
+        "q": "我保存了设置但没有数据。",
+        "a": "请检查中继配置，并确认输入的地址与您加入矿池时使用的地址一致。"
+      }
+    ]
   }
 }

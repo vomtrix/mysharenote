@@ -20,11 +20,7 @@ export const PRIMARY_COLOR_1 = THEME_PRIMARY_COLOR_1;
 export const PRIMARY_COLOR_2 = THEME_PRIMARY_COLOR_2;
 export const PRIMARY_COLOR_3 = THEME_PRIMARY_COLOR_3;
 
-// Backward-compat alias (to be cleaned later)
-export const PRIMARY_PURPLE = PRIMARY_COLOR;
-export const SECONDARY_PURPLE_1 = PRIMARY_COLOR_1;
-export const PRIMARY_PURPLE_2 = PRIMARY_COLOR_2;
-export const PRIMARY_PURPLE_3 = PRIMARY_COLOR_3;
+export const SECONDARY_COLOR = THEME_SECONDARY_COLOR;
 
 // Blue
 export const PRIMARY_BLUE = '#57bcee';

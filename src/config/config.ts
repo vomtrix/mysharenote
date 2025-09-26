@@ -5,7 +5,7 @@ export const PAYER_PUBLIC_KEY: string = process.env.NEXT_PUBLIC_PAYER_PUBLIC_KEY
 export const WORK_PROVIDER_PUBLIC_KEY: string = process.env.NEXT_PUBLIC_WORK_PROVIDER_PUBLIC_KEY!;
 
 export const SOCIAL_URLS: Record<string, string> = {
-  github: 'https://github.com/devxaro/sharenote.git'
+  github: 'https://github.com/vomtrix/mysharenote'
 };
 
 export const FAQ_LINKS: Record<string, string> = {
@@ -17,7 +17,7 @@ export const FAQ_LINKS: Record<string, string> = {
 
 // UI/Theme configuration (static values; not env-driven)
 export const THEME_PRIMARY_COLOR: string = '#9c27b0';
-export const THEME_SECONDARY_COLOR: string = '#f44336';
+export const THEME_SECONDARY_COLOR: string = '#c2db4e';
 export const THEME_PRIMARY_COLOR_1: string = '#a86dcb';
 export const THEME_PRIMARY_COLOR_2: string = '#d49de9';
 export const THEME_PRIMARY_COLOR_3: string = '#ff8bda';

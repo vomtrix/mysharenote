@@ -1,14 +1,16 @@
+import Connect from '@components/Connect';
+import Faq from '@components/Faq';
+import LanguageSwitcher from '@components/common/LanguageSwitcher';
+import SocialLinks from '@components/common/SocialLinks';
+import { Box } from '@mui/system';
+import { clearAddress } from '@store/app/AppReducer';
+import { getAddress } from '@store/app/AppSelectors';
+import { stopHashrates, stopPayouts, stopShares } from '@store/app/AppThunks';
+import { useDispatch, useSelector } from '@store/store';
+import { PRIMARY_COLOR, PRIMARY_COLOR_1, PRIMARY_COLOR_3 } from '@styles/colors';
 import { useRouter } from 'next/router';
 import { useEffect } from 'react';
-import { Box } from '@mui/system';
-import Connect from '@components/Connect';
-import { getAddress } from '@store/app/AppSelectors';
-import { useSelector, useDispatch } from '@store/store';
-import { clearAddress } from '@store/app/AppReducer';
-import { stopShares, stopPayouts, stopHashrates } from '@store/app/AppThunks';
-import { PRIMARY_COLOR, PRIMARY_COLOR_1, PRIMARY_COLOR_3 } from '@styles/colors';
 import { HOME_PAGE_ENABLED } from 'src/config/config';
-import Faq from '@components/Faq';
 
 const Home = () => {
   const dispatch = useDispatch();
@@ -67,6 +69,24 @@ const Home = () => {
       </Box>
       <Box sx={{ width: '100%', mt: { xs: 2, md: 6 } }}>
         <Faq />
+      </Box>
+
+      <Box
+        sx={{
+          position: 'fixed',
+          bottom: { xs: 10, md: 15 },
+          left: { xs: 10, md: 20 }
+        }}>
+        <LanguageSwitcher />
+      </Box>
+
+      <Box
+        sx={{
+          position: 'fixed',
+          bottom: { xs: 10, md: 15 },
+          right: { xs: 10, md: 20 }
+        }}>
+        <SocialLinks />
       </Box>
     </Box>
   );

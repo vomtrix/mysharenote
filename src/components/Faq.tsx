@@ -1,9 +1,9 @@
-import { Box, Container, Divider, Link, Stack, Typography } from '@mui/material';
 import GlassCard from '@components/styled/GlassCard';
+import { Box, Container, Link, Stack, Typography } from '@mui/material';
+import { alpha } from '@mui/material/styles';
+import { PRIMARY_COLOR_1, PRIMARY_WHITE, SECONDARY_COLOR } from '@styles/colors';
 import { useTranslation } from 'react-i18next';
 import { FAQ_LINKS } from 'src/config/config';
-import { PRIMARY_WHITE, PRIMARY_BLUE } from '@styles/colors';
-import { alpha } from '@mui/material/styles';
 
 const renderWithLinks = (text: string, t: any) => {
   const parts: (string | JSX.Element)[] = [];
@@ -23,7 +23,7 @@ const renderWithLinks = (text: string, t: any) => {
           target="_blank"
           rel="noopener noreferrer"
           underline="hover"
-          color={PRIMARY_BLUE}>
+          color={SECONDARY_COLOR}>
           {label}
         </Link>
       );
@@ -56,7 +56,17 @@ const Faq = () => {
                 <Typography sx={{ color: alpha(PRIMARY_WHITE, 0.9) }}>
                   {renderWithLinks(item.a, t)}
                 </Typography>
-                {idx < questions.length - 1 && <Divider sx={{ mt: 2, opacity: 0.08 }} />}
+                {idx < questions.length - 1 && (
+                  <Box
+                    sx={{
+                      mt: 2,
+                      height: '1px',
+                      width: '100%',
+                      background: `linear-gradient(to right, transparent, ${PRIMARY_COLOR_1} 25%,${PRIMARY_COLOR_1} 75%, transparent)`,
+                      filter: 'blur(0.5px)'
+                    }}
+                  />
+                )}
               </Box>
             ))}
           </Stack>

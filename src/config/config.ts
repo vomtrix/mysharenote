@@ -4,7 +4,7 @@ export const PAYER_PUBLIC_KEY: string = process.env.NEXT_PUBLIC_PAYER_PUBLIC_KEY
 export const WORK_PROVIDER_PUBLIC_KEY: string = process.env.NEXT_PUBLIC_WORK_PROVIDER_PUBLIC_KEY!;
 
 export const SOCIAL_URLS: Record<string, string> = {
-  github: 'https://github.com/vomtrix/mysharenote'
+  github: 'https://github.com/entanglo/viaflc-shares'
 };
 
 export const FAQ_LINKS: Record<string, string> = {
@@ -25,7 +25,7 @@ export const THEME_PRIMARY_COLOR_3: string = '#aad3f5ff';
 
 export const DARK_MODE_ENABLED: boolean = true;
 export const DARK_MODE_FORCE: boolean = false;
-export const DARK_MODE_DEFAULT: 'light' | 'dark' = 'light';
+export const DARK_MODE_DEFAULT: 'light' | 'dark' = 'dark';
 
 // Text colors
 export const THEME_TEXT_LIGHT_PRIMARY: string = '#1f1f1f';
@@ -34,11 +34,9 @@ export const THEME_TEXT_DARK_PRIMARY: string = '#e0e0e0';
 export const THEME_TEXT_DARK_SECONDARY: string = '#a6a6a6';
 
 // Charts (area gradient colors)
-export const THEME_CHART_AREA_TOP: string = 'rgba(156, 39, 176, 0.4)';
-export const THEME_CHART_AREA_BOTTOM: string = 'rgba(156, 39, 176, 0.0)';
+export const THEME_CHART_AREA_TOP: string = 'rgba(98, 158, 241, 0.4)';
+export const THEME_CHART_AREA_BOTTOM: string = 'rgba(22, 123, 246, 0)';
 
 // App behavior (static option)
-export const HOME_PAGE_ENABLED: boolean = true;
-
-// Loader behavior
+export const HOME_PAGE_ENABLED: boolean = false;
 export const LOADER_IDLE_MS: number = 3000;

@@ -1,24 +1,24 @@
+import { DARK_MODE_DEFAULT, DARK_MODE_ENABLED, DARK_MODE_FORCE } from '@config/config';
+import { Container } from '@mui/material';
+import GlobalStyles from '@mui/material/GlobalStyles';
+import { ThemeProvider, useTheme } from '@mui/material/styles';
+import { setColorMode } from '@store/app/AppReducer';
+import { getColorMode } from '@store/app/AppSelectors';
+import { AppStore, persistor, useDispatch, useSelector } from '@store/store';
+import { ColorModeContext } from '@styles/ColorModeContext';
+import { SECONDARY_GREY_3 } from '@styles/colors';
 import '@styles/scss/globals.scss';
-import '@utils/i18n';
+import customTheme from '@styles/theme';
 import '@utils/dayjsSetup';
-import 'reflect-metadata';
+import '@utils/i18n';
 import dynamic from 'next/dynamic';
 import Head from 'next/head';
+import { PropsWithChildren, useMemo } from 'react';
 import { Provider } from 'react-redux';
 import { Bounce, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { PersistGate } from 'redux-persist/integration/react';
-import { Container } from '@mui/material';
-import { ThemeProvider, useTheme } from '@mui/material/styles';
-import GlobalStyles from '@mui/material/GlobalStyles';
-import { AppStore, persistor, useDispatch, useSelector } from '@store/store';
-import customTheme from '@styles/theme';
-import { PropsWithChildren, useMemo } from 'react';
-import { ColorModeContext } from '@styles/ColorModeContext';
-import { DARK_MODE_DEFAULT, DARK_MODE_ENABLED, DARK_MODE_FORCE } from '@config/config';
-import { SECONDARY_GREY_3 } from '@styles/colors';
-import { getColorMode } from '@store/app/AppSelectors';
-import { setColorMode } from '@store/app/AppReducer';
+import 'reflect-metadata';
 
 const App = (props: any) => {
   const { Component, pageProps } = props;

@@ -1,6 +1,6 @@
-import { alpha, styled } from '@mui/material/styles';
 import Paper from '@mui/material/Paper';
-import { PRIMARY_WHITE, PRIMARY_BLACK } from '@styles/colors';
+import { alpha, styled } from '@mui/material/styles';
+import { PRIMARY_BLACK } from '@styles/colors';
 
 const GlassCard = styled(Paper)(({ theme }) => ({
   background: alpha(PRIMARY_BLACK, 0.15),

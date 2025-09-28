@@ -1,0 +1,88 @@
+{
+  "address": "请输入您的地址...",
+  "invalidAddressFormat": "无效的 地址格式",
+  "invalidAddress": "无效的 地址",
+  "missingRelayConfig": "缺少继电器配置",
+  "addressRequired": "地址是必需的",
+  "time": "时间",
+  "block": "区块",
+  "shares": "份额",
+  "pendingShares": "待定份额",
+  "totalShares": "总份额",
+  "unconfirmedBalance": "未确认余额",
+  "profit": "利润 (FLC)",
+  "fee": "费用 (LOKI)",
+  "settings": {
+    "title": "设置",
+    "relay": "中继",
+    "relayUrl": "输入中继 URL",
+    "relayUrlRequired": "中继是必需的",
+    "invalidRelayFormat": "无效的中继 URL 格式",
+    "explorer": "浏览器",
+    "explorerUrl": "输入浏览器 URL",
+    "explorerUrlRequired": "需要资源管理器",
+    "invalidUrlFormat": "无效的 URL 格式",
+    "authorPubKeyRequired": "需要作者公钥",
+    "invalidPublicKeyFormat": "公钥格式无效",
+    "enterNpub": "输入 npub",
+    "payerPublicKey": "付款人",
+    "workProviderPublicKey": "工作提供者",
+    "network": "网络",
+    "networkTypeRequired": "网络类型是必需的",
+    "invalidNetworkType": "无效的网络",
+    "mainnet": "主网",
+    "testnet": "测试网",
+    "regtest": "回归测试网",
+    "save": "保存",
+    "reset": "重置",
+    "goHome": "返回首页",
+    "configError": "配置错误"
+  },
+  "payouts": "支付",
+  "worker": "工人",
+
+  "pageNotFound": "无法找到此页面",
+  "loading": "加载中...",
+  "hashrateChart": "算力图表",
+  "hashrate": "算力 (MH/s)",
+  "previous": "上一页",
+  "next": "下一页",
+  "paymentHeight": "预计支付",
+
+  "languages": {
+    "en": "English",
+    "ru": "Русский",
+    "cn": "中文"
+  },
+  "footer": {
+    "title": "ShareNote - 去中心化的守护者 🚀"
+  },
+  "track": "跟踪",
+  "faq": {
+    "title": "FAQ",
+    "linkLabels": {
+      "shareNote": "ShareNote",
+      "nostr": "Nostr",
+      "relayGuide": "中继指南",
+      "templateReview": "模板评审频道"
+    },
+    "questions": [
+      {
+        "q": "什么是 ShareNote？",
+        "a": "ShareNote 通过 [[link:nostr:nostr]] 事件，让矿工实时跟踪份额和支付。查看 [[link:shareNote:shareNote]] 规范。"
+      },
+      {
+        "q": "我如何使用 myShareNote？",
+        "a": "输入您的地址即可从所选中继跟踪份额与支付。"
+      },
+      {
+        "q": "如何设置中继和 npub？",
+        "a": "打开 设置 → 粘贴 ws/wss 中继 URL → 粘贴矿池/运营方提供的 付款人 npub 和 工作提供者 npub。参见 [[link:relayGuide:relayGuide]]。"
+      },
+      {
+        "q": "我保存了设置但没有数据。",
+        "a": "请检查中继配置，并确认输入的地址与您加入矿池时使用的地址一致。"
+      }
+    ]
+  }
+}

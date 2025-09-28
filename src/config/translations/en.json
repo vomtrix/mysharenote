@@ -1,0 +1,90 @@
+{
+  "address": "Enter your address...",
+  "invalidAddressFormat": "Invalid address format",
+  "invalidAddress": "Invalid address",
+  "missingRelayConfig": "Missing relay configuration",
+  "addressRequired": "Address is required",
+  "time": "Time",
+  "block": "Block",
+  "shares": "Shares",
+  "pendingShares": "Pending shares",
+  "totalShares": "Total shares",
+  "unconfirmedBalance": "Unconfirmed balance",
+  "profit": "Profit (FLC)",
+  "fee": "Fee (LOKI)",
+  "settings": {
+    "title": "Settings",
+    "relay": "Relay",
+    "relayUrl": "Enter relay url",
+    "relayUrlRequired": "Relay is required",
+    "invalidRelayFormat": "Invalid relay url format",
+    "explorer": "Explorer",
+    "explorerUrl": "Enter explorer url",
+    "explorerUrlRequired": "Explorer is required",
+    "invalidUrlFormat": "Invalid url format",
+    "authorPubKeyRequired": "Author public key is required",
+    "invalidPublicKeyFormat": "Invalid public key format",
+    "enterNpub": "Enter npub",
+    "payerPublicKey": "Payer",
+    "workProviderPublicKey": "Work provider",
+    "network": "Network",
+    "networkTypeRequired": "Network is required",
+    "invalidNetworkType": "Invalid network",
+    "mainnet": "Mainnet",
+    "testnet": "Testnet",
+    "regtest": "Regtest",
+    "save": "Save",
+    "reset": "Reset",
+    "goHome": "Go home",
+    "configError": "configuration error"
+  },
+  "payouts": "Payouts",
+  "worker": "Worker",
+
+  "pageNotFound": "This page could not be found",
+  "loading": "Loading...",
+  "hashrateChart": "Hashrate chart",
+  "hashrate": "Hashrate (MH/s)",
+  "previous": "Previous",
+  "next": "Next",
+  "paymentHeight": "EST.Payment",
+
+  "languages": {
+    "en": "English",
+    "ru": "Русский",
+    "cn": "中文"
+  },
+  "header": {
+    "shareNote": "What is a sharenote?"
+  },
+  "footer": {
+    "title": "ShareNote - Guardians of Decentralization 🚀"
+  },
+  "faq": {
+    "title": "FAQ",
+    "linkLabels": {
+      "shareNote": "ShareNote",
+      "nostr": "Nostr",
+      "relayGuide": "Relay guide",
+      "templateReview": "template review channels"
+    },
+    "questions": [
+      {
+        "q": "What is ShareNote?",
+        "a": "ShareNote lets miners track shares and payouts in real time using [[link:nostr:nostr]] events. See the [[link:shareNote:shareNote]] specs."
+      },
+      {
+        "q": "How do I use myShareNote?",
+        "a": "Enter your address to track your shares and payouts from the relays you choose."
+      },
+      {
+        "q": "How do I set my Relay and npubs?",
+        "a": "Open Settings → paste a ws/wss Relay URL → paste the Payer npub and Work provider npub given by your pool/operator. See the [[link:relayGuide:relayGuide]]."
+      },
+      {
+        "q": "I saved my settings but see no data.",
+        "a": "Verify your relay configuration and make sure the address you entered is the same one you used to join the pool."
+      }
+    ]
+  }
+}

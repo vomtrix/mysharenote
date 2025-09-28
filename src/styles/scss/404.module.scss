@@ -1,0 +1,40 @@
+.pageContainer {
+  height: 100vh;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: white;
+  color: black;
+}
+
+.contentContainer {
+  line-height: 48px;
+  display: flex;
+  align-items: center;
+}
+
+.errorCode {
+  border-right: 1px solid rgba(0, 0, 0, 0.3);
+  margin: 0 20px 0 0;
+  padding-right: 23px;
+  font-size: 20px;
+  font-weight: 500;
+  display: inline-block;
+  vertical-align: top;
+
+  @media (min-width: 768px) {
+    font-size: 24px;
+  }
+}
+
+.errorMessage {
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 28px;
+
+  @media (min-width: 768px) {
+    font-size: 18px;
+  }
+}

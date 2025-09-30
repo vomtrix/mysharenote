@@ -58,32 +58,54 @@
     "shareNote": "What is a sharenote?"
   },
   "footer": {
-    "title": "ShareNote - Guardians of Decentralization 🚀"
+    "title": "Sharenote - Guardians of Decentralization 🚀"
   },
   "faq": {
     "title": "FAQ",
     "linkLabels": {
-      "shareNote": "ShareNote",
+      "shareNote": "sharenote.xyz",
       "nostr": "Nostr",
-      "relayGuide": "Relay guide",
-      "templateReview": "template review channels"
+      "relayGuide": "relay guide",
+      "templateReview": "template review channels",
+      "wofPaper": "WoF paper",
+      "sharenoteFep": "Sharenote FEP"
     },
     "questions": [
       {
-        "q": "What is ShareNote?",
-        "a": "ShareNote lets miners track shares and payouts in real time using [[link:nostr:nostr]] events. See the [[link:shareNote:shareNote]] specs."
+        "q": "What is a sharenote?",
+        "a": "Sharenote is a miner-controlled proof-of-work note minted for each accepted share. Learn more at [[link:shareNote:shareNote]]."
       },
       {
-        "q": "How do I use myShareNote?",
-        "a": "Enter your address to track your shares and payouts from the relays you choose."
+        "q": "Do all mining pools publish sharenotes?",
+        "a": "No. Only pools that follow the Sharenote FEP publish them. Ask your pool if they support [[link:sharenoteFep:sharenoteFep]]."
       },
       {
-        "q": "How do I set my Relay and npubs?",
-        "a": "Open Settings → paste a ws/wss Relay URL → paste the Payer npub and Work provider npub given by your pool/operator. See the [[link:relayGuide:relayGuide]]."
+        "q": "Who submits sharenotes during the Without Breaking Existing Things (WBET) stage?",
+        "a": "Your pool—the work provider—signs and publishes your sharenotes. mySharenote just reads them."
       },
       {
-        "q": "I saved my settings but see no data.",
-        "a": "Verify your relay configuration and make sure the address you entered is the same one you used to join the pool."
+        "q": "What is mySharenote?",
+        "a": "mySharenote is the WBET dashboard that watches your sharenotes and shows live shares and payouts."
+      },
+      {
+        "q": "How do I set up mySharenote?",
+        "a": "Open Settings, paste the setup data from your work provider, and save. mySharenote stays read-only and just watches the sharenotes they publish."
+      },
+      {
+        "q": "Who provides the mySharenote settings?",
+        "a": "Your mining pool shares the setup info—just copy it into Settings."
+      },
+      {
+        "q": "Do I need new hardware or a different pool?",
+        "a": "No. The WBET rollout keeps your current miner and pool. mySharenote only monitors the sharenotes they already mint."
+      },
+      {
+        "q": "Why is my dashboard empty?",
+        "a": "Double-check the settings you pasted and confirm your pool lets you read their relay. Ask them for access or a public mirror if needed."
+      },
+      {
+        "q": "Where can I explore the bigger WoF picture?",
+        "a": "Start with the [[link:wofPaper:wofPaper]] and watch [[link:shareNote:shareNote]] for new FEP rollouts."
       }
     ]
   }

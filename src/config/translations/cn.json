@@ -61,27 +61,49 @@
   "faq": {
     "title": "FAQ",
     "linkLabels": {
-      "shareNote": "ShareNote",
+      "shareNote": "sharenote.xyz",
       "nostr": "Nostr",
       "relayGuide": "中继指南",
-      "templateReview": "模板评审频道"
+      "templateReview": "模板评审频道",
+      "wofPaper": "WoF 白皮书",
+      "sharenoteFep": "Sharenote FEP"
     },
     "questions": [
       {
-        "q": "什么是 ShareNote？",
-        "a": "ShareNote 通过 [[link:nostr:nostr]] 事件，让矿工实时跟踪份额和支付。查看 [[link:shareNote:shareNote]] 规范。"
+        "q": "什么是 sharenote？",
+        "a": "sharenote 是一种由矿工掌控的工作量证明凭证，每提交一份被接受的份额都会生成。了解更多请访问 [[link:shareNote:shareNote]]。"
       },
       {
-        "q": "我如何使用 myShareNote？",
-        "a": "输入您的地址即可从所选中继跟踪份额与支付。"
+        "q": "所有矿池都会发布 sharenote 吗？",
+        "a": "不会。只有遵循 Sharenote FEP 的矿池才会发布它们。请向您的矿池确认是否支持 [[link:sharenoteFep:sharenoteFep]]。"
       },
       {
-        "q": "如何设置中继和 npub？",
-        "a": "打开 设置 → 粘贴 ws/wss 中继 URL → 粘贴矿池/运营方提供的 付款人 npub 和 工作提供者 npub。参见 [[link:relayGuide:relayGuide]]。"
+        "q": "在 Without Breaking Existing Things (WBET) 阶段是谁发布 sharenote？",
+        "a": "由您的矿池（工作提供方）签名并发布 sharenote，mySharenote 只负责读取。"
       },
       {
-        "q": "我保存了设置但没有数据。",
-        "a": "请检查中继配置，并确认输入的地址与您加入矿池时使用的地址一致。"
+        "q": "什么是 mySharenote？",
+        "a": "mySharenote 是 WBET 仪表板，用于查看 sharenote 的实时份额和支付。"
+      },
+      {
+        "q": "如何设置 mySharenote？",
+        "a": "打开设置，粘贴工作提供方给出的配置数据并保存。mySharenote 以只读方式监控他们发布的 sharenote。"
+      },
+      {
+        "q": "mySharenote 的配置信息由谁提供？",
+        "a": "您的矿池会提供这些设置，只需复制到设置页面即可。"
+      },
+      {
+        "q": "我需要新的硬件或更换矿池吗？",
+        "a": "不需要。WBET 阶段沿用您当前的矿机和矿池，mySharenote 仅监控他们已经发布的 sharenote。"
+      },
+      {
+        "q": "为什么我的仪表板是空的？",
+        "a": "请再次检查粘贴的设置，并确认矿池允许您读取他们的中继。如有需要，请申请访问或要求公开镜像。"
+      },
+      {
+        "q": "我可以在哪里进一步了解 WoF？",
+        "a": "先阅读 [[link:wofPaper:wofPaper]]，并关注 [[link:shareNote:shareNote]] 获取新的 FEP 更新。"
       }
     ]
   }

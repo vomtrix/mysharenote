@@ -1,23 +1,16 @@
-<p align="center">
-  <img src="public/assets/logo.svg" width="260" alt="myShareNote Logo" />
-</p>
+# mySharenote
 
-# Track Your Shares
+Dashboard for pools and miners to track sharenotes. Built on the Sharenote Fun Enhancement Proposal (WBET stage compliant) described in [the WoF paper](https://docs.flokicoin.org/wof). For the current Sharenote draft, see [docs.flokicoin.org/wof/sharenote](https://docs.flokicoin.org/wof/sharenote) and the concept overview at [sharenote.xyz](https://sharenote.xyz).
 
-Real‑time shares tracking (hashrate, shares, payouts) via the Sharenote specs and your own Nostr relay. Open‑source, privacy‑first.
+## Why use it
 
-Learn more about the sharenote concept at https://sharenote.xyz
+- Pools give miners transparent sharenote/share/payout views.
+- Miners can fork and point the UI at their own relay bundle.
+- Configuration, theming, and locales mirror the Sharenote spec and the [FEP process](https://docs.flokicoin.org/wof#what-is-a-fep).
 
-## Highlights
+## Run locally
 
-- ⛏️ Live mining stats via ShareNote events
-- 🧭 Bring‑your‑own relay and npubs
-- 🌓 Customizable theme; dark mode
-- 🌍 i18n (EN / RU / CN)
-
-## Quick Start
-
-Prereqs: Node.js ≥ 18, npm or yarn
+Prerequisites: Node.js ≥ 18, npm or yarn.
 
 ```bash
 npm install
@@ -25,40 +18,33 @@ npm run dev
 # open http://localhost:3000
 ```
 
-Build:
+Production build:
 
 ```bash
 npm run build
+npm run start
 ```
 
-## Configure (env or .env.local)
+## Configure
 
+Set environment variables (or `.env.local`) as provided by your pool:
 - `NEXT_PUBLIC_RELAY_URL`
 - `NEXT_PUBLIC_NOSTR_PRIVATE_KEY`
 - `NEXT_PUBLIC_PAYER_PUBLIC_KEY`
 - `NEXT_PUBLIC_WORK_PROVIDER_PUBLIC_KEY`
 - `NEXT_PUBLIC_EXPLORER_URL`
 
-These are read in `src/config/config.ts` and adjustable from Settings.
+They seed `src/config/config.ts` and can be overridden via in-app settings. Do not commit secrets.
 
-## Theme Customization 🎨
+## Theming and locales
 
-Theme is configurable in `src/config/config.ts`.
+- Update colour, typography, and feature tokens in `src/config/config.ts`.
+- Keep translations in `src/config/translations` aligned across EN, RU, and CN.
 
-- Colors: `THEME_PRIMARY_COLOR`, `THEME_SECONDARY_COLOR`, `THEME_PRIMARY_COLOR_1`, `THEME_PRIMARY_COLOR_2`, `THEME_PRIMARY_COLOR_3`
-- Dark mode: `DARK_MODE_ENABLED`, `DARK_MODE_FORCE`, `DARK_MODE_DEFAULT`
-- Text: `THEME_TEXT_LIGHT_PRIMARY`, `THEME_TEXT_LIGHT_SECONDARY`, `THEME_TEXT_DARK_PRIMARY`, `THEME_TEXT_DARK_SECONDARY`
-- Charts: `THEME_CHART_AREA_TOP`, `THEME_CHART_AREA_BOTTOM`
-- Behavior: `HOME_PAGE_ENABLED`
+## Contributing
 
-## Internationalization 🌐
-
-Translations live in `src/config/translations`. Language can be switched from the header.
-
-## Contributing 🤝
-
-Issues and PRs are welcome. Keep theme tokens centralized and avoid hard‑coded colors in components.
+PRs are welcome. Focus on Sharenote FEP compliance, pool-operator workflows, and localisation quality.
 
 ## License
 
-MIT
+Creative Commons CC0 1.0 Universal

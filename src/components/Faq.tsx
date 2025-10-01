@@ -44,18 +44,18 @@ const Faq = () => {
     <Container maxWidth="md" sx={{ py: 2 }}>
       <GlassCard>
         <Box sx={{ p: 3 }}>
-          <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: PRIMARY_WHITE }}>
+          {/* <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: PRIMARY_WHITE }}>
             {t('faq.title')}
-          </Typography>
-          <Stack spacing={2}>
+          </Typography> */}
+          <Stack spacing={2.5}>
             {questions.map((item, idx) => (
               <Box key={idx}>
-                <Typography sx={{ fontWeight: 600, color: PRIMARY_WHITE, mb: 0.5 }}>
-                  {item.q}
-                </Typography>
-                <Typography sx={{ color: alpha(PRIMARY_WHITE, 0.9) }}>
-                  {renderWithLinks(item.a, t)}
-                </Typography>
+                <Typography sx={{ fontSize: "large", fontWeight: 600, color: PRIMARY_WHITE, mb: 1 }}>
+                    {item.q}
+                  </Typography>
+                  <Typography variant="body1" sx={{ color: alpha(PRIMARY_WHITE, 0.86), lineHeight: 1.65 }}>
+                    {renderWithLinks(item.a, t)}
+                  </Typography>
                 {idx < questions.length - 1 && (
                   <Box
                     sx={{

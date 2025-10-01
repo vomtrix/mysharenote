@@ -12,7 +12,9 @@ export const FAQ_LINKS: Record<string, string> = {
   shareNote: 'https://sharenote.xyz',
   nostr: 'https://nostr.com',
   relayGuide: 'https://github.com/nostr-protocol/nostr#relays',
-  templateReview: 'https://docs.sharenote.com/template-review'
+  templateReview: 'https://docs.sharenote.com/template-review',
+  wofPaper: 'https://docs.flokicoin.org/wof',
+  sharenoteFep: 'https://docs.flokicoin.org/wof/sharenote'
 };
 
 // UI/Theme configuration (static values; not env-driven)

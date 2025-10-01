@@ -45,3 +45,6 @@ wiki.md
 # ------------------------------------
 coverage/
 jest-html-reporters-*.html
+
+# git helpers 
+commits.sh

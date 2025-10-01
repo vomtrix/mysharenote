@@ -2,12 +2,13 @@ import Connect from '@components/Connect';
 import Faq from '@components/Faq';
 import LanguageSwitcher from '@components/common/LanguageSwitcher';
 import SocialLinks from '@components/common/SocialLinks';
+import { alpha } from '@mui/material/styles';
 import { Box } from '@mui/system';
 import { clearAddress } from '@store/app/AppReducer';
 import { getAddress } from '@store/app/AppSelectors';
 import { stopHashrates, stopPayouts, stopShares } from '@store/app/AppThunks';
 import { useDispatch, useSelector } from '@store/store';
-import { PRIMARY_COLOR, PRIMARY_COLOR_1, PRIMARY_COLOR_3 } from '@styles/colors';
+import { PRIMARY_BLACK, PRIMARY_COLOR, PRIMARY_COLOR_1, PRIMARY_COLOR_3 } from '@styles/colors';
 import { useRouter } from 'next/router';
 import { useEffect } from 'react';
 import { HOME_PAGE_ENABLED } from 'src/config/config';
@@ -54,7 +55,7 @@ const Home = () => {
         alignItems: 'center',
         justifyContent: 'flex-start',
         gap: 2,
-        pt: { xs: '3vh', md: '15vh' }
+        pt: { xs: '3vh', md: '8vh' }
       }}>
       <img src="/assets/logo.svg" alt="ShareNote" style={{ width: '260px', maxWidth: '70vw' }} />
       <Box
@@ -66,26 +67,28 @@ const Home = () => {
         }}>
         <Connect hasButton />
       </Box>
-      <Box sx={{ width: '100%', mt: { xs: 1, md: 6 } }}>
+      <Box sx={{ width: '100%', mt: { xs: 1, md: 6 }, pb: 7 }}>
         <Faq />
       </Box>
 
       <Box
+        id="footer"
         sx={{
           position: 'fixed',
-          bottom: { xs: 15, md: 15 },
-          left: { xs: 10, md: 20 }
-        }}>
-        <LanguageSwitcher />
-      </Box>
-
-      <Box
-        sx={{
-          position: 'fixed',
-          bottom: { xs: 15, md: 15 },
-          right: { xs: 10, md: 20 }
+          bottom: 0,
+          left: 0,
+          right: 0,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'flex-end',
+          gap: 2,
+          backgroundColor: alpha(PRIMARY_BLACK, 0.4),
+          px: { xs: 1.5, md: 2.5 },
+          py: { xs: 1, md: 1.5 },
+          zIndex: 1200
         }}>
         <SocialLinks />
+        <LanguageSwitcher />
       </Box>
     </Box>
   );

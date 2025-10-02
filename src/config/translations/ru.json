@@ -50,9 +50,9 @@
   "paymentHeight": "EST.Payment",
 
   "languages": {
-    "en": "Английский",
+    "en": "English",
     "ru": "Русский",
-    "cn": "Китайский"
+    "cn": "中文"
   },
   "header": {
     "shareNote": "Как это работает?"

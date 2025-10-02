@@ -17,11 +17,11 @@ export const FAQ_LINKS: Record<string, string> = {
 };
 
 // UI/Theme configuration (static values; not env-driven)
-export const THEME_PRIMARY_COLOR: string = '#9c27b0';
-export const THEME_SECONDARY_COLOR: string = '#c2db4e';
-export const THEME_PRIMARY_COLOR_1: string = '#a86dcb';
-export const THEME_PRIMARY_COLOR_2: string = '#d49de9';
-export const THEME_PRIMARY_COLOR_3: string = '#ff8bda';
+export const THEME_PRIMARY_COLOR: string = '#42a5f5';
+export const THEME_SECONDARY_COLOR: string = '#d19810';
+export const THEME_PRIMARY_COLOR_1: string = '#72b9f3ff';
+export const THEME_PRIMARY_COLOR_2: string = '#90caf9';
+export const THEME_PRIMARY_COLOR_3: string = '#aad3f5ff';
 
 export const DARK_MODE_ENABLED: boolean = true;
 export const DARK_MODE_FORCE: boolean = false;

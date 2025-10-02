@@ -2,8 +2,6 @@ import { ISettings } from '@objects/interfaces/ISettings';
 import { RelayService } from '@services/api/RelayService';
 import { createAppAsyncThunk } from '@store/createAppAsyncThunk';
 import { beautify } from '@utils/beautifierUtils';
-import { setupLoaderOnIdle } from '@utils/inactivity';
-import { LOADER_IDLE_MS } from 'src/config/config';
 import { Container } from 'typedi';
 import {
   addHashrate,
@@ -21,15 +19,24 @@ export const getPayouts = createAppAsyncThunk(
     try {
       const { settings } = getState();
       const relayService: any = Container.get(RelayService);
-      const idle = setupLoaderOnIdle(LOADER_IDLE_MS, () => dispatch(setPayoutLoader(false)));
+      let timeoutId: NodeJS.Timeout | undefined;
+
+      const resetTimeout = () => {
+        if (timeoutId) clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => {
+          dispatch(setPayoutLoader(false));
+        }, 5000);
+      };
 
       relayService.subscribePayouts(address, settings.payerPublicKey, {
         onevent: (event: any) => {
           const payoutEvent = beautify(event);
           dispatch(addPayout(payoutEvent));
-          idle.onEvent();
+          resetTimeout();
         }
       });
+
+      resetTimeout();
     } catch (err: any) {
       return rejectWithValue({
         message: err?.message,
@@ -46,15 +53,28 @@ export const getShares = createAppAsyncThunk(
     try {
       const { settings } = getState();
       const relayService: any = Container.get(RelayService);
-      const idle = setupLoaderOnIdle(LOADER_IDLE_MS, () => dispatch(setShareLoader(false)));
+      let timeoutId: NodeJS.Timeout | undefined;
+
+      const resetTimeout = () => {
+        if (timeoutId) clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => {
+          dispatch(setShareLoader(false));
+        }, 2000);
+      };
 
       relayService.subscribeShares(address, settings.workProviderPublicKey, {
         onevent: (event: any) => {
           const shareEvent = beautify(event);
           dispatch(addShare(shareEvent));
-          idle.onEvent();
+          resetTimeout();
+        },
+        oneose: () => {
+          if (timeoutId) clearTimeout(timeoutId);
+          dispatch(setShareLoader(false));
         }
       });
+
+      resetTimeout();
     } catch (err: any) {
       return rejectWithValue({
         message: err?.message,
@@ -71,19 +91,28 @@ export const getHashrates = createAppAsyncThunk(
     try {
       const { settings } = getState();
       const relayService: any = Container.get(RelayService);
-      const idle = setupLoaderOnIdle(LOADER_IDLE_MS, () => dispatch(setHashratesLoader(false)));
+      let timeoutId: NodeJS.Timeout | undefined;
+
+      const resetTimeout = () => {
+        if (timeoutId) clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => {
+          dispatch(setHashratesLoader(false));
+        }, 2000);
+      };
 
       relayService.subscribeHashrates(address, settings.workProviderPublicKey, {
         onevent: (event: any) => {
           const hashrateEvent = beautify(event);
           dispatch(addHashrate(hashrateEvent));
-          idle.onEvent();
+          resetTimeout();
         },
         oneose: () => {
+          if (timeoutId) clearTimeout(timeoutId);
           dispatch(setHashratesLoader(false));
-          idle.complete();
         }
       });
+
+      resetTimeout();
     } catch (err: any) {
       return rejectWithValue({
         message: err?.message,

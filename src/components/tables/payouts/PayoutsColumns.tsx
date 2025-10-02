@@ -1,9 +1,10 @@
-import dayjs from 'dayjs';
+import { Chip } from '@mui/material';
+import { lokiToFlc } from '@utils/Utils';
+import dayjs from '@utils/dayjsSetup';
+import { fromEpoch } from '@utils/time';
 import numeral from 'numeral';
 import { useTranslation } from 'react-i18next';
 import { EXPLORER_URL } from 'src/config/config';
-import { Chip } from '@mui/material';
-import { lokiToFlc } from '@utils/Utils';
 
 const payoutsColumns = () => {
   const { t } = useTranslation();
@@ -15,7 +16,7 @@ const payoutsColumns = () => {
       minWidth: 150,
       headerClassName: 'text-blue text-uppercase',
       cellClassName: 'text-bold',
-      valueFormatter: (params: any) => dayjs(params.value).format('MM/DD/YYYY h:mm A')
+      valueFormatter: (value: any) => fromEpoch(value).format('L LT')
     },
     {
       headerName: t('block'),

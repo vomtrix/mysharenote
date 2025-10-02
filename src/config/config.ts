@@ -40,3 +40,6 @@ export const THEME_CHART_AREA_BOTTOM: string = 'rgba(156, 39, 176, 0.0)';
 
 // App behavior (static option)
 export const HOME_PAGE_ENABLED: boolean = true;
+
+// Loader behavior
+export const LOADER_IDLE_MS: number = 3000;

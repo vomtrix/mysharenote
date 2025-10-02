@@ -1,5 +1,6 @@
 import '@styles/scss/globals.scss';
 import '@utils/i18n';
+import '@utils/dayjsSetup';
 import 'reflect-metadata';
 import dynamic from 'next/dynamic';
 import Head from 'next/head';

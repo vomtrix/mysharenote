@@ -1,8 +1,9 @@
-import dayjs from 'dayjs';
-import { useTranslation } from 'react-i18next';
-import { EXPLORER_URL } from 'src/config/config';
 import { Chip } from '@mui/material';
 import { lokiToFlc } from '@utils/Utils';
+import dayjs from '@utils/dayjsSetup';
+import { fromEpoch } from '@utils/time';
+import { useTranslation } from 'react-i18next';
+import { EXPLORER_URL } from 'src/config/config';
 
 const sharesColumns = () => {
   const { t } = useTranslation();
@@ -14,7 +15,7 @@ const sharesColumns = () => {
       minWidth: 150,
       headerClassName: 'text-blue text-uppercase',
       cellClassName: 'text-bold',
-      valueFormatter: (params: any) => dayjs(params.value).format('MM/DD/YYYY h:mm A')
+      valueFormatter: (value: any) => fromEpoch(value).format('L LT')
     },
     {
       headerName: t('worker'),

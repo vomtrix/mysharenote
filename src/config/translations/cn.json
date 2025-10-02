@@ -1,109 +1,111 @@
 {
-  "address": "请输入您的地址...",
-  "invalidAddressFormat": "无效的 地址格式",
-  "invalidAddress": "无效的 地址",
-  "missingRelayConfig": "缺少继电器配置",
-  "addressRequired": "地址是必需的",
+  "address": "请输入你的地址...",
+  "invalidAddressFormat": "地址格式无效",
+  "invalidAddress": "无效地址",
+  "missingRelayConfig": "缺少中继配置",
+  "addressRequired": "地址为必填项",
   "time": "时间",
   "block": "区块",
   "shares": "份额",
-  "pendingShares": "待定份额",
+  "pendingShares": "待确认份额",
   "totalShares": "总份额",
   "unconfirmedBalance": "未确认余额",
   "profit": "利润 (FLC)",
-  "fee": "费用 (LOKI)",
+  "fee": "手续费 (LOKI)",
   "settings": {
     "title": "设置",
     "relay": "中继",
     "relayUrl": "输入中继 URL",
-    "relayUrlRequired": "中继是必需的",
-    "invalidRelayFormat": "无效的中继 URL 格式",
-    "explorer": "浏览器",
-    "explorerUrl": "输入浏览器 URL",
-    "explorerUrlRequired": "需要资源管理器",
-    "invalidUrlFormat": "无效的 URL 格式",
-    "authorPubKeyRequired": "需要作者公钥",
+    "relayUrlRequired": "必须填写中继",
+    "invalidRelayFormat": "中继 URL 格式无效",
+    "explorer": "区块浏览器",
+    "explorerUrl": "输入区块浏览器 URL",
+    "explorerUrlRequired": "必须填写浏览器",
+    "invalidUrlFormat": "URL 格式无效",
+    "authorPubKeyRequired": "必须填写作者公钥",
     "invalidPublicKeyFormat": "公钥格式无效",
     "enterNpub": "输入 npub",
     "payerPublicKey": "付款人",
-    "workProviderPublicKey": "工作提供者",
+    "workProviderPublicKey": "工作提供方",
     "network": "网络",
-    "networkTypeRequired": "网络类型是必需的",
-    "invalidNetworkType": "无效的网络",
+    "networkTypeRequired": "必须选择网络",
+    "invalidNetworkType": "网络无效",
     "mainnet": "主网",
     "testnet": "测试网",
     "regtest": "回归测试网",
     "save": "保存",
     "reset": "重置",
-    "goHome": "返回首页",
+    "goHome": "回到首页",
     "configError": "配置错误"
   },
-  "payouts": "支付",
-  "worker": "工人",
+  "payouts": "付款",
+  "worker": "矿工",
 
-  "pageNotFound": "无法找到此页面",
+  "pageNotFound": "未找到页面",
   "loading": "加载中...",
-  "hashrateChart": "算力图表",
-  "hashrate": "算力 (MH/s)",
+  "hashrateChart": "哈希率图表",
+  "hashrate": "哈希率 (MH/s)",
   "previous": "上一页",
   "next": "下一页",
-  "paymentHeight": "预计支付",
+  "paymentHeight": "EST.Payment",
 
   "languages": {
-    "en": "English",
-    "ru": "Русский",
+    "en": "英语",
+    "ru": "俄语",
     "cn": "中文"
   },
-  "footer": {
-    "title": "ShareNote - 去中心化的守护者 🚀"
+  "header": {
+    "shareNote": "如何运作？"
   },
-  "track": "跟踪",
+  "footer": {
+    "title": "mySharenote 哈希看板"
+  },
   "faq": {
-    "title": "FAQ",
+    "title": "常见问题",
     "linkLabels": {
       "shareNote": "sharenote.xyz",
       "nostr": "Nostr",
       "relayGuide": "中继指南",
       "templateReview": "模板评审频道",
-      "wofPaper": "WoF 白皮书",
+      "wofPaper": "WoF 论文",
       "sharenoteFep": "Sharenote FEP"
     },
     "questions": [
       {
         "q": "什么是 sharenote？",
-        "a": "sharenote 是一种由矿工掌控的工作量证明凭证，每提交一份被接受的份额都会生成。了解更多请访问 [[link:shareNote:shareNote]]。"
+        "a": "Sharenote 是由矿工控制的工作量证明便笺，为每个被接受的份额铸造。了解更多：[[link:shareNote:shareNote]]。"
       },
       {
         "q": "所有矿池都会发布 sharenote 吗？",
-        "a": "不会。只有遵循 Sharenote FEP 的矿池才会发布它们。请向您的矿池确认是否支持 [[link:sharenoteFep:sharenoteFep]]。"
+        "a": "不会。只有遵循 Sharenote FEP 的矿池会发布。询问你的矿池是否支持 [[link:sharenoteFep:sharenoteFep]]。"
       },
       {
-        "q": "在 Without Breaking Existing Things (WBET) 阶段是谁发布 sharenote？",
-        "a": "由您的矿池（工作提供方）签名并发布 sharenote，mySharenote 只负责读取。"
+        "q": "在 WBET（不破坏现有系统）阶段，谁提交 sharenote？",
+        "a": "你的矿池（工作提供方）会签名并发布你的 sharenote。mySharenote 只负责读取。"
       },
       {
         "q": "什么是 mySharenote？",
-        "a": "mySharenote 是 WBET 仪表板，用于查看 sharenote 的实时份额和支付。"
+        "a": "mySharenote 是 WBET 仪表板，用于监视你的 sharenote，并实时展示份额和支付。"
       },
       {
         "q": "如何设置 mySharenote？",
-        "a": "打开设置，粘贴工作提供方给出的配置数据并保存。mySharenote 以只读方式监控他们发布的 sharenote。"
+        "a": "打开“设置”，粘贴你的工作提供方给出的配置信息并保存。mySharenote 始终是只读的，只监听他们发布的 sharenote。"
       },
       {
-        "q": "mySharenote 的配置信息由谁提供？",
-        "a": "您的矿池会提供这些设置，只需复制到设置页面即可。"
+        "q": "谁提供 mySharenote 的设置？",
+        "a": "你的矿池会提供配置信息——直接复制到“设置”即可。"
       },
       {
-        "q": "我需要新的硬件或更换矿池吗？",
-        "a": "不需要。WBET 阶段沿用您当前的矿机和矿池，mySharenote 仅监控他们已经发布的 sharenote。"
+        "q": "我需要新硬件或更换矿池吗？",
+        "a": "不需要。WBET 推出保持你当前的矿机和矿池。mySharenote 只监控他们已铸造的 sharenote。"
       },
       {
         "q": "为什么我的仪表板是空的？",
-        "a": "请再次检查粘贴的设置，并确认矿池允许您读取他们的中继。如有需要，请申请访问或要求公开镜像。"
+        "a": "请再次检查你粘贴的设置，并确认你的矿池允许读取他们的中继。如需的话，向他们索取访问权限或公共镜像。"
       },
       {
-        "q": "我可以在哪里进一步了解 WoF？",
-        "a": "先阅读 [[link:wofPaper:wofPaper]]，并关注 [[link:shareNote:shareNote]] 获取新的 FEP 更新。"
+        "q": "在哪里了解更广泛的 WoF 概况？",
+        "a": "从 [[link:wofPaper:wofPaper]] 开始，并关注 [[link:shareNote:shareNote]] 的新 FEP 推出。"
       }
     ]
   }

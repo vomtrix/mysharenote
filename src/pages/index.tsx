@@ -6,7 +6,7 @@ import { alpha } from '@mui/material/styles';
 import { Box } from '@mui/system';
 import { clearAddress } from '@store/app/AppReducer';
 import { getAddress } from '@store/app/AppSelectors';
-import { stopHashrates, stopPayouts, stopShares } from '@store/app/AppThunks';
+import { stopHashrates, stopPayouts, stopShares } from '@store/app/AppThunks-new';
 import { useDispatch, useSelector } from '@store/store';
 import { PRIMARY_BLACK, PRIMARY_COLOR, PRIMARY_COLOR_1, PRIMARY_COLOR_3 } from '@styles/colors';
 import { useRouter } from 'next/router';

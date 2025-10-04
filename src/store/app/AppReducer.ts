@@ -22,7 +22,7 @@ import {
   getShares,
   stopHashrates,
   stopShares
-} from '@store/app/AppThunks';
+} from '@store/app/AppThunks-new';
 
 /* Instruments */
 

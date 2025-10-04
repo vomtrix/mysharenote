@@ -16,7 +16,7 @@ import {
   stopHashrates,
   stopShares,
   stopPayouts
-} from '@store/app/AppThunks';
+} from '@store/app/AppThunks-new';
 import { useDispatch, useSelector } from '@store/store';
 import { validateAddress } from '@utils/Utils';
 import { useHasRelayConfig } from '@hooks/useHasRelayConfig';

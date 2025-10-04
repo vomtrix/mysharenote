@@ -17,7 +17,7 @@ import {
 import { useNotification } from '@hooks/UseNotificationHook';
 import { NetworkTypeType } from '@objects/Enums';
 import { getSettings } from '@store/app/AppSelectors';
-import { changeRelay } from '@store/app/AppThunks';
+import { changeRelay } from '@store/app/AppThunks-new';
 import { useDispatch, useSelector } from '@store/store';
 import { PRIMARY_BLACK } from '@styles/colors';
 import CustomInput from '@components/common/CustomInput';

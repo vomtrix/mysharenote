@@ -1,5 +1,4 @@
 export const RELAY_URL: string = process.env.NEXT_PUBLIC_RELAY_URL!;
-export const NOSTR_PRIVATE_KEY: string = process.env.NEXT_PUBLIC_NOSTR_PRIVATE_KEY!;
 export const EXPLORER_URL: string = process.env.NEXT_PUBLIC_EXPLORER_URL!;
 export const PAYER_PUBLIC_KEY: string = process.env.NEXT_PUBLIC_PAYER_PUBLIC_KEY!;
 export const WORK_PROVIDER_PUBLIC_KEY: string = process.env.NEXT_PUBLIC_WORK_PROVIDER_PUBLIC_KEY!;

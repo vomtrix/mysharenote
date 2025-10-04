@@ -29,7 +29,6 @@ npm run start
 
 Set environment variables (or `.env.local`) as provided by your pool:
 - `NEXT_PUBLIC_RELAY_URL`
-- `NEXT_PUBLIC_NOSTR_PRIVATE_KEY`
 - `NEXT_PUBLIC_PAYER_PUBLIC_KEY`
 - `NEXT_PUBLIC_WORK_PROVIDER_PUBLIC_KEY`
 - `NEXT_PUBLIC_EXPLORER_URL`

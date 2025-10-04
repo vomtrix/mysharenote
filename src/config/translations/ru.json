@@ -8,6 +8,7 @@
   "block": "Блок",
   "shares": "Шары",
   "pendingShares": "Ожидающие шары",
+  "pendingBalance": "Ожидаемый баланс",
   "totalShares": "Всего шар",
   "unconfirmedBalance": "Неподтвержденный баланс",
   "profit": "Прибыль (FLC)",

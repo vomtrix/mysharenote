@@ -8,6 +8,7 @@
   "block": "区块",
   "shares": "份额",
   "pendingShares": "待确认份额",
+  "pendingBalance": "待处理余额",
   "totalShares": "总份额",
   "unconfirmedBalance": "未确认余额",
   "profit": "利润 (FLC)",

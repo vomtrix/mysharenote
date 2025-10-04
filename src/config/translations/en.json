@@ -10,6 +10,7 @@
   "pendingShares": "Pending shares",
   "totalShares": "Total shares",
   "unconfirmedBalance": "Unconfirmed balance",
+  "pendingBalance": "Pending balance",
   "profit": "Profit (FLC)",
   "fee": "Fee (LOKI)",
   "settings": {

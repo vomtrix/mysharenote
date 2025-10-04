@@ -3,6 +3,7 @@ import type { ReduxState } from '@store/store';
 
 export const getAddress = (state: ReduxState) => state.address;
 export const getUnconfirmedBalance = (state: ReduxState) => state.unconfirmedBalance;
+export const getPendingBalance = (state: ReduxState) => state.pendingBalance;
 export const getSettings = (state: ReduxState) => state.settings;
 
 export const getPayouts = (state: ReduxState) => state.payouts;

@@ -32,6 +32,7 @@ export interface AppState {
   hashrates: IHashrateEvent[];
   shares: IShareEvent[];
   payouts: IPayoutEvent[];
+  pendingBalance: number;
   unconfirmedBalance: number;
   settings: ISettings;
   colorMode: 'light' | 'dark';
@@ -51,6 +52,7 @@ export const initialState: AppState = {
   shares: [],
   payouts: [],
   unconfirmedBalance: 0,
+  pendingBalance: 0,
   colorMode: initialColorMode,
   settings: {
     relay: RELAY_URL,
@@ -128,7 +130,9 @@ export const slice = createSlice({
       }
     },
     addShare: (state: AppState, action: PayloadAction<IShareEvent>) => {
-      state.shares = [...state.shares, action.payload];
+      const event = action.payload;
+      state.pendingBalance += event.amount;
+      state.shares = [...state.shares, event];
     },
     addHashrate: (state: AppState, action: PayloadAction<IHashrateEvent>) => {
       state.hashrates = [...state.hashrates, action.payload];

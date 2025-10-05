@@ -41,7 +41,7 @@ const SharesTable = () => {
                 justifyContent: 'center',
                 alignItems: 'center'
               }}>
-              {pendingBalance > 0 && !isLoading && (
+              {/* {pendingBalance > 0 && !isLoading && (
                 <CustomTooltip title={t('pendingBalance')} placement="top" textBold>
                   <Chip
                     label={lokiToFlc(pendingBalance) + ' FLC'}
@@ -49,7 +49,7 @@ const SharesTable = () => {
                     size="small"
                   />
                 </CustomTooltip>
-              )}
+              )} */}
             </Box>
           </Box>
         </SectionHeader>

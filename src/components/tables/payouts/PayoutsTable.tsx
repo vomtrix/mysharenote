@@ -41,7 +41,7 @@ const PayoutsTable = () => {
                 justifyContent: 'center',
                 alignItems: 'center'
               }}>
-              {unconfirmedBalance > 0 && !isLoading &&  (
+              {/* {unconfirmedBalance > 0 && !isLoading &&  (
                 <CustomTooltip title={t('unconfirmedBalance')} placement="top" textBold>
                   <Chip
                     label={lokiToFlc(unconfirmedBalance) + ' FLC'}
@@ -49,7 +49,7 @@ const PayoutsTable = () => {
                     size="small"
                   />
                 </CustomTooltip>
-              )}
+              )} */}
             </Box>
           </Box>
         </SectionHeader>

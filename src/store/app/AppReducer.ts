@@ -135,7 +135,11 @@ export const slice = createSlice({
       state.shares = [...state.shares, event];
     },
     addHashrate: (state: AppState, action: PayloadAction<IHashrateEvent>) => {
-      state.hashrates = [...state.hashrates, action.payload];
+      const event = action.payload;
+      const lastHashrate = state.hashrates.at(-1)?.timestamp;
+      if (event.timestamp !== lastHashrate) {
+        state.hashrates = [...state.hashrates, event];
+      }
     }
   },
   extraReducers: (builder) => {

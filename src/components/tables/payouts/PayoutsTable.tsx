@@ -5,15 +5,12 @@ import { SectionHeader } from '@components/styled/SectionHeader';
 import { StyledCard } from '@components/styled/StyledCard';
 import { Chip } from '@mui/material';
 import Box from '@mui/material/Box';
-import {
-  getIsPayoutsLoading,
-  getPayouts,
-  getUnconfirmedBalance
-} from '@store/app/AppSelectors';
+import { getIsPayoutsLoading, getPayouts, getUnconfirmedBalance } from '@store/app/AppSelectors';
 import { useSelector } from '@store/store';
 import { lokiToFlc } from '@utils/Utils';
 import { useTranslation } from 'react-i18next';
 import payoutsColumns from './PayoutsColumns';
+import { IS_ADMIN_MODE } from '@config/config';
 
 const PayoutsTable = () => {
   const { t } = useTranslation();
@@ -41,7 +38,7 @@ const PayoutsTable = () => {
                 justifyContent: 'center',
                 alignItems: 'center'
               }}>
-              {/* {unconfirmedBalance > 0 && !isLoading &&  (
+              {unconfirmedBalance > 0 && !isLoading && IS_ADMIN_MODE && (
                 <CustomTooltip title={t('unconfirmedBalance')} placement="top" textBold>
                   <Chip
                     label={lokiToFlc(unconfirmedBalance) + ' FLC'}
@@ -49,11 +46,13 @@ const PayoutsTable = () => {
                     size="small"
                   />
                 </CustomTooltip>
-              )} */}
+              )}
             </Box>
           </Box>
         </SectionHeader>
-        {isLoading ? (<ProgressLoader value={payouts.length} />) : (
+        {isLoading ? (
+          <ProgressLoader value={payouts.length} />
+        ) : (
           <CustomTable
             columns={columns}
             rows={payouts}
@@ -64,7 +63,7 @@ const PayoutsTable = () => {
               }
             }}
           />
-        ) }
+        )}
       </Box>
     </StyledCard>
   );

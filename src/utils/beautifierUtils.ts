@@ -24,7 +24,6 @@ export const beautify = (event: any) => {
         result.confirmedTx = true;
         result.txBlockHeight = tagValue2;
         result.txBlockHash = tagValue3;
-        result.confirmedTx = true;
       }
     }
   });

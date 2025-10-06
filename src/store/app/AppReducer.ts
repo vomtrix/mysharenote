@@ -79,6 +79,8 @@ export const slice = createSlice({
     },
     clearAddress: (state: AppState) => {
       state.address = undefined;
+      state.unconfirmedBalance = 0;
+      state.pendingBalance = 0;
     },
     clearSettings: (state: AppState) => {
       state.settings = {

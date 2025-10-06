@@ -25,13 +25,13 @@ export class RelayService {
       {
         kinds: [35505],
         authors: [payerPublicKey],
-        ...(IS_ADMIN_MODE ? { since: getTimeBeforeDaysInSeconds(2) } : {}),
+        ...(IS_ADMIN_MODE ? {} : { since: getTimeBeforeDaysInSeconds(2) }),
         [`#a`]: [address]
       },
       {
         kinds: [35505],
         authors: [payerPublicKey],
-        ...(IS_ADMIN_MODE ? { limit: 500 } : {}),
+        ...(IS_ADMIN_MODE ? {} : { limit: 500 }),
         [`#a`]: [address]
       }
     ];
@@ -58,7 +58,7 @@ export class RelayService {
       {
         kinds: [35503],
         authors: [workProviderPublicKey],
-        ...(IS_ADMIN_MODE ? { limit: 500 } : {}),
+        ...(IS_ADMIN_MODE ? {} : { limit: 500 }),
         [`#a`]: [address]
       }
     ];

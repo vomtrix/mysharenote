@@ -20,7 +20,6 @@ import {
 import { useDispatch, useSelector } from '@store/store';
 import { validateAddress } from '@utils/Utils';
 import { useHasRelayConfig } from '@hooks/useHasRelayConfig';
-import { IS_ADMIN_MODE } from '@config/config';
 
 const AddressPage = () => {
   const { t } = useTranslation();
@@ -110,7 +109,7 @@ const AddressPage = () => {
           />
         </>
       ) : (
-        IS_ADMIN_MODE && <SharesTable />
+        <SharesTable />
       )}
 
       {enableSkeleton ? (

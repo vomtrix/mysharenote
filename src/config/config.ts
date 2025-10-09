@@ -2,6 +2,7 @@ export const RELAY_URL: string = process.env.NEXT_PUBLIC_RELAY_URL!;
 export const EXPLORER_URL: string = process.env.NEXT_PUBLIC_EXPLORER_URL!;
 export const PAYER_PUBLIC_KEY: string = process.env.NEXT_PUBLIC_PAYER_PUBLIC_KEY!;
 export const WORK_PROVIDER_PUBLIC_KEY: string = process.env.NEXT_PUBLIC_WORK_PROVIDER_PUBLIC_KEY!;
+export const IS_ADMIN_MODE: boolean = process.env.NEXT_PUBLIC_ADMIN_MODE === 'true'!;
 
 export const SOCIAL_URLS: Record<string, string> = {
   github: 'https://github.com/vomtrix/mysharenote'

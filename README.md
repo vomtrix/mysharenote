@@ -1,4 +1,4 @@
-# mySharenote
+# ViaFLC
 
 Dashboard for pools and miners to track sharenotes. Built on the Sharenote Fun Enhancement Proposal (WBET stage compliant) described in [the WoF paper](https://docs.flokicoin.org/wof). For the current Sharenote draft, see [docs.flokicoin.org/wof/sharenote](https://docs.flokicoin.org/wof/sharenote) and the concept overview at [sharenote.xyz](https://sharenote.xyz).
 
@@ -29,7 +29,6 @@ npm run start
 
 Set environment variables (or `.env.local`) as provided by your pool:
 - `NEXT_PUBLIC_RELAY_URL`
-- `NEXT_PUBLIC_NOSTR_PRIVATE_KEY`
 - `NEXT_PUBLIC_PAYER_PUBLIC_KEY`
 - `NEXT_PUBLIC_WORK_PROVIDER_PUBLIC_KEY`
 - `NEXT_PUBLIC_EXPLORER_URL`

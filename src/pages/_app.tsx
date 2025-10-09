@@ -1,24 +1,25 @@
+import { DARK_MODE_DEFAULT, DARK_MODE_ENABLED, DARK_MODE_FORCE } from '@config/config';
+import { Container } from '@mui/material';
+import GlobalStyles from '@mui/material/GlobalStyles';
+import { ThemeProvider, useTheme } from '@mui/material/styles';
+import { setColorMode } from '@store/app/AppReducer';
+import { getColorMode } from '@store/app/AppSelectors';
+import { AppStore, persistor, useDispatch, useSelector } from '@store/store';
+import { ColorModeContext } from '@styles/ColorModeContext';
+import { SECONDARY_GREY_3 } from '@styles/colors';
 import '@styles/scss/globals.scss';
-import '@utils/i18n';
+import customTheme from '@styles/theme';
 import '@utils/dayjsSetup';
-import 'reflect-metadata';
+import '@utils/i18n';
 import dynamic from 'next/dynamic';
 import Head from 'next/head';
+import Script from 'next/script';
+import { PropsWithChildren, useMemo } from 'react';
 import { Provider } from 'react-redux';
 import { Bounce, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { PersistGate } from 'redux-persist/integration/react';
-import { Container } from '@mui/material';
-import { ThemeProvider, useTheme } from '@mui/material/styles';
-import GlobalStyles from '@mui/material/GlobalStyles';
-import { AppStore, persistor, useDispatch, useSelector } from '@store/store';
-import customTheme from '@styles/theme';
-import { PropsWithChildren, useMemo } from 'react';
-import { ColorModeContext } from '@styles/ColorModeContext';
-import { DARK_MODE_DEFAULT, DARK_MODE_ENABLED, DARK_MODE_FORCE } from '@config/config';
-import { SECONDARY_GREY_3 } from '@styles/colors';
-import { getColorMode } from '@store/app/AppSelectors';
-import { setColorMode } from '@store/app/AppReducer';
+import 'reflect-metadata';
 
 const App = (props: any) => {
   const { Component, pageProps } = props;
@@ -31,16 +32,28 @@ const App = (props: any) => {
     <Provider store={AppStore}>
       <PersistGate persistor={persistor}>
         <Head>
-          <title>myShareNote</title>
-          <meta name="description" content="myShareNote - Guardians of Decentralization" />
+          <title>ViaFLC</title>
+          <meta name="description" content="ViaFLC - More Coins Same Power" />
           <meta name="viewport" content="width=device-width, initial-scale=1" />
           <link rel="icon" type="image/png" href="/assets/favicon-96x96.png" sizes="96x96"></link>
           <link rel="icon" href="/assets/favicon.ico" type="image/x-icon" />
           <link rel="shortcut icon" href="/assets/favicon.ico"></link>
           <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png"></link>
-          <meta name="apple-mobile-web-app-title" content="ShareNote"></meta>
+          <meta name="apple-mobile-web-app-title" content="ViaFLC"></meta>
           <link rel="manifest" href="/assets/site.webmanifest"></link>
         </Head>
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-57MPTSDC1R"
+          strategy="afterInteractive"
+        />
+        <Script id="ga-gtag-init" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);} 
+            gtag('js', new Date());
+            gtag('config', 'G-57MPTSDC1R');
+          `}
+        </Script>
         <ModeThemeProvider>
           {!hideChrome && <Header />}
           <Container

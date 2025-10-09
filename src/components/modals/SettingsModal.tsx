@@ -1,9 +1,7 @@
-import React from 'react';
-import { nip19 } from 'nostr-tools';
-import { Controller, useForm } from 'react-hook-form';
-import { useTranslation } from 'react-i18next';
-import * as Yup from 'yup';
+import CustomInput from '@components/common/CustomInput';
 import { yupResolver } from '@hookform/resolvers/yup';
+import { useNotification } from '@hooks/UseNotificationHook';
+import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import {
   Box,
   Button,
@@ -14,23 +12,21 @@ import {
   RadioGroup,
   Typography
 } from '@mui/material';
-import { useNotification } from '@hooks/UseNotificationHook';
 import { NetworkTypeType } from '@objects/Enums';
+import { clearAddress, clearSettings } from '@store/app/AppReducer';
 import { getSettings } from '@store/app/AppSelectors';
 import { changeRelay } from '@store/app/AppThunks-new';
 import { useDispatch, useSelector } from '@store/store';
-import { PRIMARY_BLACK } from '@styles/colors';
-import CustomInput from '@components/common/CustomInput';
-import { clearAddress, clearSettings } from '@store/app/AppReducer';
 import { useRouter } from 'next/router';
-import { HOME_PAGE_ENABLED } from 'src/config/config';
-import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
+import { nip19 } from 'nostr-tools';
+import { Controller, useForm } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
 import {
-  PAYER_PUBLIC_KEY,
+  EXPLORER_URL, HOME_PAGE_ENABLED, PAYER_PUBLIC_KEY,
   RELAY_URL,
-  WORK_PROVIDER_PUBLIC_KEY,
-  EXPLORER_URL
+  WORK_PROVIDER_PUBLIC_KEY
 } from 'src/config/config';
+import * as Yup from 'yup';
 
 export interface SettingsModalProps {
   close?: () => void;
@@ -123,8 +119,10 @@ const SettingsModal = ({ close }: SettingsModalProps) => {
     reset({
       relay: RELAY_URL || '',
       network: NetworkTypeType.Mainnet,
-      payerPublicKey: PAYER_PUBLIC_KEY || '',
-      workProviderPublicKey: WORK_PROVIDER_PUBLIC_KEY || '',
+      payerPublicKey: PAYER_PUBLIC_KEY ? nip19.npubEncode(PAYER_PUBLIC_KEY) : '',
+      workProviderPublicKey: WORK_PROVIDER_PUBLIC_KEY
+        ? nip19.npubEncode(WORK_PROVIDER_PUBLIC_KEY)
+        : '',
       explorer: EXPLORER_URL || ''
     });
     dispatch(clearSettings());
@@ -158,7 +156,6 @@ const SettingsModal = ({ close }: SettingsModalProps) => {
           <Typography
             sx={{
               fontWeight: 'bold !important',
-              color: PRIMARY_BLACK,
               textAlign: 'center',
               typography: { xs: 'h6', md: 'h5' }
             }}>

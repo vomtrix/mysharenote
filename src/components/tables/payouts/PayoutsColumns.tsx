@@ -1,6 +1,5 @@
 import { Chip } from '@mui/material';
 import { lokiToFlc } from '@utils/Utils';
-import dayjs from '@utils/dayjsSetup';
 import { fromEpoch } from '@utils/time';
 import numeral from 'numeral';
 import { useTranslation } from 'react-i18next';

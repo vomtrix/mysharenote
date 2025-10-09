@@ -43,7 +43,6 @@ const Header = () => {
             sx={{ pr: 2, display: { xs: 'none', md: 'block' } }}
             href={FAQ_LINKS.shareNote}
             target="_blank"
-            rel="noopener noreferrer"
             color={SECONDARY_COLOR}>
             {t('header.shareNote')}
           </MuiLink>

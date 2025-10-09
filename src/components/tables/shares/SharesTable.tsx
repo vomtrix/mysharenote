@@ -14,6 +14,7 @@ import { useSelector } from '@store/store';
 import { useTranslation } from 'react-i18next';
 import sharesColumns from './SharesColumns';
 import { lokiToFlc } from '@utils/Utils';
+import { IS_ADMIN_MODE } from '@config/config';
 
 const SharesTable = () => {
   const { t } = useTranslation();
@@ -41,7 +42,7 @@ const SharesTable = () => {
                 justifyContent: 'center',
                 alignItems: 'center'
               }}>
-              {pendingBalance > 0 && !isLoading && (
+              {pendingBalance > 0 && !isLoading && IS_ADMIN_MODE && (
                 <CustomTooltip title={t('pendingBalance')} placement="top" textBold>
                   <Chip
                     label={lokiToFlc(pendingBalance) + ' FLC'}

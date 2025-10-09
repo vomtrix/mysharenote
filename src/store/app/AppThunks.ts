@@ -25,7 +25,7 @@ export const getPayouts = createAppAsyncThunk(
         if (timeoutId) clearTimeout(timeoutId);
         timeoutId = setTimeout(() => {
           dispatch(setPayoutLoader(false));
-        }, 5000);
+        }, 2000);
       };
 
       relayService.subscribePayouts(address, settings.payerPublicKey, {
@@ -59,7 +59,7 @@ export const getShares = createAppAsyncThunk(
         if (timeoutId) clearTimeout(timeoutId);
         timeoutId = setTimeout(() => {
           dispatch(setShareLoader(false));
-        }, 5000);
+        }, 2000);
       };
 
       relayService.subscribeShares(address, settings.workProviderPublicKey, {

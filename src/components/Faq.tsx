@@ -21,7 +21,6 @@ const renderWithLinks = (text: string, t: any) => {
           key={`${id}-${match.index}`}
           href={entry}
           target="_blank"
-          rel="noopener noreferrer"
           underline="hover"
           color={SECONDARY_COLOR}>
           {label}

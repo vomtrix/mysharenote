@@ -631,35 +631,35 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mui/core-downloads-tracker@npm:^7.3.3":
-  version: 7.3.3
-  resolution: "@mui/core-downloads-tracker@npm:7.3.3"
-  checksum: 10c0/62ae4dfc39ad724f4ffb6c3b9ab9f502eb0d201ef1cc75f1f1a9099a40f0482d30814a82280322e91adf543dd1b14f468f2e7dcba630a7c004d978925ede3cac
+"@mui/core-downloads-tracker@npm:^7.3.4":
+  version: 7.3.4
+  resolution: "@mui/core-downloads-tracker@npm:7.3.4"
+  checksum: 10c0/938037e8a1141edf9bef744248dcddd91277d08ddf9de0a24d027fd8debea7bf81da22f01902d5979df4f9d3ef4931069131f2ce6e0c0d8e82a286896a1e372c
   languageName: node
   linkType: hard
 
 "@mui/icons-material@npm:^7.1.2":
-  version: 7.3.3
-  resolution: "@mui/icons-material@npm:7.3.3"
+  version: 7.3.4
+  resolution: "@mui/icons-material@npm:7.3.4"
   dependencies:
     "@babel/runtime": "npm:^7.28.4"
   peerDependencies:
-    "@mui/material": ^7.3.3
+    "@mui/material": ^7.3.4
     "@types/react": ^17.0.0 || ^18.0.0 || ^19.0.0
     react: ^17.0.0 || ^18.0.0 || ^19.0.0
   peerDependenciesMeta:
     "@types/react":
       optional: true
-  checksum: 10c0/da2bcc5020b50ea15388182aca5cfbbd2ed1f5cbe724c61f7f0fa03eb33a2e9bb3e46fab176101610797d52ddea683b912f247aaa732048659eaf64a0c72c1ea
+  checksum: 10c0/09c5708f0a96979dafeefdfbaef4950463e987bdc283874831d67ae0ce32cbc946bf408ba5084bd7a8f57af0cb87c3fdfddcf4c21e0946bb5e17c34abfd49d80
   languageName: node
   linkType: hard
 
 "@mui/material@npm:^7.1.2":
-  version: 7.3.3
-  resolution: "@mui/material@npm:7.3.3"
+  version: 7.3.4
+  resolution: "@mui/material@npm:7.3.4"
   dependencies:
     "@babel/runtime": "npm:^7.28.4"
-    "@mui/core-downloads-tracker": "npm:^7.3.3"
+    "@mui/core-downloads-tracker": "npm:^7.3.4"
     "@mui/system": "npm:^7.3.3"
     "@mui/types": "npm:^7.4.7"
     "@mui/utils": "npm:^7.3.3"
@@ -686,7 +686,7 @@ __metadata:
       optional: true
     "@types/react":
       optional: true
-  checksum: 10c0/dbd0f1a685c6ef6f16fb8b6ef996fec553b0aa0d3b76d9e91215838d82023c4211ad7796ba705b5cf5f0402534445213621d1c137d82c0e10d1e2b70859f9b55
+  checksum: 10c0/bd6ad058c3505bb8b680113ade6ac2cb20b21f7bc6a53c202c89a950b3570586e16646a7a04930ef6ea707a77000440d73b246301ff0d09380b2fb392452b678
   languageName: node
   linkType: hard
 
@@ -1299,11 +1299,11 @@ __metadata:
   linkType: hard
 
 "@types/node@npm:^24.0.4":
-  version: 24.6.1
-  resolution: "@types/node@npm:24.6.1"
+  version: 24.6.2
+  resolution: "@types/node@npm:24.6.2"
   dependencies:
     undici-types: "npm:~7.13.0"
-  checksum: 10c0/f2f8aea441d72139345cfa2e392af51bc27d12eb5f74b9b4d202046a2e82ab70d6da89c46a2ac7feea98854c2919e53070869d4af9d448e173a77249fcb7bca3
+  checksum: 10c0/d029757711be85ec468686f66cd8eca78f5996d7e2b1a5b818436e0299b19925b0fb4f7509a6b62750abdc72d66f5750ce22fb8b55559baca86df89a9c44722e
   languageName: node
   linkType: hard
 
@@ -2006,12 +2006,12 @@ __metadata:
   linkType: hard
 
 "bip174@npm:^3.0.0-rc.0":
-  version: 3.0.0-rc.1
-  resolution: "bip174@npm:3.0.0-rc.1"
+  version: 3.0.0
+  resolution: "bip174@npm:3.0.0"
   dependencies:
     uint8array-tools: "npm:^0.0.9"
     varuint-bitcoin: "npm:^2.0.0"
-  checksum: 10c0/d4fc26a4ec3dc6f4ce5b5cf38acc0825570c96a2bea536bf857a743ebfca5061ea9bc5c0cb21466a47c82e757190e7f00149eb6c6ccbba3238a48e853341b945
+  checksum: 10c0/5a335518712770f3b43ec87d950ebec5e0215e5705086cf752f2ea6e03e3c3542900a861224b4c571946e3abf77350e6d0ce43978a9741f1e128259861382937
   languageName: node
   linkType: hard
 
@@ -4742,9 +4742,9 @@ __metadata:
   linkType: hard
 
 "react-is@npm:^19.1.1":
-  version: 19.1.1
-  resolution: "react-is@npm:19.1.1"
-  checksum: 10c0/3dba763fcd69835ae263dcd6727d7ffcc44c1d616f04b7329e67aefdc66a567af4f8dcecdd29454c7a707c968aa1eb85083a83fb616f01675ef25e71cf082f97
+  version: 19.2.0
+  resolution: "react-is@npm:19.2.0"
+  checksum: 10c0/a63cb346aeced8ac0e671b0f9b33720d2906de02a066ca067075d871a5d4c64cdb328f495baf9b5842d5868c0d5edd1ce18465a7358b52f4b6aa983479c9bfa2
   languageName: node
   linkType: hard
 
@@ -5828,11 +5828,11 @@ __metadata:
   linkType: hard
 
 "use-sync-external-store@npm:^1.0.0, use-sync-external-store@npm:^1.4.0":
-  version: 1.5.0
-  resolution: "use-sync-external-store@npm:1.5.0"
+  version: 1.6.0
+  resolution: "use-sync-external-store@npm:1.6.0"
   peerDependencies:
     react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
-  checksum: 10c0/1b8663515c0be34fa653feb724fdcce3984037c78dd4a18f68b2c8be55cc1a1084c578d5b75f158d41b5ddffc2bf5600766d1af3c19c8e329bb20af2ec6f52f4
+  checksum: 10c0/35e1179f872a53227bdf8a827f7911da4c37c0f4091c29b76b1e32473d1670ebe7bcd880b808b7549ba9a5605c233350f800ffab963ee4a4ee346ee983b6019b
   languageName: node
   linkType: hard
 

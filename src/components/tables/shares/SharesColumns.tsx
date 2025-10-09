@@ -1,6 +1,5 @@
 import { Chip } from '@mui/material';
 import { lokiToFlc } from '@utils/Utils';
-import dayjs from '@utils/dayjsSetup';
 import { fromEpoch } from '@utils/time';
 import { useTranslation } from 'react-i18next';
 import { EXPLORER_URL } from 'src/config/config';

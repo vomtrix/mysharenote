@@ -22,7 +22,7 @@ export const THEME_PRIMARY_COLOR: string = '#42a5f5';
 export const THEME_SECONDARY_COLOR: string = '#d19810';
 export const THEME_PRIMARY_COLOR_1: string = '#72b9f3ff';
 export const THEME_PRIMARY_COLOR_2: string = '#90caf9';
-export const THEME_PRIMARY_COLOR_3: string = '#aad3f5ff';
+export const THEME_PRIMARY_COLOR_3: string = 'q';
 
 export const DARK_MODE_ENABLED: boolean = true;
 export const DARK_MODE_FORCE: boolean = false;

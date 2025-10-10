@@ -3,7 +3,6 @@ import { Service } from 'typedi';
 import { NostrClient } from '@services/NostrClient';
 import { getTimeBeforeDaysInSeconds } from '@utils/Utils';
 import { SubscriptionParams } from 'nostr-tools/lib/types/relay';
-``;
 import { IS_ADMIN_MODE } from '@config/config';
 @Service()
 export class RelayService {

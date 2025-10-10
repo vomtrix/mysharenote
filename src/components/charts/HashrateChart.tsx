@@ -18,9 +18,11 @@ const HashrateChart = () => {
   const theme = useTheme();
 
   const getDatapoints = (events: any[]): any[] => {
+    const tzOffsetSeconds = new Date().getTimezoneOffset() * 60;
     const lineDataPoints = events
       .map((event: any) => ({
-        time: event.timestamp,
+        // event.timestamp is expected to be UTCTimestamp (seconds)
+        time: event.timestamp - tzOffsetSeconds,
         value: event.hashrate
       }))
       .sort(

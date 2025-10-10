@@ -14,9 +14,12 @@ i18n.on('languageChanged', (lng) => {
   dayjs.locale(lng || 'en');
 });
 
+// Set default timezone to the user's browser timezone (client-side only)
 try {
-  const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-  if (tz) dayjs.tz.setDefault(tz);
+  if (typeof window !== 'undefined') {
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    if (tz) dayjs.tz.setDefault(tz);
+  }
 } catch (_) {}
 
 export default dayjs;

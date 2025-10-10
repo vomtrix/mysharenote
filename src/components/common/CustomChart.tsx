@@ -3,6 +3,7 @@ import React, { useEffect, useRef } from 'react';
 import { useTheme } from '@mui/material/styles';
 import { CHART_AREA_BOTTOM_COLOR, CHART_AREA_TOP_COLOR } from '@styles/colors';
 import { SECONDARY_GREY_4 } from '@styles/colors';
+// No date formatter here: we shift data timestamps at source
 
 interface CustomChartProps {
   dataPoints: LineData[];
@@ -45,7 +46,7 @@ const CustomChart = ({
       },
       timeScale: {
         timeVisible: true,
-        secondsVisible: true
+        secondsVisible: false
       }
     });
 
@@ -105,7 +106,15 @@ const CustomChart = ({
     return () => {
       chartRef.current?.remove();
     };
-  }, [height, lineColor, areaTopColor, areaBottomColor, dataPoints, valueFormatter, theme.palette.primary.main]);
+  }, [
+    height,
+    lineColor,
+    areaTopColor,
+    areaBottomColor,
+    dataPoints,
+    valueFormatter,
+    theme.palette.primary.main
+  ]);
 
   useEffect(() => {
     if (areaSeriesRef.current && dataPoints.length > 0) {

@@ -107,11 +107,7 @@ export const getShares = createAppAsyncThunk(
       relayService.subscribeShares(address, settings.workProviderPublicKey, {
         onevent: (event: any) => {
           const shareEvent = beautify(event);
-<<<<<<< HEAD
-          dispatch(addShare(shareEvent));
-=======
           dispatch(addShare({ ...shareEvent, status: BlockStatusEnum.New }));
->>>>>>> upstream/main
           sharesCount++;
           resetTimeout();
         }

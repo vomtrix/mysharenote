@@ -14,5 +14,6 @@ export interface IShareEvent {
 export enum BlockStatusEnum {
   New = 'NEW',
   Valid = 'VALID',
-  Orphan = 'ORPHAN'
+  Orphan = 'ORPHAN',
+  Checked = 'CHECKED'
 }

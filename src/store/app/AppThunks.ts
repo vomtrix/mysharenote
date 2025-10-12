@@ -6,7 +6,7 @@ import { ElectrumService } from '@services/api/ElectrumService';
 import { RelayService } from '@services/api/RelayService';
 import { createAppAsyncThunk } from '@store/createAppAsyncThunk';
 import { beautify } from '@utils/beautifierUtils';
-import { sliceByPagination } from '@utils/Utils';
+import { sliceShareByPagination } from '@utils/Utils';
 import {
   addHashrate,
   addPayout,
@@ -57,8 +57,8 @@ export const syncBlock = createAppAsyncThunk(
   async (pageSize: IPaginationModel, { rejectWithValue, dispatch, getState }) => {
     try {
       const { shares } = getState();
-      const sharesToSync = sliceByPagination(shares, pageSize).filter(
-        (share: any) => share.status == BlockStatusEnum.New
+      const sharesToSync = sliceShareByPagination(shares, pageSize).filter((share: any) =>
+        [BlockStatusEnum.New, BlockStatusEnum.Checked].includes(share.status)
       );
       const electrumService: any = Container.get(ElectrumService);
       const results = await Promise.allSettled(
@@ -73,6 +73,8 @@ export const syncBlock = createAppAsyncThunk(
           dispatch(updateShare({ id: targetShare.id, status: BlockStatusEnum.Orphan }));
         } else if (status === 'fulfilled' && value?.id) {
           dispatch(updateShare({ id: targetShare.id, status: BlockStatusEnum.Valid }));
+        } else {
+          dispatch(updateShare({ id: targetShare.id, status: BlockStatusEnum.Checked }));
         }
       });
     } catch (err: any) {

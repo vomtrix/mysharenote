@@ -5,7 +5,7 @@ import { NetworkTypeType } from '@objects/Enums';
 import { IHashrateEvent } from '@objects/interfaces/IHashrateEvent';
 import { IPayoutEvent } from '@objects/interfaces/IPayoutEvent';
 import { ISettings } from '@objects/interfaces/ISettings';
-import { IShareEvent } from '@objects/interfaces/IShareEvent';
+import { BlockStatusEnum, IShareEvent } from '@objects/interfaces/IShareEvent';
 import {
   changeRelay,
   connectRelay,
@@ -148,6 +148,9 @@ export const slice = createSlice({
       if (index !== -1) {
         const original = state.shares[index];
         const updated = { ...original, ...payload } as IShareEvent;
+        if (updated.status === BlockStatusEnum.Orphan) {
+          state.pendingBalance -= updated.amount;
+        }
         state.shares[index] = updated;
       }
     },

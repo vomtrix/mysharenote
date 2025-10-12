@@ -11,6 +11,8 @@
   "pendingBalance": "待处理余额",
   "totalShares": "总份额",
   "unconfirmedBalance": "未确认余额",
+  "orphanBlock": "孤块",
+  "orphanCheck": "孤块检查",
   "profit": "利润 (FLC)",
   "fee": "手续费 (LOKI)",
   "settings": {

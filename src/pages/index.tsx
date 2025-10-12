@@ -1,16 +1,16 @@
-import Connect from '@components/Connect';
-import Faq from '@components/Faq';
-import LanguageSwitcher from '@components/common/LanguageSwitcher';
-import SocialLinks from '@components/common/SocialLinks';
-import { alpha } from '@mui/material/styles';
-import { Box } from '@mui/system';
-import { clearAddress } from '@store/app/AppReducer';
-import { getAddress } from '@store/app/AppSelectors';
-import { stopHashrates, stopPayouts, stopShares } from '@store/app/AppThunks-new';
-import { useDispatch, useSelector } from '@store/store';
-import { PRIMARY_BLACK, PRIMARY_COLOR, PRIMARY_COLOR_1, PRIMARY_COLOR_3 } from '@styles/colors';
 import { useRouter } from 'next/router';
 import { useEffect } from 'react';
+import { alpha } from '@mui/material/styles';
+import { Box } from '@mui/system';
+import LanguageSwitcher from '@components/common/LanguageSwitcher';
+import SocialLinks from '@components/common/SocialLinks';
+import Connect from '@components/Connect';
+import Faq from '@components/Faq';
+import { clearAddress } from '@store/app/AppReducer';
+import { getAddress } from '@store/app/AppSelectors';
+import { stopHashrates, stopPayouts, stopShares } from '@store/app/AppThunks';
+import { useDispatch, useSelector } from '@store/store';
+import { PRIMARY_BLACK, PRIMARY_COLOR, PRIMARY_COLOR_1, PRIMARY_COLOR_3 } from '@styles/colors';
 import { HOME_PAGE_ENABLED } from 'src/config/config';
 
 const Home = () => {

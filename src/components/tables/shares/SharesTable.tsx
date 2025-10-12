@@ -1,27 +1,36 @@
+import { useTranslation } from 'react-i18next';
+import { IS_ADMIN_MODE } from '@config/config';
+import { Chip } from '@mui/material';
+import Box from '@mui/material/Box';
 import CustomTable from '@components/common/CustomTable';
 import CustomTooltip from '@components/common/CustomTooltip';
 import ProgressLoader from '@components/common/ProgressLoader';
 import { SectionHeader } from '@components/styled/SectionHeader';
 import { StyledCard } from '@components/styled/StyledCard';
-import { Chip } from '@mui/material';
-import Box from '@mui/material/Box';
+import { IPaginationModel } from '@objects/interfaces/IPaginationModel';
 import {
   getIsSharesLoading,
   getPendingBalance as getPendingBalance,
-  getShares
+  getShares,
+  getSharesSyncLoading
 } from '@store/app/AppSelectors';
-import { useSelector } from '@store/store';
-import { useTranslation } from 'react-i18next';
-import sharesColumns from './SharesColumns';
+import { syncBlock } from '@store/app/AppThunks';
+import { useDispatch, useSelector } from '@store/store';
 import { lokiToFlc } from '@utils/Utils';
-import { IS_ADMIN_MODE } from '@config/config';
+import sharesColumns from './SharesColumns';
 
 const SharesTable = () => {
   const { t } = useTranslation();
+  const dispatch = useDispatch();
   const columns = sharesColumns();
   const isLoading = useSelector(getIsSharesLoading);
+  const isSharesSyncLoading = useSelector(getSharesSyncLoading);
   const shares = useSelector(getShares);
   const pendingBalance = useSelector(getPendingBalance);
+
+  const onPagination = (paginationModel: IPaginationModel) => {
+    dispatch(syncBlock(paginationModel));
+  };
 
   return (
     <StyledCard>
@@ -61,12 +70,15 @@ const SharesTable = () => {
             <CustomTable
               columns={columns}
               rows={shares}
+              pageSizeOptions={[10]}
+              isLoading={isSharesSyncLoading}
               initialState={{
                 sorting: {
                   sortModel: [{ field: 'blockHeight', sort: 'desc' }]
                 },
                 pagination: { paginationModel: { pageSize: 10 } }
               }}
+              onPaginationModelChange={onPagination}
             />
           </Box>
         )}

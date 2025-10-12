@@ -1,12 +1,11 @@
-import { RELAY_URL } from 'src/config/config';
 import { RequestSecurityType, RequestVerbType } from '../objects/Enums';
 import { HttpClient } from './HttpClient';
 
 export class AbstractHttpRequest {
   private readonly httpClient: HttpClient;
 
-  constructor() {
-    this.httpClient = new HttpClient(RELAY_URL);
+  constructor(baseUrl: string) {
+    this.httpClient = new HttpClient(baseUrl);
   }
 
   async makeRequest(

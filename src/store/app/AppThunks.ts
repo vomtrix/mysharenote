@@ -1,8 +1,12 @@
+import { Container } from 'typedi';
+import { IPaginationModel } from '@objects/interfaces/IPaginationModel';
 import { ISettings } from '@objects/interfaces/ISettings';
+import { BlockStatusEnum } from '@objects/interfaces/IShareEvent';
+import { ElectrumService } from '@services/api/ElectrumService';
 import { RelayService } from '@services/api/RelayService';
 import { createAppAsyncThunk } from '@store/createAppAsyncThunk';
 import { beautify } from '@utils/beautifierUtils';
-import { Container } from 'typedi';
+import { sliceByPagination } from '@utils/Utils';
 import {
   addHashrate,
   addPayout,
@@ -10,7 +14,8 @@ import {
   setHashratesLoader,
   setPayoutLoader,
   setShareLoader,
-  setSkeleton
+  setSkeleton,
+  updateShare
 } from './AppReducer';
 
 export const getPayouts = createAppAsyncThunk(
@@ -47,6 +52,39 @@ export const getPayouts = createAppAsyncThunk(
   }
 );
 
+export const syncBlock = createAppAsyncThunk(
+  'electrum/syncBlock',
+  async (pageSize: IPaginationModel, { rejectWithValue, dispatch, getState }) => {
+    try {
+      const { shares } = getState();
+      const sharesToSync = sliceByPagination(shares, pageSize).filter(
+        (share: any) => !('orphan' in share)
+      );
+      const electrumService: any = Container.get(ElectrumService);
+      const results = await Promise.allSettled(
+        sharesToSync.map((share) => electrumService.getBlock(share.blockHash))
+      );
+
+      results.forEach(({ status, value, reason }: any, index: number) => {
+        const targetShare = sharesToSync[index];
+        if (!targetShare) return;
+
+        if (status === 'rejected' && reason?.message === 'Failed to get block') {
+          dispatch(updateShare({ id: targetShare.id, status: BlockStatusEnum.Orphan }));
+        } else if (status === 'fulfilled' && value?.id) {
+          dispatch(updateShare({ id: targetShare.id, status: BlockStatusEnum.Valid }));
+        }
+      });
+    } catch (err: any) {
+      return rejectWithValue({
+        message: err?.message || err,
+        code: err.code,
+        status: err.status
+      });
+    }
+  }
+);
+
 export const getShares = createAppAsyncThunk(
   'relay/getShares',
   async (address: string, { rejectWithValue, dispatch, getState }) => {
@@ -54,9 +92,13 @@ export const getShares = createAppAsyncThunk(
       const { settings } = getState();
       const relayService: any = Container.get(RelayService);
       let timeoutId: NodeJS.Timeout | undefined;
+      let sharesCount = 0;
 
       const resetTimeout = () => {
         if (timeoutId) clearTimeout(timeoutId);
+        if (sharesCount === 10) {
+          dispatch(syncBlock({ page: 0, pageSize: 10 }));
+        }
         timeoutId = setTimeout(() => {
           dispatch(setShareLoader(false));
         }, 2000);
@@ -66,6 +108,7 @@ export const getShares = createAppAsyncThunk(
         onevent: (event: any) => {
           const shareEvent = beautify(event);
           dispatch(addShare(shareEvent));
+          sharesCount++;
           resetTimeout();
         }
       });

@@ -11,6 +11,8 @@
   "totalShares": "Total shares",
   "unconfirmedBalance": "Unconfirmed balance",
   "pendingBalance": "Pending balance",
+  "orphanBlock": "Orphan block",
+  "orphanCheck": "Orphan check",
   "profit": "Profit (FLC)",
   "fee": "Fee (LOKI)",
   "settings": {

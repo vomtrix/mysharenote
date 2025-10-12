@@ -58,7 +58,7 @@ export const syncBlock = createAppAsyncThunk(
     try {
       const { shares } = getState();
       const sharesToSync = sliceByPagination(shares, pageSize).filter(
-        (share: any) => !('orphan' in share)
+        (share: any) => share.status == BlockStatusEnum.New
       );
       const electrumService: any = Container.get(ElectrumService);
       const results = await Promise.allSettled(
@@ -107,7 +107,7 @@ export const getShares = createAppAsyncThunk(
       relayService.subscribeShares(address, settings.workProviderPublicKey, {
         onevent: (event: any) => {
           const shareEvent = beautify(event);
-          dispatch(addShare(shareEvent));
+          dispatch(addShare({ ...shareEvent, status: BlockStatusEnum.New }));
           sharesCount++;
           resetTimeout();
         }

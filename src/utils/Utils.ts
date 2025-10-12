@@ -129,6 +129,7 @@ export const shareChipColor = (status: BlockStatusEnum) => {
   switch (status) {
     case BlockStatusEnum.Orphan:
       return 'error';
+    case BlockStatusEnum.New:
     case BlockStatusEnum.Valid:
       return;
     default:
@@ -138,6 +139,7 @@ export const shareChipColor = (status: BlockStatusEnum) => {
 
 export const shareChipVariant = (status: BlockStatusEnum) => {
   switch (status) {
+    case BlockStatusEnum.New:
     case BlockStatusEnum.Valid:
       return;
     default:

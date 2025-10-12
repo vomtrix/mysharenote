@@ -1,7 +1,7 @@
 import { address, networks } from 'flokicoinjs-lib';
 import { NetworkTypeType } from '@objects/Enums';
 import { IDataPoint } from '@objects/interfaces/IDatapoint';
-import { BlockStatusEnum } from '@objects/interfaces/IShareEvent';
+import { BlockStatusEnum, IShareEvent } from '@objects/interfaces/IShareEvent';
 
 export const setWidthStyle = (width?: any) => {
   if (width && typeof width === 'number') {
@@ -117,12 +117,13 @@ export const getPaginationBounds = ({ page, pageSize }: { page: number; pageSize
   return { start, end };
 };
 
-export const sliceByPagination = <T>(
-  list: T[],
+export const sliceShareByPagination = (
+  list: IShareEvent[],
   pagination: { page: number; pageSize: number }
-): T[] => {
+): IShareEvent[] => {
   const { start, end } = getPaginationBounds(pagination);
-  return list.slice(start, end);
+  const sorted = [...list].sort((a, b) => b.blockHeight - a.blockHeight);
+  return sorted.slice(start, end);
 };
 
 export const shareChipColor = (status: BlockStatusEnum) => {

@@ -46,7 +46,7 @@ const sharesColumns = () => {
             variant={shareChipVariant(params.row?.status)}
           />
         );
-        return [BlockStatusEnum.Orphan, undefined].includes(params.row?.status) ? (
+        return [BlockStatusEnum.Orphan, BlockStatusEnum.Checked].includes(params.row?.status) ? (
           <Tooltip
             title={
               params.row?.status == BlockStatusEnum.Orphan ? t('orphanBlock') : t('orphanCheck')
@@ -66,15 +66,29 @@ const sharesColumns = () => {
       minWidth: 100,
       headerClassName: 'text-blue text-uppercase',
       cellClassName: 'text-blue',
-      renderCell: (params: any) => (
-        <Chip
-          label={params.value}
-          sx={{ fontWeight: 'bold', borderRadius: 1 }}
-          size="small"
-          color={shareChipColor(params.row?.status)}
-          variant={shareChipVariant(params.row?.status)}
-        />
-      )
+      renderCell: (params: any) => {
+        const chip = (
+          <Chip
+            label={params.value}
+            sx={{ fontWeight: 'bold', borderRadius: 1 }}
+            size="small"
+            color={shareChipColor(params.row?.status)}
+            variant={shareChipVariant(params.row?.status)}
+          />
+        );
+
+        return [BlockStatusEnum.Orphan, BlockStatusEnum.Checked].includes(params.row?.status) ? (
+          <Tooltip
+            title={
+              params.row?.status == BlockStatusEnum.Orphan ? t('orphanBlock') : t('orphanCheck')
+            }
+            placement="top">
+            {chip}
+          </Tooltip>
+        ) : (
+          chip
+        );
+      }
     },
     {
       headerName: t('shares'),
@@ -99,21 +113,35 @@ const sharesColumns = () => {
       minWidth: 120,
       headerClassName: 'text-blue text-uppercase',
       cellClassName: 'text-blue text-bold',
-      renderCell: (params: any) => (
-        <Chip
-          label={lokiToFlc(params.value)}
-          sx={{
-            fontWeight: 'bold',
-            '& .MuiChip-label':
-              params.row?.status === BlockStatusEnum.Orphan
-                ? { textDecoration: 'line-through' }
-                : undefined
-          }}
-          color={shareChipColor(params.row?.status)}
-          variant={shareChipVariant(params.row?.status)}
-          size="small"
-        />
-      )
+      renderCell: (params: any) => {
+        const chip = (
+          <Chip
+            label={lokiToFlc(params.value)}
+            sx={{
+              fontWeight: 'bold',
+              '& .MuiChip-label':
+                params.row?.status === BlockStatusEnum.Orphan
+                  ? { textDecoration: 'line-through' }
+                  : undefined
+            }}
+            color={shareChipColor(params.row?.status)}
+            variant={shareChipVariant(params.row?.status)}
+            size="small"
+          />
+        );
+
+        return [BlockStatusEnum.Orphan, BlockStatusEnum.Checked].includes(params.row?.status) ? (
+          <Tooltip
+            title={
+              params.row?.status == BlockStatusEnum.Orphan ? t('orphanBlock') : t('orphanCheck')
+            }
+            placement="top">
+            {chip}
+          </Tooltip>
+        ) : (
+          chip
+        );
+      }
     }
   ];
 };

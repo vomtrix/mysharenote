@@ -12,7 +12,7 @@ export interface IShareEvent {
 }
 
 export enum BlockStatusEnum {
-  New = 'New',
+  New = 'NEW',
   Valid = 'VALID',
   Orphan = 'ORPHAN'
 }

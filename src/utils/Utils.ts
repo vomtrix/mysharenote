@@ -85,7 +85,7 @@ export const addRandomNumber = (number: number): number => {
 };
 
 export const formatHashrate = (hpsStr: any) => {
-  const hps = BigInt(Math.round(Number(hpsStr)));
+  const hps = BigInt(Math.round(Number(hpsStr * 60)));
 
   const units = ['H/s', 'kH/s', 'MH/s', 'GH/s', 'TH/s', 'PH/s', 'EH/s'];
 

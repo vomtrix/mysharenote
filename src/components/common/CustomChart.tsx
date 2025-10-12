@@ -1,8 +1,7 @@
 import { AreaSeries, createChart, IChartApi, ISeriesApi, LineData } from 'lightweight-charts';
 import React, { useEffect, useRef } from 'react';
 import { useTheme } from '@mui/material/styles';
-import { CHART_AREA_BOTTOM_COLOR, CHART_AREA_TOP_COLOR } from '@styles/colors';
-import { SECONDARY_GREY_4 } from '@styles/colors';
+import { CHART_AREA_BOTTOM_COLOR, CHART_AREA_TOP_COLOR, SECONDARY_GREY_4 } from '@styles/colors';
 // No date formatter here: we shift data timestamps at source
 
 interface CustomChartProps {

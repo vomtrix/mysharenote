@@ -11,6 +11,8 @@
   "pendingBalance": "Ожидаемый баланс",
   "totalShares": "Всего шар",
   "unconfirmedBalance": "Неподтвержденный баланс",
+  "orphanBlock": "Осиротевший блок",
+  "orphanCheck": "Проверка осиротевших блоков",
   "profit": "Прибыль (FLC)",
   "fee": "Комиссия (LOKI)",
   "settings": {

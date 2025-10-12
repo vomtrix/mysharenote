@@ -31,6 +31,6 @@
       "@styles/*": ["./src/styles/*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "src/store/app/AppThunks.ts.skip"],
   "exclude": ["node_modules", ".next", "dist"]
 }

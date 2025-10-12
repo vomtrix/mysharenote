@@ -5,21 +5,21 @@ import { Box, Skeleton } from '@mui/material';
 import HashrateChart from '@components/charts/HashrateChart';
 import PayoutsTable from '@components/tables/payouts/PayoutsTable';
 import SharesTable from '@components/tables/shares/SharesTable';
+import { useHasRelayConfig } from '@hooks/useHasRelayConfig';
 import { useNotification } from '@hooks/UseNotificationHook';
 import { addAddress, clearAddress } from '@store/app/AppReducer';
-import { getSkeleton, getSettings, getAddress, getRelayReady } from '@store/app/AppSelectors';
+import { getAddress, getRelayReady, getSettings, getSkeleton } from '@store/app/AppSelectors';
 import {
   connectRelay,
   getHashrates,
   getPayouts,
   getShares,
   stopHashrates,
-  stopShares,
-  stopPayouts
-} from '@store/app/AppThunks-new';
+  stopPayouts,
+  stopShares
+} from '@store/app/AppThunks';
 import { useDispatch, useSelector } from '@store/store';
 import { validateAddress } from '@utils/Utils';
-import { useHasRelayConfig } from '@hooks/useHasRelayConfig';
 
 const AddressPage = () => {
   const { t } = useTranslation();

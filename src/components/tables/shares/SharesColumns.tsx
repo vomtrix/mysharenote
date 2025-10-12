@@ -1,7 +1,8 @@
-import { Chip } from '@mui/material';
-import { lokiToFlc } from '@utils/Utils';
-import { fromEpoch } from '@utils/time';
 import { useTranslation } from 'react-i18next';
+import { Chip, Tooltip } from '@mui/material';
+import { BlockStatusEnum } from '@objects/interfaces/IShareEvent';
+import { fromEpoch } from '@utils/time';
+import { lokiToFlc, shareChipColor, shareChipVariant } from '@utils/Utils';
 import { EXPLORER_URL } from 'src/config/config';
 
 const sharesColumns = () => {
@@ -31,17 +32,32 @@ const sharesColumns = () => {
       minWidth: 100,
       headerClassName: 'text-blue text-uppercase',
       cellClassName: 'text-blue',
-      renderCell: (params: any) => (
-        <Chip
-          label={params.value}
-          sx={{ fontWeight: 'bold', borderRadius: 1 }}
-          size="small"
-          component="a"
-          target="_blank"
-          href={`${EXPLORER_URL}/block/${params.row.blockHash}`}
-          clickable
-        />
-      )
+      renderCell: (params: any) => {
+        const chip = (
+          <Chip
+            label={params.value}
+            sx={{ fontWeight: 'bold', borderRadius: 1 }}
+            size="small"
+            component="a"
+            target="_blank"
+            href={`${EXPLORER_URL}/block/${params.row.blockHash}`}
+            clickable
+            color={shareChipColor(params.row?.status)}
+            variant={shareChipVariant(params.row?.status)}
+          />
+        );
+        return [BlockStatusEnum.Orphan, undefined].includes(params.row?.status) ? (
+          <Tooltip
+            title={
+              params.row?.status == BlockStatusEnum.Orphan ? t('orphanBlock') : t('orphanCheck')
+            }
+            placement="top">
+            {chip}
+          </Tooltip>
+        ) : (
+          chip
+        );
+      }
     },
     {
       headerName: t('paymentHeight'),
@@ -51,7 +67,13 @@ const sharesColumns = () => {
       headerClassName: 'text-blue text-uppercase',
       cellClassName: 'text-blue',
       renderCell: (params: any) => (
-        <Chip label={params.value} sx={{ fontWeight: 'bold', borderRadius: 1 }} size="small" />
+        <Chip
+          label={params.value}
+          sx={{ fontWeight: 'bold', borderRadius: 1 }}
+          size="small"
+          color={shareChipColor(params.row?.status)}
+          variant={shareChipVariant(params.row?.status)}
+        />
       )
     },
     {
@@ -78,7 +100,19 @@ const sharesColumns = () => {
       headerClassName: 'text-blue text-uppercase',
       cellClassName: 'text-blue text-bold',
       renderCell: (params: any) => (
-        <Chip label={lokiToFlc(params.value)} sx={{ fontWeight: 'bold' }} size="small" />
+        <Chip
+          label={lokiToFlc(params.value)}
+          sx={{
+            fontWeight: 'bold',
+            '& .MuiChip-label':
+              params.row?.status === BlockStatusEnum.Orphan
+                ? { textDecoration: 'line-through' }
+                : undefined
+          }}
+          color={shareChipColor(params.row?.status)}
+          variant={shareChipVariant(params.row?.status)}
+          size="small"
+        />
       )
     }
   ];

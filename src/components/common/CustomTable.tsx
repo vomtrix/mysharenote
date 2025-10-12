@@ -1,5 +1,6 @@
-import StyledDataGrid from '@components/styled/StyledDataGrid';
 import { gridClasses } from '@mui/x-data-grid';
+import StyledDataGrid from '@components/styled/StyledDataGrid';
+import { IPaginationModel } from '@objects/interfaces/IPaginationModel';
 
 interface CustomTableProps {
   columns: any;
@@ -10,10 +11,22 @@ interface CustomTableProps {
   filters?: boolean;
   autoSelectAll?: boolean;
   initialState?: any;
+  pageSizeOptions?: number[];
+  onPaginationModelChange?: (paginationModel: IPaginationModel) => void;
 }
 
 const CustomTable = (props: CustomTableProps) => {
-  const { columns, hidePagination, stripedRows, filters, rows, isLoading, initialState } = props;
+  const {
+    columns,
+    hidePagination,
+    stripedRows,
+    filters,
+    rows,
+    isLoading,
+    initialState,
+    pageSizeOptions,
+    onPaginationModelChange
+  } = props;
 
   return (
     <>
@@ -23,8 +36,9 @@ const CustomTable = (props: CustomTableProps) => {
           loading={isLoading}
           rows={rows}
           columns={columns}
+          onPaginationModelChange={onPaginationModelChange}
           disableColumnMenu={!filters}
-          pageSizeOptions={[10, 25, 50, 100]}
+          pageSizeOptions={pageSizeOptions ?? [10, 25, 50, 100]}
           initialState={
             initialState
               ? {

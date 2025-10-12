@@ -1,6 +1,7 @@
 import { address, networks } from 'flokicoinjs-lib';
 import { NetworkTypeType } from '@objects/Enums';
 import { IDataPoint } from '@objects/interfaces/IDatapoint';
+import { BlockStatusEnum } from '@objects/interfaces/IShareEvent';
 
 export const setWidthStyle = (width?: any) => {
   if (width && typeof width === 'number') {
@@ -108,4 +109,38 @@ export const formatHashrate = (hpsStr: any) => {
   const fracStr = fractionPart.toString().padStart(2, '0');
 
   return `${integerPart}.${fracStr} ${units[unitIndex]}`;
+};
+
+export const getPaginationBounds = ({ page, pageSize }: { page: number; pageSize: number }) => {
+  const start = page * pageSize;
+  const end = start + pageSize;
+  return { start, end };
+};
+
+export const sliceByPagination = <T>(
+  list: T[],
+  pagination: { page: number; pageSize: number }
+): T[] => {
+  const { start, end } = getPaginationBounds(pagination);
+  return list.slice(start, end);
+};
+
+export const shareChipColor = (status: BlockStatusEnum) => {
+  switch (status) {
+    case BlockStatusEnum.Orphan:
+      return 'error';
+    case BlockStatusEnum.Valid:
+      return;
+    default:
+      return 'warning';
+  }
+};
+
+export const shareChipVariant = (status: BlockStatusEnum) => {
+  switch (status) {
+    case BlockStatusEnum.Valid:
+      return;
+    default:
+      return 'outlined';
+  }
 };

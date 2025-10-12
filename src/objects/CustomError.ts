@@ -11,7 +11,7 @@ class CustomError extends Error {
       code = errorData.errors[0].errorCode || code;
       status = errorData.errors[0].status || status;
     } else {
-      message = err.message || message;
+      message = errorData.message || errorData.error || message;
       code = err.code || code;
     }
 

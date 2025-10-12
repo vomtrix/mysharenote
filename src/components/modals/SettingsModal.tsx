@@ -1,6 +1,9 @@
-import CustomInput from '@components/common/CustomInput';
+import { useRouter } from 'next/router';
+import { nip19 } from 'nostr-tools';
+import { Controller, useForm } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
+import * as Yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useNotification } from '@hooks/UseNotificationHook';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import {
   Box,
@@ -12,27 +15,22 @@ import {
   RadioGroup,
   Typography
 } from '@mui/material';
+import CustomInput from '@components/common/CustomInput';
+import { useNotification } from '@hooks/UseNotificationHook';
 import { NetworkTypeType } from '@objects/Enums';
 import { clearAddress, clearSettings } from '@store/app/AppReducer';
 import { getSettings } from '@store/app/AppSelectors';
-import { changeRelay } from '@store/app/AppThunks-new';
+import { changeRelay } from '@store/app/AppThunks';
 import { useDispatch, useSelector } from '@store/store';
-import { useRouter } from 'next/router';
-import { nip19 } from 'nostr-tools';
-import { Controller, useForm } from 'react-hook-form';
-import { useTranslation } from 'react-i18next';
 import {
-  EXPLORER_URL, HOME_PAGE_ENABLED, PAYER_PUBLIC_KEY,
+  EXPLORER_URL,
+  HOME_PAGE_ENABLED,
+  PAYER_PUBLIC_KEY,
   RELAY_URL,
   WORK_PROVIDER_PUBLIC_KEY
 } from 'src/config/config';
-import * as Yup from 'yup';
 
-export interface SettingsModalProps {
-  close?: () => void;
-}
-
-const SettingsModal = ({ close }: SettingsModalProps) => {
+const SettingsModal = () => {
   const { t } = useTranslation();
   const settings = useSelector(getSettings);
   const dispatch = useDispatch();

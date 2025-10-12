@@ -21,3 +21,4 @@ export const getSkeleton = (state: ReduxState) => state.skeleton;
 export const getError = (state: ReduxState) => state.error;
 export const getRelayReady = (state: ReduxState) => state.relayReady;
 export const getColorMode = (state: ReduxState) => state.colorMode;
+export const getSharesSyncLoading = (state: ReduxState) => state.isSharesSyncLoading;

@@ -1,13 +1,12 @@
-import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
+import { useTheme } from '@mui/material/styles';
 import CustomChart from '@components/common/CustomChart';
 import ProgressLoader from '@components/common/ProgressLoader';
 import { SectionHeader } from '@components/styled/SectionHeader';
 import { StyledCard } from '@components/styled/StyledCard';
 import { getAddress, getHashrates, getIsHashratesLoading } from '@store/app/AppSelectors';
 import { useSelector } from '@store/store';
-import { useTheme } from '@mui/material/styles';
 import { calculateSMA, formatHashrate } from '@utils/Utils';
 
 const HashrateChart = () => {
@@ -21,7 +20,6 @@ const HashrateChart = () => {
     const tzOffsetSeconds = new Date().getTimezoneOffset() * 60;
     const lineDataPoints = events
       .map((event: any) => ({
-        // event.timestamp is expected to be UTCTimestamp (seconds)
         time: event.timestamp - tzOffsetSeconds,
         value: event.hashrate
       }))

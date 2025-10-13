@@ -1,9 +1,9 @@
 import { Filter } from 'nostr-tools';
+import { SubscriptionParams } from 'nostr-tools/lib/types/relay';
 import { Service } from 'typedi';
+import { IS_ADMIN_MODE } from '@config/config';
 import { NostrClient } from '@services/NostrClient';
 import { getTimeBeforeDaysInSeconds } from '@utils/Utils';
-import { SubscriptionParams } from 'nostr-tools/lib/types/relay';
-import { IS_ADMIN_MODE } from '@config/config';
 @Service()
 export class RelayService {
   public nostrClient: any;
@@ -57,7 +57,7 @@ export class RelayService {
       {
         kinds: [35503],
         authors: [workProviderPublicKey],
-        ...(IS_ADMIN_MODE ? {} : { limit: 500 }),
+        ...(IS_ADMIN_MODE ? {} : { limit: 500, since: getTimeBeforeDaysInSeconds(2) }),
         [`#a`]: [address]
       }
     ];

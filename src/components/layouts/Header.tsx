@@ -19,11 +19,11 @@ const Header = () => {
         <Box>
           <Link href="/" passHref>
             <Image
-              src="/assets/logo.svg"
+              src="/assets/icon.svg"
               alt="Mobile Logo"
               className={styles.mobileLogo}
-              width={120}
-              height={48}
+              width={65}
+              height={50}
             />
           </Link>
           <Link href="/" passHref>

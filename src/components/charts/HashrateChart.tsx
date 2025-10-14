@@ -7,7 +7,7 @@ import { SectionHeader } from '@components/styled/SectionHeader';
 import { StyledCard } from '@components/styled/StyledCard';
 import { getAddress, getHashrates, getIsHashratesLoading } from '@store/app/AppSelectors';
 import { useSelector } from '@store/store';
-import { calculateSMA, formatHashrate } from '@utils/Utils';
+import { formatHashrate } from '@utils/Utils';
 
 const HashrateChart = () => {
   const { t } = useTranslation();
@@ -26,7 +26,7 @@ const HashrateChart = () => {
       .sort(
         (a: { time: number; value: number }, b: { time: number; value: number }) => a.time - b.time
       );
-    return lineDataPoints?.length >= 50 ? calculateSMA(lineDataPoints, 50) : lineDataPoints;
+    return lineDataPoints;
   };
 
   return (

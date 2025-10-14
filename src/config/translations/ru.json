@@ -6,10 +6,10 @@
   "addressRequired": "Требуется адрес",
   "time": "Время",
   "block": "Блок",
-  "shares": "Шары",
-  "pendingShares": "Ожидающие шары",
+  "shares": "Sharenotes",
+  "pendingShares": "Ожидающие Sharenotes",
   "pendingBalance": "Ожидаемый баланс",
-  "totalShares": "Всего шар",
+  "totalShares": "Общие Sharenotes",
   "unconfirmedBalance": "Неподтвержденный баланс",
   "orphanBlock": "Осиротевший блок",
   "orphanCheck": "Проверка осиротевших блоков",
@@ -46,11 +46,11 @@
 
   "pageNotFound": "Страница не найдена",
   "loading": "Загрузка...",
-  "hashrateChart": "График хешрейта",
+  "hashrateChart": "Хешрейт",
   "hashrate": "Хешрейт (MH/s)",
   "previous": "Назад",
   "next": "Далее",
-  "paymentHeight": "EST.Payment",
+  "paymentHeight": "Оценка.Платеж",
 
   "languages": {
     "en": "English",

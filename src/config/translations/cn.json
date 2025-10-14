@@ -6,10 +6,10 @@
   "addressRequired": "地址为必填项",
   "time": "时间",
   "block": "区块",
-  "shares": "份额",
-  "pendingShares": "待确认份额",
+  "shares": "Sharenotes",
+  "pendingShares": "待处理的 Sharenotes",
   "pendingBalance": "待处理余额",
-  "totalShares": "总份额",
+  "totalShares": "总 Sharenotes",
   "unconfirmedBalance": "未确认余额",
   "orphanBlock": "孤块",
   "orphanCheck": "孤块检查",
@@ -46,11 +46,11 @@
 
   "pageNotFound": "未找到页面",
   "loading": "加载中...",
-  "hashrateChart": "哈希率图表",
+  "hashrateChart": "哈希率",
   "hashrate": "哈希率 (MH/s)",
   "previous": "上一页",
   "next": "下一页",
-  "paymentHeight": "EST.Payment",
+  "paymentHeight": "估算.支付",
 
   "languages": {
     "en": "English",

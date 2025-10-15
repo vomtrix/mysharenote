@@ -7,7 +7,6 @@ import CustomTooltip from '@components/common/CustomTooltip';
 import ProgressLoader from '@components/common/ProgressLoader';
 import { SectionHeader } from '@components/styled/SectionHeader';
 import { StyledCard } from '@components/styled/StyledCard';
-import { IPaginationModel } from '@objects/interfaces/IPaginationModel';
 import {
   getIsSharesLoading,
   getPendingBalance as getPendingBalance,
@@ -28,8 +27,8 @@ const SharesTable = () => {
   const shares = useSelector(getShares);
   const pendingBalance = useSelector(getPendingBalance);
 
-  const onPagination = (paginationModel: IPaginationModel) => {
-    dispatch(syncBlock(paginationModel));
+  const onVisibleShares = async (ids: any[]) => {
+    await dispatch(syncBlock(ids));
   };
 
   return (
@@ -78,7 +77,7 @@ const SharesTable = () => {
                 },
                 pagination: { paginationModel: { pageSize: 10 } }
               }}
-              onPaginationModelChange={onPagination}
+              onVisibleRowChange={onVisibleShares}
             />
           </Box>
         )}

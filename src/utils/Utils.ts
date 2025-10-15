@@ -111,21 +111,6 @@ export const formatHashrate = (hpsStr: any) => {
   return `${integerPart}.${fracStr} ${units[unitIndex]}`;
 };
 
-export const getPaginationBounds = ({ page, pageSize }: { page: number; pageSize: number }) => {
-  const start = page * pageSize;
-  const end = start + pageSize;
-  return { start, end };
-};
-
-export const sliceShareByPagination = (
-  list: IShareEvent[],
-  pagination: { page: number; pageSize: number }
-): IShareEvent[] => {
-  const { start, end } = getPaginationBounds(pagination);
-  const sorted = [...list].sort((a, b) => b.blockHeight - a.blockHeight);
-  return sorted.slice(start, end);
-};
-
 export const shareChipColor = (status: BlockStatusEnum) => {
   switch (status) {
     case BlockStatusEnum.Orphan:
@@ -146,4 +131,25 @@ export const shareChipVariant = (status: BlockStatusEnum) => {
     default:
       return 'outlined';
   }
+};
+
+export const makeIdsSignature = (ids: any[]): string => {
+  const input = ids.join('\u001F');
+  const FNV_OFFSET = 0x811c9dc5; // 2166136261
+  const FNV_PRIME = 0x01000193; // 16777619
+
+  let h1 = FNV_OFFSET >>> 0;
+  for (let i = 0; i < input.length; i++) {
+    h1 ^= input.charCodeAt(i);
+    h1 = (h1 * FNV_PRIME) >>> 0;
+  }
+
+  let h2 = FNV_OFFSET >>> 0;
+  for (let i = input.length - 1; i >= 0; i--) {
+    h2 ^= input.charCodeAt(i);
+    h2 = (h2 * FNV_PRIME) >>> 0;
+  }
+
+  const combined = (BigInt(h1) << 32n) | BigInt(h2);
+  return combined.toString(36);
 };

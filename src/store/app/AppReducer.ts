@@ -5,6 +5,7 @@ import { NetworkTypeType } from '@objects/Enums';
 import { IHashrateEvent } from '@objects/interfaces/IHashrateEvent';
 import { IPayoutEvent } from '@objects/interfaces/IPayoutEvent';
 import { ISettings } from '@objects/interfaces/ISettings';
+import { makeIdsSignature } from '@utils/Utils';
 import { BlockStatusEnum, IShareEvent } from '@objects/interfaces/IShareEvent';
 import {
   changeRelay,
@@ -33,6 +34,7 @@ export interface AppState {
   hashrates: IHashrateEvent[];
   shares: IShareEvent[];
   payouts: IPayoutEvent[];
+  visibleSharesSig?: string | null;
   pendingBalance: number;
   unconfirmedBalance: number;
   settings: ISettings;
@@ -53,6 +55,7 @@ export const initialState: AppState = {
   hashrates: [],
   shares: [],
   payouts: [],
+  visibleSharesSig: null,
   unconfirmedBalance: 0,
   pendingBalance: 0,
   colorMode: initialColorMode,
@@ -120,6 +123,9 @@ export const slice = createSlice({
     },
     setSkeleton: (state: AppState, action: PayloadAction<boolean>) => {
       state.skeleton = action.payload;
+    },
+    setVisibleSharesSig: (state: AppState, action: PayloadAction<string | null>) => {
+      state.visibleSharesSig = action.payload;
     },
     addPayout: (state: AppState, action: PayloadAction<IPayoutEvent>) => {
       const event = action.payload;
@@ -247,8 +253,16 @@ export const slice = createSlice({
         state.skeleton = true;
         state.relayReady = false;
       })
-      .addCase(syncBlock.pending, (state) => {
-        state.isSharesSyncLoading = true;
+      .addCase(syncBlock.pending, (state, action) => {
+        try {
+          const idsArg: any[] = action?.meta?.arg ?? [];
+          const sig = makeIdsSignature(idsArg);
+          if (sig !== state.visibleSharesSig) {
+            state.isSharesSyncLoading = true;
+          }
+        } catch {
+          state.isSharesSyncLoading = true;
+        }
       })
       .addCase(syncBlock.fulfilled, (state) => {
         state.isSharesSyncLoading = false;
@@ -277,7 +291,8 @@ export const {
   setShareLoader,
   setSettings,
   setColorMode,
-  setSkeleton
+  setSkeleton,
+  setVisibleSharesSig
 } = slice.actions;
 
 export default appReducer;

@@ -1,12 +1,11 @@
 import { Container } from 'typedi';
-import { IPaginationModel } from '@objects/interfaces/IPaginationModel';
 import { ISettings } from '@objects/interfaces/ISettings';
 import { BlockStatusEnum } from '@objects/interfaces/IShareEvent';
 import { ElectrumService } from '@services/api/ElectrumService';
 import { RelayService } from '@services/api/RelayService';
 import { createAppAsyncThunk } from '@store/createAppAsyncThunk';
 import { beautify } from '@utils/beautifierUtils';
-import { sliceShareByPagination } from '@utils/Utils';
+import { makeIdsSignature } from '@utils/Utils';
 import {
   addHashrate,
   addPayout,
@@ -15,7 +14,8 @@ import {
   setPayoutLoader,
   setShareLoader,
   setSkeleton,
-  updateShare
+  updateShare,
+  setVisibleSharesSig
 } from './AppReducer';
 
 export const getPayouts = createAppAsyncThunk(
@@ -54,12 +54,19 @@ export const getPayouts = createAppAsyncThunk(
 
 export const syncBlock = createAppAsyncThunk(
   'electrum/syncBlock',
-  async (pageSize: IPaginationModel, { rejectWithValue, dispatch, getState }) => {
+  async (ids: any[], { rejectWithValue, dispatch, getState }) => {
     try {
-      const { shares } = getState();
-      const sharesToSync = sliceShareByPagination(shares, pageSize).filter((share: any) =>
-        [BlockStatusEnum.New, BlockStatusEnum.Checked].includes(share.status)
-      );
+      const { shares, visibleSharesSig } = getState();
+      const sig = makeIdsSignature(ids ?? []);
+      if (sig === visibleSharesSig) return;
+
+      dispatch(setVisibleSharesSig(sig));
+      const idSet = new Set(ids ?? []);
+      const sharesToSync = shares
+        .filter((share: any) => idSet.has(share.id))
+        .filter((share: any) =>
+          [BlockStatusEnum.New, BlockStatusEnum.Checked].includes(share.status)
+        );
       const electrumService: any = Container.get(ElectrumService);
       const results = await Promise.allSettled(
         sharesToSync.map((share) => electrumService.getBlock(share.blockHash))
@@ -98,9 +105,6 @@ export const getShares = createAppAsyncThunk(
 
       const resetTimeout = () => {
         if (timeoutId) clearTimeout(timeoutId);
-        if (sharesCount === 10) {
-          dispatch(syncBlock({ page: 0, pageSize: 10 }));
-        }
         timeoutId = setTimeout(() => {
           dispatch(setShareLoader(false));
         }, 2000);

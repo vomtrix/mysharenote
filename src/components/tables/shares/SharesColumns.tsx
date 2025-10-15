@@ -70,7 +70,14 @@ const sharesColumns = () => {
         const chip = (
           <Chip
             label={params.value}
-            sx={{ fontWeight: 'bold', borderRadius: 1 }}
+            sx={{
+              fontWeight: 'bold',
+              borderRadius: 1,
+              '& .MuiChip-label':
+                params.row?.status === BlockStatusEnum.Orphan
+                  ? { textDecoration: 'line-through' }
+                  : undefined
+            }}
             size="small"
             color={shareChipColor(params.row?.status)}
             variant={shareChipVariant(params.row?.status)}

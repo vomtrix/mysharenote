@@ -39,6 +39,7 @@ export interface AppState {
   unconfirmedBalance: number;
   settings: ISettings;
   colorMode: 'light' | 'dark';
+  lastBlockHeight: number;
   isHashrateLoading: boolean;
   isSharesLoading: boolean;
   isSharesSyncLoading: boolean;
@@ -66,6 +67,7 @@ export const initialState: AppState = {
     workProviderPublicKey: WORK_PROVIDER_PUBLIC_KEY,
     explorer: EXPLORER_URL
   },
+  lastBlockHeight: 0,
   isHashrateLoading: false,
   isSharesSyncLoading: false,
   isSharesLoading: false,
@@ -142,6 +144,9 @@ export const slice = createSlice({
     },
     addShare: (state: AppState, action: PayloadAction<IShareEvent>) => {
       const event = action.payload;
+      if (!state.lastBlockHeight || event.blockHeight > state.lastBlockHeight) {
+        state.lastBlockHeight = event.blockHeight;
+      }
       state.pendingBalance += event.amount;
       state.shares = [...state.shares, event];
     },

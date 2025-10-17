@@ -17,6 +17,7 @@ import {
   updateShare,
   setVisibleSharesSig
 } from './AppReducer';
+import { ORHAN_BLOCK_MATURITY } from '@config/config';
 
 export const getPayouts = createAppAsyncThunk(
   'relay/getPayouts',
@@ -56,17 +57,20 @@ export const syncBlock = createAppAsyncThunk(
   'electrum/syncBlock',
   async (ids: any[], { rejectWithValue, dispatch, getState }) => {
     try {
-      const { shares, visibleSharesSig } = getState();
+      const { shares, visibleSharesSig, lastBlockHeight } = getState();
       const sig = makeIdsSignature(ids ?? []);
       if (sig === visibleSharesSig) return;
 
       dispatch(setVisibleSharesSig(sig));
       const idSet = new Set(ids ?? []);
-      const sharesToSync = shares
-        .filter((share: any) => idSet.has(share.id))
-        .filter((share: any) =>
+      const orphanBlockHeightMaturity = lastBlockHeight - ORHAN_BLOCK_MATURITY;
+      const sharesToSync = shares.filter(
+        (share: any) =>
+          idSet.has(share.id) &&
+          share.blockHeight <= orphanBlockHeightMaturity &&
           [BlockStatusEnum.New, BlockStatusEnum.Checked].includes(share.status)
-        );
+      );
+
       const electrumService: any = Container.get(ElectrumService);
       const results = await Promise.allSettled(
         sharesToSync.map((share) => electrumService.getBlock(share.blockHash))

@@ -4,6 +4,9 @@ export const PAYER_PUBLIC_KEY: string = process.env.NEXT_PUBLIC_PAYER_PUBLIC_KEY
 export const WORK_PROVIDER_PUBLIC_KEY: string = process.env.NEXT_PUBLIC_WORK_PROVIDER_PUBLIC_KEY!;
 export const ELECTRUM_API_URL: string = `${EXPLORER_URL}/api`;
 export const IS_ADMIN_MODE: boolean = process.env.NEXT_PUBLIC_ADMIN_MODE === 'true'!;
+export const ORHAN_BLOCK_MATURITY: number = process.env.ORHAN_BLOCK_MATURITY
+  ? parseInt(process.env.ORHAN_BLOCK_MATURITY, 10) || 5
+  : 5;
 
 export const SOCIAL_URLS: Record<string, string> = {
   github: 'https://github.com/vomtrix/mysharenote'

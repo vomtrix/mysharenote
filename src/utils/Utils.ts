@@ -68,6 +68,7 @@ export const truncateAddress = (addr: string) => {
 };
 
 export const lokiToFlc = (amount: number) => (amount / 100000000).toFixed(6);
+export const lokiToFlcNumber = (amount: number) => parseFloat(lokiToFlc(amount));
 
 export const calculateSMA = (data: IDataPoint[], period: number): IDataPoint[] => {
   const smaData: IDataPoint[] = [];
@@ -109,6 +110,20 @@ export const formatHashrate = (hpsStr: any) => {
   const fracStr = fractionPart.toString().padStart(2, '0');
 
   return `${integerPart}.${fracStr} ${units[unitIndex]}`;
+};
+
+// Format a number using thousands shorthand: 1k, 2.5k, 100k
+// - Integers show without decimals (e.g., 1k, 100k)
+// - Non-integers keep one decimal (e.g., 2.5k)
+export const formatK = (v: number | null | undefined): string => {
+  if (v === null || v === undefined || Number.isNaN(v)) return '';
+  const abs = Math.abs(v);
+  if (abs >= 1000) {
+    const val = v / 1000;
+    const str = Number.isInteger(val) ? val.toString() : val.toFixed(1);
+    return `${str}k`;
+  }
+  return `${v}`;
 };
 
 export const shareChipColor = (status: BlockStatusEnum) => {

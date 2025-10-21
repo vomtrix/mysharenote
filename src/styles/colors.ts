@@ -4,8 +4,8 @@ import {
   THEME_PRIMARY_COLOR_1,
   THEME_PRIMARY_COLOR_2,
   THEME_PRIMARY_COLOR_3
-} from 'src/config/config';
-import { THEME_CHART_AREA_BOTTOM, THEME_CHART_AREA_TOP } from 'src/config/config';
+} from '@config/config';
+import { THEME_CHART_AREA_BOTTOM, THEME_CHART_AREA_TOP } from '@config/config';
 
 // Theme accents (configurable)
 export const THEME_PRIMARY = THEME_PRIMARY_COLOR;

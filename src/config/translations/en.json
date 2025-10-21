@@ -42,6 +42,7 @@
     "configError": "configuration error"
   },
   "payouts": "Payouts",
+  "payoutsSummary": "Payouts Summary",
   "worker": "Worker",
 
   "pageNotFound": "This page could not be found",

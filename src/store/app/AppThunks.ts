@@ -29,9 +29,10 @@ export const getPayouts = createAppAsyncThunk(
 
       const resetTimeout = () => {
         if (timeoutId) clearTimeout(timeoutId);
+        dispatch(setPayoutLoader(true));
         timeoutId = setTimeout(() => {
           dispatch(setPayoutLoader(false));
-        }, 2000);
+        }, 5000);
       };
 
       relayService.subscribePayouts(address, settings.payerPublicKey, {
@@ -105,21 +106,23 @@ export const getShares = createAppAsyncThunk(
       const { settings } = getState();
       const relayService: any = Container.get(RelayService);
       let timeoutId: NodeJS.Timeout | undefined;
-      let sharesCount = 0;
 
       const resetTimeout = () => {
         if (timeoutId) clearTimeout(timeoutId);
         timeoutId = setTimeout(() => {
           dispatch(setShareLoader(false));
-        }, 2000);
+        }, 5000);
       };
 
       relayService.subscribeShares(address, settings.workProviderPublicKey, {
         onevent: (event: any) => {
           const shareEvent = beautify(event);
           dispatch(addShare({ ...shareEvent, status: BlockStatusEnum.New }));
-          sharesCount++;
           resetTimeout();
+        },
+        oneose: () => {
+          if (timeoutId) clearTimeout(timeoutId);
+          dispatch(setShareLoader(false));
         }
       });
 
@@ -249,6 +252,22 @@ export const changeRelay = createAppAsyncThunk(
       return settings;
     } catch (err: any) {
       dispatch(setSkeleton(true));
+      return rejectWithValue({
+        message: err?.message || err,
+        code: err.code,
+        status: err.status
+      });
+    }
+  }
+);
+
+export const getLastBlockHeight = createAppAsyncThunk(
+  'electrum/getLastBlockHeight',
+  async (_, { rejectWithValue, dispatch }) => {
+    try {
+      const electrumService: any = Container.get(ElectrumService);
+      return await electrumService.getLastBlockHeight();
+    } catch (err: any) {
       return rejectWithValue({
         message: err?.message || err,
         code: err.code,

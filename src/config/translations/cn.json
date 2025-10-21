@@ -42,6 +42,7 @@
     "configError": "配置错误"
   },
   "payouts": "付款",
+  "payoutsSummary": "付款摘要",
   "worker": "矿工",
 
   "pageNotFound": "未找到页面",

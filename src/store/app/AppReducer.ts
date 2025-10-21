@@ -11,6 +11,7 @@ import {
   changeRelay,
   connectRelay,
   getHashrates,
+  getLastBlockHeight,
   getPayouts,
   getShares,
   stopHashrates,
@@ -274,6 +275,12 @@ export const slice = createSlice({
       })
       .addCase(syncBlock.rejected, (state, action) => {
         state.error = action.payload;
+      })
+      .addCase(getLastBlockHeight.fulfilled, (state, action) => {
+        const blockHeight = action.payload;
+        if (!state.lastBlockHeight || blockHeight > state.lastBlockHeight) {
+          state.lastBlockHeight = blockHeight;
+        }
       });
   }
 });

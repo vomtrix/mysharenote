@@ -15,7 +15,7 @@ const sharesColumns = () => {
       minWidth: 150,
       headerClassName: 'text-blue text-uppercase',
       cellClassName: 'text-bold',
-      valueFormatter: (value: any) => fromEpoch(value).format('L LT')
+      valueFormatter: (value: any) => fromEpoch(value).format('L LTS')
     },
     {
       headerName: t('worker'),

@@ -34,7 +34,7 @@ const PayoutsChart = ({ intervalMinutes = 1440 }: PayoutsChartProps) => {
       map.set(bucket, [a + (e.amount || 0), f + (e.fee || 0)]);
     }
     const entries = Array.from(map.entries()).sort((a, b) => a[0] - b[0]);
-    const x = entries.map(([s]) => fromEpoch(s).format('L LT'));
+    const x = entries.map(([s]) => fromEpoch(s).format('L LTS'));
     const amount = entries.map(([, [am]]) => lokiToFlcNumber(am));
     const fee = entries.map(([, [, fe]]) => fe);
     return { x, amount, fee };

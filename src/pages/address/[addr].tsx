@@ -22,7 +22,6 @@ import {
 } from '@store/app/AppThunks';
 import { useDispatch, useSelector } from '@store/store';
 import { validateAddress } from '@utils/Utils';
-import { IS_ADMIN_MODE } from '@config/config';
 
 const AddressPage = () => {
   const { t } = useTranslation();
@@ -130,7 +129,7 @@ const AddressPage = () => {
           />
         </>
       ) : (
-        IS_ADMIN_MODE && <PayoutsChart />
+        <PayoutsChart />
       )}
 
       {enableSkeleton ? (

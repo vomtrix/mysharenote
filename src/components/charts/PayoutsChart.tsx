@@ -15,7 +15,7 @@ import type { IPayoutEvent } from '@objects/interfaces/IPayoutEvent';
 
 type PayoutsChartProps = { intervalMinutes?: number };
 
-const PayoutsChart = ({ intervalMinutes = 1440 }: PayoutsChartProps) => {
+const PayoutsChart = ({ intervalMinutes = 60 }: PayoutsChartProps) => {
   const { t } = useTranslation();
   const payouts = useSelector(getPayouts) as IPayoutEvent[];
   const isLoading = useSelector(getIsPayoutsLoading);
@@ -23,28 +23,59 @@ const PayoutsChart = ({ intervalMinutes = 1440 }: PayoutsChartProps) => {
   const theme = useTheme();
 
   const aggregateByMinutes = (events: IPayoutEvent[], minutes: number) => {
+    // Gap-based bucketing: sort chronologically; start a bucket at first event;
+    // keep adding while the gap with previous event is < interval; otherwise start new bucket.
     const intervalSec = Math.max(1, Math.floor(minutes)) * 60;
-    const map = new Map<number, [number, number]>();
-    for (const e of events) {
-      const ts =
-        typeof e.timestamp === 'number' ? (e.timestamp as any) : parseInt(e.timestamp as any, 10);
-      const sec = ts > 1e12 ? Math.floor(ts / 1000) : ts;
-      const bucket = Math.floor(sec / intervalSec) * intervalSec;
-      const [a, f] = map.get(bucket) || [0, 0];
-      map.set(bucket, [a + (e.amount || 0), f + (e.fee || 0)]);
+
+    // Normalize and sort events by timestamp ascending
+    const normalized = events
+      .map((e) => {
+        const ts =
+          typeof e.timestamp === 'number' ? (e.timestamp as any) : parseInt(e.timestamp as any, 10);
+        const sec = ts > 1e12 ? Math.floor(ts / 1000) : ts;
+        return { sec, amount: e.amount || 0 };
+      })
+      .sort((a, b) => a.sec - b.sec);
+
+    const buckets: { startSec: number; totalAmount: number }[] = [];
+    let currentStart = 0;
+    let currentTotal = 0;
+    let prevSec = 0;
+
+    for (let i = 0; i < normalized.length; i++) {
+      const { sec, amount } = normalized[i];
+      if (i === 0) {
+        currentStart = sec;
+        currentTotal = amount;
+      } else {
+        const gap = sec - prevSec;
+        if (gap >= intervalSec) {
+          // close previous bucket and start a new one
+          buckets.push({ startSec: currentStart, totalAmount: currentTotal });
+          currentStart = sec;
+          currentTotal = amount;
+        } else {
+          currentTotal += amount;
+        }
+      }
+      prevSec = sec;
     }
-    const entries = Array.from(map.entries()).sort((a, b) => a[0] - b[0]);
-    const x = entries.map(([s]) => fromEpoch(s).format('L LTS'));
-    const amount = entries.map(([, [am]]) => lokiToFlcNumber(am));
-    const fee = entries.map(([, [, fe]]) => fe);
-    return { x, amount, fee };
+
+    // push the last bucket if any events exist
+    if (normalized.length > 0) {
+      buckets.push({ startSec: currentStart, totalAmount: currentTotal });
+    }
+
+    const x = buckets.map((b) => fromEpoch(b.startSec).format('L LT'));
+    const amount = buckets.map((b) => lokiToFlcNumber(b.totalAmount));
+    return { x, amount };
   };
 
-  const { x, amount, fee } = useMemo((): { x: string[]; amount: number[]; fee: number[] } => {
+  const { x, amount } = useMemo((): { x: string[]; amount: number[] } => {
     if (!isLoading && payouts && payouts.length > 0) {
       return aggregateByMinutes(payouts, intervalMinutes);
     }
-    return { x: [], amount: [], fee: [] };
+    return { x: [], amount: [] };
   }, [isLoading, payouts, intervalMinutes]);
   const hasData = x.length > 0 && amount.length > 0;
 
@@ -65,12 +96,6 @@ const PayoutsChart = ({ intervalMinutes = 1440 }: PayoutsChartProps) => {
                     label: t('profit'),
                     id: 'amount',
                     color: theme.palette.primary.main
-                  },
-                  {
-                    data: fee,
-                    label: t('fee'),
-                    id: 'fee',
-                    color: theme.palette.secondary.main
                   }
                 ]}
                 xAxis={[{ scaleType: 'band', data: x }]}

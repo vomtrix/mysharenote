@@ -158,12 +158,10 @@ export const slice = createSlice({
       const payload = action.payload;
       const index = state.shares.findIndex((share) => share.id === payload.id);
       if (index !== -1) {
-        const original = state.shares[index];
-        const updated = { ...original, ...payload } as IShareEvent;
-        if (updated.status === BlockStatusEnum.Orphan) {
-          state.pendingBalance -= updated.amount;
+        state.shares[index] = { ...state.shares[index], ...payload };
+        if (state.shares[index].status === BlockStatusEnum.Orphan) {
+          state.pendingBalance -= state.shares[index].amount;
         }
-        state.shares[index] = updated;
       }
     },
     addHashrate: (state: AppState, action: PayloadAction<IHashrateEvent>) => {

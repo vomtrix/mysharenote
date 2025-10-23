@@ -33,7 +33,7 @@ const App = (props: any) => {
       <PersistGate persistor={persistor}>
         <Head>
           <title>myShareNote</title>
-          <meta name="description" content="myShareNote - mySharenote You Hashboard" />
+          <meta name="description" content="myShareNote - mySharenote Your Hashboard" />
           <meta name="viewport" content="width=device-width, initial-scale=1" />
           <link rel="icon" type="image/png" href="/assets/favicon-96x96.png" sizes="96x96"></link>
           <link rel="icon" href="/assets/favicon.ico" type="image/x-icon" />

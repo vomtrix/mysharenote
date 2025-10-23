@@ -13,70 +13,82 @@ import { fromEpoch } from '@utils/time';
 // Colors now taken from theme.palette
 import type { IPayoutEvent } from '@objects/interfaces/IPayoutEvent';
 
-type PayoutsChartProps = { intervalMinutes?: number };
-
-const PayoutsChart = ({ intervalMinutes = 60 }: PayoutsChartProps) => {
+const PayoutsChart = () => {
   const { t } = useTranslation();
   const payouts = useSelector(getPayouts) as IPayoutEvent[];
   const isLoading = useSelector(getIsPayoutsLoading);
   const address = useSelector(getAddress);
   const theme = useTheme();
 
-  const aggregateByMinutes = (events: IPayoutEvent[], minutes: number) => {
-    // Gap-based bucketing: sort chronologically; start a bucket at first event;
-    // keep adding while the gap with previous event is < interval; otherwise start new bucket.
-    const intervalSec = Math.max(1, Math.floor(minutes)) * 60;
+  const aggregateByTxId = (events: IPayoutEvent[]) => {
+    // Merge all payouts that belong to the same transaction id into one bar.
+    const buckets = new Map<
+      string,
+      { txId: string; startSec: number | null; endSec: number | null; totalAmount: number }
+    >();
 
-    // Normalize and sort events by timestamp ascending
-    const normalized = events
-      .map((e) => {
-        const ts =
-          typeof e.timestamp === 'number' ? (e.timestamp as any) : parseInt(e.timestamp as any, 10);
-        const sec = ts > 1e12 ? Math.floor(ts / 1000) : ts;
-        return { sec, amount: e.amount || 0 };
-      })
-      .sort((a, b) => a.sec - b.sec);
+    const toSeconds = (ts: string | number | undefined): number | null => {
+      if (ts === undefined || ts === null) return null;
+      const raw = typeof ts === 'number' ? ts : parseInt(ts, 10);
+      if (Number.isNaN(raw)) return null;
+      return raw > 1e12 ? Math.floor(raw / 1000) : raw;
+    };
 
-    const buckets: { startSec: number; totalAmount: number }[] = [];
-    let currentStart = 0;
-    let currentTotal = 0;
-    let prevSec = 0;
-
-    for (let i = 0; i < normalized.length; i++) {
-      const { sec, amount } = normalized[i];
-      if (i === 0) {
-        currentStart = sec;
-        currentTotal = amount;
-      } else {
-        const gap = sec - prevSec;
-        if (gap >= intervalSec) {
-          // close previous bucket and start a new one
-          buckets.push({ startSec: currentStart, totalAmount: currentTotal });
-          currentStart = sec;
-          currentTotal = amount;
-        } else {
-          currentTotal += amount;
-        }
+    events.forEach((event) => {
+      const txId = event.txId || event.id;
+      if (!txId) {
+        return;
       }
-      prevSec = sec;
-    }
+      const amount = event.amount || 0;
+      const sec = toSeconds(event.timestamp);
+      const existing = buckets.get(txId);
 
-    // push the last bucket if any events exist
-    if (normalized.length > 0) {
-      buckets.push({ startSec: currentStart, totalAmount: currentTotal });
-    }
+      if (existing) {
+        existing.totalAmount += amount;
+        if (sec !== null && (existing.startSec === null || sec < existing.startSec)) {
+          existing.startSec = sec;
+        }
+        if (sec !== null && (existing.endSec === null || sec > existing.endSec)) {
+          existing.endSec = sec;
+        }
+      } else {
+        buckets.set(txId, { txId, startSec: sec, endSec: sec, totalAmount: amount });
+      }
+    });
 
-    const x = buckets.map((b) => fromEpoch(b.startSec).format('L LT'));
-    const amount = buckets.map((b) => lokiToFlcNumber(b.totalAmount));
+    const sortedBuckets = Array.from(buckets.values()).sort((a, b) => {
+      if (a.endSec !== null && b.endSec !== null && a.endSec !== b.endSec) {
+        return a.endSec - b.endSec;
+      }
+      if (a.endSec === null && b.endSec !== null) return 1;
+      if (a.endSec !== null && b.endSec === null) return -1;
+      return a.txId.localeCompare(b.txId);
+    });
+
+    const x = sortedBuckets.map((bucket, index) => {
+      if (bucket.endSec !== null) {
+        return fromEpoch(bucket.endSec).format('MMM D, HH:mm:ss');
+      }
+      return `Unknown time #${index + 1}`;
+    });
+    const amount = sortedBuckets.map((bucket) => lokiToFlcNumber(bucket.totalAmount));
     return { x, amount };
+  };
+
+  const formatPayoutValue = (value: number | null | undefined) => {
+    if (value === null || value === undefined || Number.isNaN(value)) {
+      return '';
+    }
+    const formatted = formatK(value);
+    return formatted ? `${formatted} FLC` : '';
   };
 
   const { x, amount } = useMemo((): { x: string[]; amount: number[] } => {
     if (!isLoading && payouts && payouts.length > 0) {
-      return aggregateByMinutes(payouts, intervalMinutes);
+      return aggregateByTxId(payouts);
     }
     return { x: [], amount: [] };
-  }, [isLoading, payouts, intervalMinutes]);
+  }, [isLoading, payouts]);
   const hasData = x.length > 0 && amount.length > 0;
 
   return (
@@ -93,13 +105,14 @@ const PayoutsChart = ({ intervalMinutes = 60 }: PayoutsChartProps) => {
                 series={[
                   {
                     data: amount,
-                    label: t('profit'),
+                    // label: t('profit'),
                     id: 'amount',
-                    color: theme.palette.primary.main
+                    color: theme.palette.primary.main,
+                    valueFormatter: formatPayoutValue
                   }
                 ]}
                 xAxis={[{ scaleType: 'band', data: x }]}
-                yAxis={[{ width: 50, valueFormatter: formatK }]}
+                yAxis={[{ position: 'none' }]}
                 height={300}
               />
             </Box>

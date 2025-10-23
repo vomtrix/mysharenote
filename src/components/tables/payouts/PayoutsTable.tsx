@@ -7,7 +7,7 @@ import { Chip } from '@mui/material';
 import Box from '@mui/material/Box';
 import { getIsPayoutsLoading, getPayouts, getUnconfirmedBalance } from '@store/app/AppSelectors';
 import { useSelector } from '@store/store';
-import { lokiToFlc } from '@utils/utils';
+import { lokiToFlc } from '@utils/helpers';
 import { useTranslation } from 'react-i18next';
 import payoutsColumns from './PayoutsColumns';
 import { IS_ADMIN_MODE } from '@config/config';

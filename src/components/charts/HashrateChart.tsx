@@ -7,7 +7,7 @@ import { SectionHeader } from '@components/styled/SectionHeader';
 import { StyledCard } from '@components/styled/StyledCard';
 import { getAddress, getHashrates, getIsHashratesLoading } from '@store/app/AppSelectors';
 import { useSelector } from '@store/store';
-import { formatHashrate } from '@utils/utils';
+import { formatHashrate } from '@utils/helpers';
 
 const HashrateChart = () => {
   const { t } = useTranslation();

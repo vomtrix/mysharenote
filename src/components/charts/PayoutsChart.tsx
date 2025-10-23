@@ -8,7 +8,7 @@ import { SectionHeader } from '@components/styled/SectionHeader';
 import { StyledCard } from '@components/styled/StyledCard';
 import { getAddress, getIsPayoutsLoading, getPayouts } from '@store/app/AppSelectors';
 import { useSelector } from '@store/store';
-import { lokiToFlcNumber, formatK } from '@utils/utils';
+import { lokiToFlcNumber, formatK } from '@utils/helpers';
 import { fromEpoch, toSeconds } from '@utils/time';
 // Colors now taken from theme.palette
 import type { IPayoutEvent } from '@objects/interfaces/IPayoutEvent';

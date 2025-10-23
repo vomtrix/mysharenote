@@ -5,7 +5,7 @@ import { ElectrumService } from '@services/api/ElectrumService';
 import { RelayService } from '@services/api/RelayService';
 import { createAppAsyncThunk } from '@store/createAppAsyncThunk';
 import { beautify } from '@utils/beautifierUtils';
-import { makeIdsSignature } from '@utils/utils';
+import { makeIdsSignature } from '@utils/helpers';
 import {
   addHashrate,
   addPayout,

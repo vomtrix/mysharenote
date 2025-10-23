@@ -22,7 +22,7 @@ import {
   stopShares
 } from '@store/app/AppThunks';
 import { useDispatch, useSelector } from '@store/store';
-import { validateAddress } from '@utils/utils';
+import { validateAddress } from '@utils/helpers';
 
 const AddressPage = () => {
   const { t } = useTranslation();

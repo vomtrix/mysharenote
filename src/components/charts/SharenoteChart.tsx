@@ -9,8 +9,8 @@ import { useSelector } from '@store/store';
 import { getAddress, getIsSharesLoading, getShares } from '@store/app/AppSelectors';
 import type { IShareEvent } from '@objects/interfaces/IShareEvent';
 import { useTheme } from '@mui/material/styles';
-import { aggregateSharesByInterval } from '@utils/sharenotes';
-import { generateStackColors } from '@utils/chartColors';
+import { aggregateSharesByInterval } from '@utils/aggregators';
+import { generateStackColors } from '@utils/colors';
 
 type Props = {
   intervalMinutes?: number; // default 60 min

@@ -5,6 +5,8 @@ import { BarChart } from '@mui/x-charts/BarChart';
 import ProgressLoader from '@components/common/ProgressLoader';
 import { SectionHeader } from '@components/styled/SectionHeader';
 import { StyledCard } from '@components/styled/StyledCard';
+import InfoHeader from '@components/common/InfoHeader';
+import StackedTotalTooltip from '@components/charts/StackedTotalTooltip';
 import { useSelector } from '@store/store';
 import { getAddress, getIsSharesLoading, getShares } from '@store/app/AppSelectors';
 import type { IShareEvent } from '@objects/interfaces/IShareEvent';
@@ -50,12 +52,13 @@ const SharenoteChart = ({ intervalMinutes = 60 }: Props) => {
     const flc = (value / 100000000).toFixed(8);
     return `${flc} FLC`;
   };
+  const formatShareValueNumber = (value: number) => `${(value / 100000000).toFixed(8)} FLC`;
 
   return (
     <StyledCard>
       <Box component="section" sx={{ p: 2, minHeight: '150px', justifyContent: 'center' }}>
         <SectionHeader>
-          <Box>{t('sharenotesSummary')}</Box>
+          <InfoHeader title={t('sharenotesSummary')} tooltip={t('info.sharenotesSummary')} />
         </SectionHeader>
         {isLoading && address && <ProgressLoader value={shares.length} />}        
         {!isLoading &&
@@ -66,9 +69,19 @@ const SharenoteChart = ({ intervalMinutes = 60 }: Props) => {
                   ...s,
                   valueFormatter: formatShareValue
                 }))}
-                xAxis={[{ scaleType: 'band', data: xLabels }]}
+                xAxis={[
+                  {
+                    scaleType: 'band',
+                    data: xLabels,
+                    // slightly larger for readability
+                    tickLabelStyle: { fontSize: 12 }
+                  }
+                ]}
                 yAxis={[{ position: 'none' }]}
                 height={300}
+                margin={{ bottom: 40, left: 10, right: 10, top: 10 }}
+                slots={{ tooltip: StackedTotalTooltip as any }}
+                slotProps={{ tooltip: { trigger: 'axis', valueFormatter: formatShareValueNumber } as any }}
               />
             </Box>
           ) : (

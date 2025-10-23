@@ -46,6 +46,14 @@
   "sharenotesSummary": "Sharenotes 摘要",
   "worker": "矿工",
 
+  "info": {
+    "payouts": "占位符：关于“付款”区块的信息。",
+    "payoutsSummary": "占位符：按时间的付款汇总。",
+    "sharenotesSummary": "占位符：按矿工分组的已接受 sharenote 汇总。\n这是一段较长的示例文本，用于测试气泡的最大宽度。",
+    "pendingShares": "占位符：尚未最终确认的 sharenote。",
+    "hashrateChart": "占位符：你的算力历史变化。"
+  },
+
   "pageNotFound": "未找到页面",
   "loading": "加载中...",
   "hashrateChart": "哈希率",

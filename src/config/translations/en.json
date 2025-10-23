@@ -46,6 +46,14 @@
   "sharenotesSummary": "Sharenotes Summary",
   "worker": "Worker",
 
+  "info": {
+    "payouts": "Placeholder: information about payouts section.",
+    "payoutsSummary": "Placeholder: summary of payouts over time.",
+    "sharenotesSummary": "Placeholder: summary of accepted sharenotes grouped by worker.\nThis is a long dummy text to test max-width in the tooltip bubble.",
+    "pendingShares": "Placeholder: pending sharenotes not yet finalized.",
+    "hashrateChart": "Placeholder: your historical hashrate values over time."
+  },
+
   "pageNotFound": "This page could not be found",
   "loading": "Loading...",
   "hashrateChart": "Hashrate",

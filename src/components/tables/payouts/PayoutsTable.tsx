@@ -5,6 +5,7 @@ import { SectionHeader } from '@components/styled/SectionHeader';
 import { StyledCard } from '@components/styled/StyledCard';
 import { Chip } from '@mui/material';
 import Box from '@mui/material/Box';
+import InfoHeader from '@components/common/InfoHeader';
 import { getIsPayoutsLoading, getPayouts, getUnconfirmedBalance } from '@store/app/AppSelectors';
 import { useSelector } from '@store/store';
 import { lokiToFlc } from '@utils/helpers';
@@ -30,7 +31,7 @@ const PayoutsTable = () => {
         }}>
         <SectionHeader>
           <Box display="flex" justifyContent="space-between" alignItems="center">
-            <Box>{t('payouts')}</Box>
+            <InfoHeader title={t('payouts')} tooltip={t('info.payouts')} />
             <Box
               sx={{
                 display: 'flex',

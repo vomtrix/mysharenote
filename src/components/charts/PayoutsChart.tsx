@@ -6,6 +6,7 @@ import { useTheme } from '@mui/material/styles';
 import ProgressLoader from '@components/common/ProgressLoader';
 import { SectionHeader } from '@components/styled/SectionHeader';
 import { StyledCard } from '@components/styled/StyledCard';
+import InfoHeader from '@components/common/InfoHeader';
 import { getAddress, getIsPayoutsLoading, getPayouts } from '@store/app/AppSelectors';
 import { useSelector } from '@store/store';
 import { lokiToFlcNumber, formatK } from '@utils/helpers';
@@ -88,7 +89,7 @@ const PayoutsChart = () => {
     <StyledCard>
       <Box component="section" sx={{ p: 2, minHeight: '150px', justifyContent: 'center' }}>
         <SectionHeader>
-          <Box>{t('payoutsSummary')}</Box>
+          <InfoHeader title={t('payoutsSummary')} tooltip={t('info.payoutsSummary')} />
         </SectionHeader>
         {isLoading && address && <ProgressLoader value={payouts.length} />}
         {!isLoading &&
@@ -104,9 +105,16 @@ const PayoutsChart = () => {
                     valueFormatter: formatPayoutValue
                   }
                 ]}
-                xAxis={[{ scaleType: 'band', data: x }]}
+                xAxis={[
+                  {
+                    scaleType: 'band',
+                    data: x,
+                    tickLabelStyle: { fontSize: 12 }
+                  }
+                ]}
                 yAxis={[{ position: 'none' }]}
                 height={300}
+                margin={{ bottom: 40, left: 10, right: 10, top: 10 }}
               />
             </Box>
           ) : (

@@ -5,7 +5,7 @@ import { NetworkTypeType } from '@objects/Enums';
 import { IHashrateEvent } from '@objects/interfaces/IHashrateEvent';
 import { IPayoutEvent } from '@objects/interfaces/IPayoutEvent';
 import { ISettings } from '@objects/interfaces/ISettings';
-import { makeIdsSignature } from '@utils/Utils';
+import { makeIdsSignature } from '@utils/utils';
 import { BlockStatusEnum, IShareEvent } from '@objects/interfaces/IShareEvent';
 import {
   changeRelay,

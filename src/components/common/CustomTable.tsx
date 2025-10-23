@@ -3,7 +3,7 @@ import { getVisibleRows } from '@mui/x-data-grid/internals';
 import StyledDataGrid from '@components/styled/StyledDataGrid';
 import { IPaginationModel } from '@objects/interfaces/IPaginationModel';
 import { useState } from 'react';
-import { makeIdsSignature } from '@utils/Utils';
+import { makeIdsSignature } from '@utils/utils';
 
 interface CustomTableProps {
   columns: any;

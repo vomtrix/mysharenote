@@ -42,3 +42,22 @@ export const SECONDARY_RED_1 = '#f1c0c0';
 // Charts
 export const CHART_AREA_TOP_COLOR = THEME_CHART_AREA_TOP;
 export const CHART_AREA_BOTTOM_COLOR = THEME_CHART_AREA_BOTTOM;
+
+// Distinct colors for stacked sharenote chart (workers)
+export const SHARENOTE_STACK_COLORS = [
+  '#5B8FF9',
+  '#61DDAA',
+  '#F6BD16',
+  '#7262FD',
+  '#78D3F8',
+  '#9661BC',
+  '#F6903D',
+  '#E86452',
+  '#6DC8EC',
+  '#FF99C3',
+  '#1E9AFF',
+  '#43A047',
+  '#EF6C00',
+  '#8E24AA',
+  '#00ACC1'
+];

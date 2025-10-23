@@ -8,8 +8,8 @@ import { SectionHeader } from '@components/styled/SectionHeader';
 import { StyledCard } from '@components/styled/StyledCard';
 import { getAddress, getIsPayoutsLoading, getPayouts } from '@store/app/AppSelectors';
 import { useSelector } from '@store/store';
-import { lokiToFlcNumber, formatK } from '@utils/Utils';
-import { fromEpoch } from '@utils/time';
+import { lokiToFlcNumber, formatK } from '@utils/utils';
+import { fromEpoch, toSeconds } from '@utils/time';
 // Colors now taken from theme.palette
 import type { IPayoutEvent } from '@objects/interfaces/IPayoutEvent';
 
@@ -26,13 +26,6 @@ const PayoutsChart = () => {
       string,
       { txId: string; startSec: number | null; endSec: number | null; totalAmount: number }
     >();
-
-    const toSeconds = (ts: string | number | undefined): number | null => {
-      if (ts === undefined || ts === null) return null;
-      const raw = typeof ts === 'number' ? ts : parseInt(ts, 10);
-      if (Number.isNaN(raw)) return null;
-      return raw > 1e12 ? Math.floor(raw / 1000) : raw;
-    };
 
     events.forEach((event) => {
       const txId = event.txId || event.id;

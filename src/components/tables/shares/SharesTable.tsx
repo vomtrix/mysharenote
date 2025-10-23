@@ -15,7 +15,7 @@ import {
 } from '@store/app/AppSelectors';
 import { syncBlock } from '@store/app/AppThunks';
 import { useDispatch, useSelector } from '@store/store';
-import { lokiToFlc } from '@utils/Utils';
+import { lokiToFlc } from '@utils/utils';
 import sharesColumns from './SharesColumns';
 
 const SharesTable = () => {

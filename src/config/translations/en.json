@@ -45,15 +45,13 @@
   "payoutsSummary": "Payouts Summary",
   "sharenotesSummary": "Sharenotes Summary",
   "worker": "Worker",
-
-  "info": {
-    "payouts": "Placeholder: information about payouts section.",
-    "payoutsSummary": "Placeholder: summary of payouts over time.",
-    "sharenotesSummary": "Placeholder: summary of accepted sharenotes grouped by worker.\nThis is a long dummy text to test max-width in the tooltip bubble.",
-    "pendingShares": "Placeholder: pending sharenotes not yet finalized.",
-    "hashrateChart": "Placeholder: your historical hashrate values over time."
+ "info": {
+    "payouts": "Shows all confirmed payments from matured blocks. Each entry represents one payout that includes rewards from your workers’ valid sharenotes. Use this view to track completed earnings and verify funds once blocks are confirmed and paid.",
+    "payoutsSummary": "Visual overview of your total paid rewards over time. Each bar shows how much you’ve received in a given period. Helps you monitor payout frequency and spot earning trends.",
+    "sharenotesSummary": "Displays valid sharenotes grouped by hour and stacked by worker. These represent your contribution to mining work that’s waiting for block maturity before payment. Useful for spotting worker activity and hourly performance.",
+    "pendingShares": "Lists all workers with valid sharenotes that contributed to blocks not yet matured or paid. Shows what’s queued for future payouts once confirmations are complete.",
+    "hashrateChart": "Shows your total effective hashrate across all workers over time. Reflects your mining power and stability — steady hashrate means consistent performance."
   },
-
   "pageNotFound": "This page could not be found",
   "loading": "Loading...",
   "hashrateChart": "Hashrate",
@@ -61,7 +59,6 @@
   "previous": "Previous",
   "next": "Next",
   "paymentHeight": "EST.Payment",
-
   "languages": {
     "en": "English",
     "ru": "Русский",

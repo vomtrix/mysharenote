@@ -4,7 +4,7 @@ interface KeysMap {
 
 export const beautifierConfig: Record<number, KeysMap> = {
   35502: {
-    hash: 'hashrate',
+    all: 'hashrate',
     worker: 'worker',
     a: 'address'
   },

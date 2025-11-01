@@ -4,6 +4,8 @@ import { useTranslation } from 'react-i18next';
 import { Box, Skeleton } from '@mui/material';
 import HashrateChart from '@components/charts/HashrateChart';
 import PayoutsTable from '@components/tables/payouts/PayoutsTable';
+import PayoutsChart from '@components/charts/PayoutsChart';
+import SharenoteChart from '@components/charts/SharenoteChart';
 import SharesTable from '@components/tables/shares/SharesTable';
 import { useHasRelayConfig } from '@hooks/useHasRelayConfig';
 import { useNotification } from '@hooks/UseNotificationHook';
@@ -12,6 +14,7 @@ import { getAddress, getRelayReady, getSettings, getSkeleton } from '@store/app/
 import {
   connectRelay,
   getHashrates,
+  getLastBlockHeight,
   getPayouts,
   getShares,
   stopHashrates,
@@ -19,7 +22,7 @@ import {
   stopShares
 } from '@store/app/AppThunks';
 import { useDispatch, useSelector } from '@store/store';
-import { validateAddress } from '@utils/Utils';
+import { validateAddress } from '@utils/helpers';
 
 const AddressPage = () => {
   const { t } = useTranslation();
@@ -52,6 +55,7 @@ const AddressPage = () => {
 
   useEffect(() => {
     if (currentAddress && hasConfig && hasConnectedRelayRef.current && relayIsReady) {
+      dispatch(getLastBlockHeight());
       dispatch(stopHashrates());
       dispatch(stopShares());
       dispatch(stopPayouts());
@@ -109,7 +113,41 @@ const AddressPage = () => {
           />
         </>
       ) : (
+        <SharenoteChart />
+      )}
+
+      {enableSkeleton ? (
+        <>
+          <Skeleton
+            variant="rounded"
+            animation="wave"
+            sx={{ height: 50, width: '100%', marginBottom: 1 }}
+          />
+          <Skeleton
+            variant="rounded"
+            animation="wave"
+            sx={{ height: 200, width: '100%', marginBottom: 3 }}
+          />
+        </>
+      ) : (
         <SharesTable />
+      )}
+
+      {enableSkeleton ? (
+        <>
+          <Skeleton
+            variant="rounded"
+            animation="wave"
+            sx={{ height: 50, width: '100%', marginBottom: 1 }}
+          />
+          <Skeleton
+            variant="rounded"
+            animation="wave"
+            sx={{ height: 200, width: '100%', marginBottom: 3 }}
+          />
+        </>
+      ) : (
+        <PayoutsChart />
       )}
 
       {enableSkeleton ? (

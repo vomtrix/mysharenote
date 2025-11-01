@@ -20,4 +20,16 @@ export class ElectrumService extends AbstractHttpRequest {
 
     return response;
   }
+
+  async getLastBlockHeight() {
+    const response = await this.makeRequest(
+      `/blocks/tip/height`,
+      undefined,
+      undefined,
+      RequestSecurityType.Public,
+      RequestVerbType.Get
+    );
+
+    return response;
+  }
 }

@@ -7,6 +7,7 @@ import CustomTooltip from '@components/common/CustomTooltip';
 import ProgressLoader from '@components/common/ProgressLoader';
 import { SectionHeader } from '@components/styled/SectionHeader';
 import { StyledCard } from '@components/styled/StyledCard';
+import InfoHeader from '@components/common/InfoHeader';
 import {
   getIsSharesLoading,
   getPendingBalance as getPendingBalance,
@@ -15,7 +16,7 @@ import {
 } from '@store/app/AppSelectors';
 import { syncBlock } from '@store/app/AppThunks';
 import { useDispatch, useSelector } from '@store/store';
-import { lokiToFlc } from '@utils/Utils';
+import { lokiToFlc } from '@utils/helpers';
 import sharesColumns from './SharesColumns';
 
 const SharesTable = () => {
@@ -42,7 +43,7 @@ const SharesTable = () => {
         }}>
         <SectionHeader>
           <Box display="flex" justifyContent="space-between" alignItems="center">
-            <Box>{t('pendingShares')}</Box>
+            <InfoHeader title={t('pendingShares')} tooltip={t('info.pendingShares')} />
             <Box
               sx={{
                 display: 'flex',

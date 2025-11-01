@@ -42,7 +42,17 @@
     "configError": "配置错误"
   },
   "payouts": "付款",
+  "payoutsSummary": "付款摘要",
+  "sharenotesSummary": "Sharenotes 摘要",
   "worker": "矿工",
+
+  "info": {
+    "payouts": "显示所有来自已成熟区块的已确认付款。每条记录代表一次支付，包含您各个矿工的有效 sharenotes 奖励。用于跟踪已完成的收益并核实区块确认后到账的资金。",
+    "payoutsSummary": "按时间段展示您的总付款情况。每个柱状代表在该时间段收到的金额。帮助您监控付款频率并观察收益趋势。",
+    "sharenotesSummary": "按小时分组、按矿工堆叠显示有效 sharenotes。这些代表您已完成但尚未结算的挖矿贡献，用于等待区块成熟后发放奖励。可用于查看各矿工的活跃度和每小时表现。",
+    "pendingShares": "列出所有参与挖到但尚未成熟或支付的区块的矿工及其有效 sharenotes。显示将在区块确认完成后进入付款队列的待发收益。",
+    "hashrateChart": "显示所有矿工的总有效算力随时间变化情况。反映您的整体挖矿能力与稳定性——算力越平稳，表现越稳定。"
+  },
 
   "pageNotFound": "未找到页面",
   "loading": "加载中...",

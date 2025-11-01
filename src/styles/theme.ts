@@ -6,7 +6,8 @@ import {
   THEME_TEXT_DARK_SECONDARY,
   THEME_TEXT_LIGHT_PRIMARY,
   THEME_TEXT_LIGHT_SECONDARY,
-  THEME_PRIMARY_COLOR_2
+  THEME_PRIMARY_COLOR_2,
+  THEME_SECONDARY_COLOR
 } from 'src/config/config';
 
 const customTheme = (outerTheme: Theme, mode: 'light' | 'dark' = DARK_MODE_DEFAULT) =>
@@ -17,7 +18,7 @@ const customTheme = (outerTheme: Theme, mode: 'light' | 'dark' = DARK_MODE_DEFAU
         main: mode === 'dark' ? THEME_PRIMARY_COLOR_2 : THEME_PRIMARY
       },
       secondary: {
-        main: mode === 'dark' ? THEME_PRIMARY_COLOR_2 : THEME_PRIMARY
+        main: THEME_SECONDARY_COLOR
       },
       text:
         mode === 'dark'

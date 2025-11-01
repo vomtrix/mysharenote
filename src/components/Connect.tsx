@@ -12,7 +12,7 @@ import { Box } from '@mui/system';
 import { addAddress, clearAddress, setSkeleton } from '@store/app/AppReducer';
 import { getAddress, getSettings } from '@store/app/AppSelectors';
 import { useDispatch, useSelector } from '@store/store';
-import { isMobileDevice, truncateAddress, validateAddress } from '@utils/Utils';
+import { isMobileDevice, truncateAddress, validateAddress } from '@utils/helpers';
 import { useRouter } from 'next/router';
 import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';

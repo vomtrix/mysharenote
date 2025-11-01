@@ -5,9 +5,10 @@ import CustomChart from '@components/common/CustomChart';
 import ProgressLoader from '@components/common/ProgressLoader';
 import { SectionHeader } from '@components/styled/SectionHeader';
 import { StyledCard } from '@components/styled/StyledCard';
+import InfoHeader from '@components/common/InfoHeader';
 import { getAddress, getHashrates, getIsHashratesLoading } from '@store/app/AppSelectors';
 import { useSelector } from '@store/store';
-import { formatHashrate } from '@utils/Utils';
+import { formatHashrate } from '@utils/helpers';
 
 const HashrateChart = () => {
   const { t } = useTranslation();
@@ -39,7 +40,7 @@ const HashrateChart = () => {
           justifyContent: 'center'
         }}>
         <SectionHeader>
-          <Box>{t('hashrateChart')}</Box>
+          <InfoHeader title={t('hashrateChart')} tooltip={t('info.hashrateChart')} />
         </SectionHeader>
         {isLoading && address && <ProgressLoader value={hashrates.length} />}
         {!isLoading &&

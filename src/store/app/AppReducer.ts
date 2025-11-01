@@ -5,12 +5,13 @@ import { NetworkTypeType } from '@objects/Enums';
 import { IHashrateEvent } from '@objects/interfaces/IHashrateEvent';
 import { IPayoutEvent } from '@objects/interfaces/IPayoutEvent';
 import { ISettings } from '@objects/interfaces/ISettings';
-import { makeIdsSignature } from '@utils/Utils';
+import { makeIdsSignature } from '@utils/helpers';
 import { BlockStatusEnum, IShareEvent } from '@objects/interfaces/IShareEvent';
 import {
   changeRelay,
   connectRelay,
   getHashrates,
+  getLastBlockHeight,
   getPayouts,
   getShares,
   stopHashrates,
@@ -157,12 +158,10 @@ export const slice = createSlice({
       const payload = action.payload;
       const index = state.shares.findIndex((share) => share.id === payload.id);
       if (index !== -1) {
-        const original = state.shares[index];
-        const updated = { ...original, ...payload } as IShareEvent;
-        if (updated.status === BlockStatusEnum.Orphan) {
-          state.pendingBalance -= updated.amount;
+        state.shares[index] = { ...state.shares[index], ...payload };
+        if (state.shares[index].status === BlockStatusEnum.Orphan) {
+          state.pendingBalance -= state.shares[index].amount;
         }
-        state.shares[index] = updated;
       }
     },
     addHashrate: (state: AppState, action: PayloadAction<IHashrateEvent>) => {
@@ -274,6 +273,12 @@ export const slice = createSlice({
       })
       .addCase(syncBlock.rejected, (state, action) => {
         state.error = action.payload;
+      })
+      .addCase(getLastBlockHeight.fulfilled, (state, action) => {
+        const blockHeight = action.payload;
+        if (!state.lastBlockHeight || blockHeight > state.lastBlockHeight) {
+          state.lastBlockHeight = blockHeight;
+        }
       });
   }
 });

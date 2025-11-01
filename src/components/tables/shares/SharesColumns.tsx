@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { Chip, Tooltip } from '@mui/material';
 import { BlockStatusEnum } from '@objects/interfaces/IShareEvent';
 import { fromEpoch } from '@utils/time';
-import { lokiToFlc, shareChipColor, shareChipVariant } from '@utils/Utils';
+import { lokiToFlc, shareChipColor, shareChipVariant } from '@utils/helpers';
 import { EXPLORER_URL } from 'src/config/config';
 
 const sharesColumns = () => {

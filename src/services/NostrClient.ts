@@ -1,6 +1,6 @@
 import { Filter, getPublicKey, Relay } from 'nostr-tools';
 import { SubscriptionParams } from 'nostr-tools/lib/types/relay';
-import { hexStringToUint8Array } from '@utils/Utils';
+import { hexStringToUint8Array } from '@utils/helpers';
 
 export class NostrClient {
   public relay: Relay;

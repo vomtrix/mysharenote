@@ -1,4 +1,4 @@
-import type { LineData } from 'lightweight-charts';
+import type { LineData, UTCTimestamp } from 'lightweight-charts';
 import { type MouseEvent, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import BoltIcon from '@mui/icons-material/Bolt';
@@ -201,7 +201,7 @@ const HashrateChart = () => {
     return metricsMap;
   }, [hashrates]);
 
-  type WorkerDataPoint = { time: number; value: number };
+  type WorkerDataPoint = LineData<UTCTimestamp>;
 
   const workerDataPoints = useMemo<WorkerDataPoint[]>(() => {
     const tzOffsetSeconds = new Date().getTimezoneOffset() * 60;
@@ -209,7 +209,7 @@ const HashrateChart = () => {
       .map((event) => {
         const timestamp =
           typeof event.timestamp === 'number' && Number.isFinite(event.timestamp)
-            ? event.timestamp - tzOffsetSeconds
+            ? (Math.round(event.timestamp - tzOffsetSeconds) as UTCTimestamp)
             : null;
         const baseValue =
           selectedWorker === 'all'
@@ -233,7 +233,7 @@ const HashrateChart = () => {
       .sort((a, b) => a.time - b.time);
   }, [hashrates, selectedWorker]);
 
-  const chartDataPoints = useMemo<LineData[]>(() => {
+  const chartDataPoints = useMemo<LineData<UTCTimestamp>[]>(() => {
     if (workerDataPoints.length === 0) return [];
     if (hashrateMetric === 'live') {
       return workerDataPoints.map(({ time, value }) => ({ time, value }));

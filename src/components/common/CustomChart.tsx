@@ -2,9 +2,10 @@ import {
   AreaSeries,
   createChart,
   IChartApi,
+  type IRange,
   ISeriesApi,
   LineData,
-  TimeRange
+  type Time
 } from 'lightweight-charts';
 import React, { useEffect, useRef } from 'react';
 import { useTheme } from '@mui/material/styles';
@@ -35,7 +36,7 @@ const CustomChart = ({
   const areaSeriesRef = useRef<ISeriesApi<'Area'> | null>(null);
   const legendRef = useRef<HTMLDivElement | null>(null);
   const latestValueRef = useRef<number | undefined>(undefined);
-  const visibleRangeRef = useRef<TimeRange | null>(null);
+  const visibleRangeRef = useRef<IRange<Time> | null>(null);
   const theme = useTheme();
   const effectiveLineColor = lineColor || theme.palette.primary.main;
   const effectiveLegendColor = legendColor || effectiveLineColor;
@@ -146,7 +147,7 @@ const CustomChart = ({
     const timeScale = chartRef.current.timeScale();
     timeScale.fitContent();
     visibleRangeRef.current = timeScale.getVisibleRange() ?? null;
-    const handleRangeChange = (range: TimeRange | null) => {
+    const handleRangeChange = (range: IRange<Time> | null) => {
       if (range) {
         visibleRangeRef.current = range;
       }

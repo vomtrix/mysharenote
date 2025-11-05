@@ -13,13 +13,14 @@ const decodeNpubToHex = (value: string): string | undefined => {
   try {
     const decoded = nip19.decode(value);
     if (decoded.type !== 'npub') return undefined;
+    const decodedData = decoded.data as unknown;
 
-    if (decoded.data instanceof Uint8Array) {
-      return toHexFromBytes(decoded.data);
+    if (decodedData instanceof Uint8Array) {
+      return toHexFromBytes(decodedData);
     }
 
-    if (typeof decoded.data === 'string' && HEX_REGEX.test(decoded.data)) {
-      return decoded.data;
+    if (typeof decodedData === 'string' && HEX_REGEX.test(decodedData)) {
+      return decodedData;
     }
   } catch {
     return undefined;

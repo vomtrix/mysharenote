@@ -47,14 +47,14 @@
   "workersProfit": "Workers Profit",
   "workersInsights": "Workers Insights",
   "worker": "Worker",
- "info": {
-    "payouts": "Shows all confirmed payments from matured blocks. Each entry represents one payout that includes rewards from your workers’ valid sharenotes. Use this view to track completed earnings and verify funds once blocks are confirmed and paid.",
-    "payoutsSummary": "Visual overview of your total paid rewards over time. Each bar shows how much you’ve received in a given period. Helps you monitor payout frequency and spot earning trends.",
-    "sharenotesSummary": "Displays valid sharenotes grouped by hour and stacked by worker. These represent your contribution to mining work that’s waiting for block maturity before payment. Useful for spotting worker activity and hourly performance.",
-    "workersProfit": "Displays your workers’ contributions hour by hour, stacked to highlight who’s driving your earnings. Use it to spot trends and identify top performers.",
-    "workersInsights": "Gives you a quick read on each worker’s target sharenote, how long they typically take to print it, and when the last sharenote was printed.",
-    "pendingShares": "Lists all workers with valid sharenotes that contributed to blocks not yet matured or paid. Shows what’s queued for future payouts once confirmations are complete.",
-    "hashrateChart": "Shows your total effective hashrate across all workers over time. Reflects your mining power and stability — steady hashrate means consistent performance."
+  "info": {
+    "payouts": "Confirmed payments from matured blocks, including rewards from valid sharenotes. Useful for tracking completed earnings and verifying received funds.",
+    "payoutsSummary": "Total paid rewards over time, grouped by period to help track payout frequency and spot trends.",
+    "sharenotesSummary": "Valid sharenotes grouped by hour and worker, representing ongoing mining work awaiting block maturity.",
+    "workersInsights": "Per-worker overview highlighting the current sharenote in progress, printing speed, and latest printed sharenote.",
+    "pendingShares": "Workers with valid sharenotes from blocks still awaiting maturity or payment, queued for future payouts once confirmations complete.",
+    "workersProfit": "Unpaid, immature rewards by worker over time — amounts may change once blocks confirm.",
+    "hashrateChart": "Hashrate over time for all or selected workers, with live and averaged view options."
   },
   "pageNotFound": "This page could not be found",
   "loading": "Loading...",
@@ -75,9 +75,9 @@
   "workersInsights.lastShare": "Last Sharenote",
   "workersInsights.unknownWorker": "Unnamed worker",
   "workersInsights.info": {
-    "sharenotes": "Latest sharenote from this worker.",
-    "meanTime": "Average time this worker takes per sharenote.",
-    "lastShare": "Time since this worker last printed a sharenote."
+    "sharenotes": "Most recent sharenote printed by this worker.",
+    "meanTime": "Average time this worker takes to print a sharenote.",
+    "lastShare": "Elapsed time since this worker last printed a sharenote."
   },
   "previous": "Previous",
   "next": "Next",

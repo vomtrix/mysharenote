@@ -1,18 +1,18 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
-import { BarChart } from '@mui/x-charts/BarChart';
 import { useTheme } from '@mui/material/styles';
+import { BarChart } from '@mui/x-charts/BarChart';
+import InfoHeader from '@components/common/InfoHeader';
 import ProgressLoader from '@components/common/ProgressLoader';
 import { SectionHeader } from '@components/styled/SectionHeader';
 import { StyledCard } from '@components/styled/StyledCard';
-import InfoHeader from '@components/common/InfoHeader';
+import type { IPayoutEvent } from '@objects/interfaces/IPayoutEvent';
 import { getAddress, getIsPayoutsLoading, getPayouts } from '@store/app/AppSelectors';
 import { useSelector } from '@store/store';
-import { lokiToFlcNumber, formatK } from '@utils/helpers';
+import { formatK, lokiToFlcNumber } from '@utils/helpers';
 import { fromEpoch, toSeconds } from '@utils/time';
 // Colors now taken from theme.palette
-import type { IPayoutEvent } from '@objects/interfaces/IPayoutEvent';
 
 const PayoutsChart = () => {
   const { t } = useTranslation();
@@ -124,7 +124,7 @@ const PayoutsChart = () => {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                paddingTop: 1,
+                minHeight: '45px',
                 fontSize: '0.9rem'
               }}>
               No data

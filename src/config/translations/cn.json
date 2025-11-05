@@ -44,12 +44,16 @@
   "payouts": "付款",
   "payoutsSummary": "付款摘要",
   "sharenotesSummary": "Sharenotes 摘要",
+  "workersProfit": "矿工收益",
+  "workersInsights": "矿工洞察",
   "worker": "矿工",
 
   "info": {
     "payouts": "显示所有来自已成熟区块的已确认付款。每条记录代表一次支付，包含您各个矿工的有效 sharenotes 奖励。用于跟踪已完成的收益并核实区块确认后到账的资金。",
     "payoutsSummary": "按时间段展示您的总付款情况。每个柱状代表在该时间段收到的金额。帮助您监控付款频率并观察收益趋势。",
     "sharenotesSummary": "按小时分组、按矿工堆叠显示有效 sharenotes。这些代表您已完成但尚未结算的挖矿贡献，用于等待区块成熟后发放奖励。可用于查看各矿工的活跃度和每小时表现。",
+    "workersProfit": "按小时堆叠展示各矿工贡献的 sharenote，让您快速识别主力矿工与收益趋势。",
+    "workersInsights": "聚焦最新的矿工 sharenote 数据：每个矿工的 sharenote 数量、平均出块耗时以及当前算力一目了然。",
     "pendingShares": "列出所有参与挖到但尚未成熟或支付的区块的矿工及其有效 sharenotes。显示将在区块确认完成后进入付款队列的待发收益。",
     "hashrateChart": "显示所有矿工的总有效算力随时间变化情况。反映您的整体挖矿能力与稳定性——算力越平稳，表现越稳定。"
   },
@@ -58,6 +62,25 @@
   "loading": "加载中...",
   "hashrateChart": "哈希率",
   "hashrate": "哈希率 (MH/s)",
+  "hashrateFilter": {
+    "all": "全部矿工"
+  },
+  "hashrateModes": {
+    "live": "实时",
+    "emaShort": "EMA（快速）",
+    "emaLong": "EMA（慢速）"
+  },
+  "workersInsights.sharenotes": "Sharenote 数量",
+  "workersInsights.meanTime": "平均耗时",
+  "workersInsights.meanSharenote": "平均 sharenote",
+  "workersInsights.meanSharenoteShort": "均值",
+  "workersInsights.lastShare": "最近一次",
+  "workersInsights.unknownWorker": "未命名矿工",
+  "workersInsights.info": {
+    "sharenotes": "该矿工最近打印的 sharenote。",
+    "meanTime": "该矿工打印每份 sharenote 所需的平均时间。",
+    "lastShare": "距离该矿工上次打印 sharenote 的时间。"
+  },
   "previous": "上一页",
   "next": "下一页",
   "paymentHeight": "估算.支付",

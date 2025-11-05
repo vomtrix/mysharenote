@@ -44,11 +44,15 @@
   "payouts": "Payouts",
   "payoutsSummary": "Payouts Summary",
   "sharenotesSummary": "Sharenotes Summary",
+  "workersProfit": "Workers Profit",
+  "workersInsights": "Workers Insights",
   "worker": "Worker",
  "info": {
     "payouts": "Shows all confirmed payments from matured blocks. Each entry represents one payout that includes rewards from your workers’ valid sharenotes. Use this view to track completed earnings and verify funds once blocks are confirmed and paid.",
     "payoutsSummary": "Visual overview of your total paid rewards over time. Each bar shows how much you’ve received in a given period. Helps you monitor payout frequency and spot earning trends.",
     "sharenotesSummary": "Displays valid sharenotes grouped by hour and stacked by worker. These represent your contribution to mining work that’s waiting for block maturity before payment. Useful for spotting worker activity and hourly performance.",
+    "workersProfit": "Displays your workers’ contributions hour by hour, stacked to highlight who’s driving your earnings. Use it to spot trends and identify top performers.",
+    "workersInsights": "Gives you a quick read on each worker’s target sharenote, how long they typically take to print it, and when the last sharenote was printed.",
     "pendingShares": "Lists all workers with valid sharenotes that contributed to blocks not yet matured or paid. Shows what’s queued for future payouts once confirmations are complete.",
     "hashrateChart": "Shows your total effective hashrate across all workers over time. Reflects your mining power and stability — steady hashrate means consistent performance."
   },
@@ -56,6 +60,25 @@
   "loading": "Loading...",
   "hashrateChart": "Hashrate",
   "hashrate": "Hashrate (MH/s)",
+  "hashrateFilter": {
+    "all": "All Workers"
+  },
+  "hashrateModes": {
+    "live": "Live",
+    "emaShort": "EMA (Fast)",
+    "emaLong": "EMA (Slow)"
+  },
+  "workersInsights.sharenotes": "Sharenote",
+  "workersInsights.meanTime": "Avg time",
+  "workersInsights.meanSharenote": "Avg sharenote",
+  "workersInsights.meanSharenoteShort": "Avg",
+  "workersInsights.lastShare": "Last Sharenote",
+  "workersInsights.unknownWorker": "Unnamed worker",
+  "workersInsights.info": {
+    "sharenotes": "Latest sharenote from this worker.",
+    "meanTime": "Average time this worker takes per sharenote.",
+    "lastShare": "Time since this worker last printed a sharenote."
+  },
   "previous": "Previous",
   "next": "Next",
   "paymentHeight": "EST.Payment",
@@ -68,7 +91,7 @@
     "shareNote": "How it Works?"
   },
   "footer": {
-    "title": "mySharenote Your Hashboard"
+    "title": ""
   },
   "faq": {
     "title": "FAQ",

@@ -1,6 +1,6 @@
 import { lighten } from '@mui/material/styles';
 import type { Theme } from '@mui/material/styles';
-import { SHARENOTE_STACK_COLORS } from '@styles/colors';
+import { SHARENOTE_STACK_COLORS, WORKER_COLOR_PALETTE } from '@styles/colors';
 
 export const generateStackColors = (count: number, theme: Theme): string[] => {
   const bases = SHARENOTE_STACK_COLORS;
@@ -20,3 +20,25 @@ export const generateStackColors = (count: number, theme: Theme): string[] => {
   return result;
 };
 
+const workerColorAssignments: Record<string, string> = {};
+let workerColorPointer = 0;
+
+export const getWorkerColor = (theme: Theme, workerId: string): string => {
+  const palette = WORKER_COLOR_PALETTE.length > 0 ? WORKER_COLOR_PALETTE : SHARENOTE_STACK_COLORS;
+  if (!workerId) {
+    return palette[0] ?? theme.palette.primary.main;
+  }
+
+  const key = workerId.trim().toLowerCase();
+  if (!key) {
+    return palette[0] ?? theme.palette.primary.main;
+  }
+
+  if (!workerColorAssignments[key]) {
+    const color = palette[workerColorPointer % palette.length] ?? theme.palette.primary.main;
+    workerColorAssignments[key] = color;
+    workerColorPointer += 1;
+  }
+
+  return workerColorAssignments[key];
+};

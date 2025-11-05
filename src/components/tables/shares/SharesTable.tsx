@@ -4,10 +4,10 @@ import { Chip } from '@mui/material';
 import Box from '@mui/material/Box';
 import CustomTable from '@components/common/CustomTable';
 import CustomTooltip from '@components/common/CustomTooltip';
+import InfoHeader from '@components/common/InfoHeader';
 import ProgressLoader from '@components/common/ProgressLoader';
 import { SectionHeader } from '@components/styled/SectionHeader';
 import { StyledCard } from '@components/styled/StyledCard';
-import InfoHeader from '@components/common/InfoHeader';
 import {
   getIsSharesLoading,
   getPendingBalance as getPendingBalance,
@@ -38,7 +38,6 @@ const SharesTable = () => {
         component="section"
         sx={{
           p: 2,
-          minHeight: shares.length ? 200 : 100,
           justifyContent: 'center'
         }}>
         <SectionHeader>

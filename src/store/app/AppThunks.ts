@@ -1,4 +1,5 @@
 import { Container } from 'typedi';
+import { ORHAN_BLOCK_MATURITY } from '@config/config';
 import { ISettings } from '@objects/interfaces/ISettings';
 import { BlockStatusEnum } from '@objects/interfaces/IShareEvent';
 import { ElectrumService } from '@services/api/ElectrumService';
@@ -6,6 +7,7 @@ import { RelayService } from '@services/api/RelayService';
 import { createAppAsyncThunk } from '@store/createAppAsyncThunk';
 import { beautify } from '@utils/beautifierUtils';
 import { makeIdsSignature } from '@utils/helpers';
+import { toHexPublicKey } from '@utils/nostr';
 import {
   addHashrate,
   addPayout,
@@ -14,10 +16,9 @@ import {
   setPayoutLoader,
   setShareLoader,
   setSkeleton,
-  updateShare,
-  setVisibleSharesSig
+  setVisibleSharesSig,
+  updateShare
 } from './AppReducer';
-import { ORHAN_BLOCK_MATURITY } from '@config/config';
 
 export const getPayouts = createAppAsyncThunk(
   'relay/getPayouts',
@@ -25,6 +26,7 @@ export const getPayouts = createAppAsyncThunk(
     try {
       const { settings } = getState();
       const relayService: any = Container.get(RelayService);
+      const payerPublicKeyHex = toHexPublicKey(settings.payerPublicKey);
       let timeoutId: NodeJS.Timeout | undefined;
 
       const resetTimeout = () => {
@@ -35,7 +37,7 @@ export const getPayouts = createAppAsyncThunk(
         }, 5000);
       };
 
-      relayService.subscribePayouts(address, settings.payerPublicKey, {
+      relayService.subscribePayouts(address, payerPublicKeyHex, {
         onevent: (event: any) => {
           const payoutEvent = beautify(event);
           dispatch(addPayout(payoutEvent));
@@ -105,6 +107,7 @@ export const getShares = createAppAsyncThunk(
     try {
       const { settings } = getState();
       const relayService: any = Container.get(RelayService);
+      const workProviderPublicKeyHex = toHexPublicKey(settings.workProviderPublicKey);
       let timeoutId: NodeJS.Timeout | undefined;
 
       const resetTimeout = () => {
@@ -114,7 +117,7 @@ export const getShares = createAppAsyncThunk(
         }, 5000);
       };
 
-      relayService.subscribeShares(address, settings.workProviderPublicKey, {
+      relayService.subscribeShares(address, workProviderPublicKeyHex, {
         onevent: (event: any) => {
           const shareEvent = beautify(event);
           dispatch(addShare({ ...shareEvent, status: BlockStatusEnum.New }));
@@ -143,6 +146,7 @@ export const getHashrates = createAppAsyncThunk(
     try {
       const { settings } = getState();
       const relayService: any = Container.get(RelayService);
+      const workProviderPublicKeyHex = toHexPublicKey(settings.workProviderPublicKey);
       let timeoutId: NodeJS.Timeout | undefined;
 
       const resetTimeout = () => {
@@ -152,7 +156,7 @@ export const getHashrates = createAppAsyncThunk(
         }, 2000);
       };
 
-      relayService.subscribeHashrates(address, settings.workProviderPublicKey, {
+      relayService.subscribeHashrates(address, workProviderPublicKeyHex, {
         onevent: (event: any) => {
           const hashrateEvent = beautify(event);
           dispatch(addHashrate(hashrateEvent));
@@ -263,7 +267,7 @@ export const changeRelay = createAppAsyncThunk(
 
 export const getLastBlockHeight = createAppAsyncThunk(
   'electrum/getLastBlockHeight',
-  async (_, { rejectWithValue, dispatch }) => {
+  async (_, { rejectWithValue }) => {
     try {
       const electrumService: any = Container.get(ElectrumService);
       return await electrumService.getLastBlockHeight();

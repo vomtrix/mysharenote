@@ -5,7 +5,6 @@ import { NetworkTypeType } from '@objects/Enums';
 import { IHashrateEvent } from '@objects/interfaces/IHashrateEvent';
 import { IPayoutEvent } from '@objects/interfaces/IPayoutEvent';
 import { ISettings } from '@objects/interfaces/ISettings';
-import { makeIdsSignature } from '@utils/helpers';
 import { BlockStatusEnum, IShareEvent } from '@objects/interfaces/IShareEvent';
 import {
   changeRelay,
@@ -18,6 +17,7 @@ import {
   stopShares,
   syncBlock
 } from '@store/app/AppThunks';
+import { makeIdsSignature } from '@utils/helpers';
 import {
   DARK_MODE_DEFAULT,
   DARK_MODE_FORCE,

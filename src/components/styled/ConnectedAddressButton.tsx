@@ -11,13 +11,14 @@ export const ConnectedAddressButton = styled('div')(({ theme }) => ({
   marginLeft: 0,
   color: PRIMARY_WHITE,
   width: '100%',
+  minWidth: 0,
+  overflow: 'hidden',
   [theme.breakpoints.up('sm')]: {
-    marginLeft: theme.spacing(1),
-    width: 'auto'
+    marginLeft: theme.spacing(1)
   }
 }));
 
-export const ConnectedAddressIconWrapper = styled('div')(({ theme }) => ({
+export const ConnectedAddressIconWrapper = styled('div')(() => ({
   padding: '5px 0px 5px 10px',
   height: '100%',
   position: 'absolute',
@@ -40,6 +41,10 @@ export const StyledAddressButton = styled('button')(({ theme }) => ({
   paddingLeft: `calc(1em + ${theme.spacing(3)})`,
   textAlign: 'left',
   transition: theme.transitions.create('width'),
+  display: 'block',
+  whiteSpace: 'nowrap',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
   '&:focus': {
     outline: 'none'
   }

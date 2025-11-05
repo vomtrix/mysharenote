@@ -1,23 +1,23 @@
-import {
-  AddressIconWrapper,
-  AddressInput,
-  StyledAddressInputBase
-} from '@components/styled/AddressInput';
-import { yupResolver } from '@hookform/resolvers/yup';
-import { useNotification } from '@hooks/UseNotificationHook';
-import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
-import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
-import IconButton from '@mui/material/IconButton';
-import { Box } from '@mui/system';
-import { addAddress, clearAddress, setSkeleton } from '@store/app/AppReducer';
-import { getAddress, getSettings } from '@store/app/AppSelectors';
-import { useDispatch, useSelector } from '@store/store';
-import { isMobileDevice, truncateAddress, validateAddress } from '@utils/helpers';
 import { useRouter } from 'next/router';
 import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import * as Yup from 'yup';
+import { yupResolver } from '@hookform/resolvers/yup';
+import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
+import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
+import IconButton from '@mui/material/IconButton';
+import { Box } from '@mui/system';
+import {
+  AddressIconWrapper,
+  AddressInput,
+  StyledAddressInputBase
+} from '@components/styled/AddressInput';
+import { useNotification } from '@hooks/UseNotificationHook';
+import { addAddress, clearAddress, setSkeleton } from '@store/app/AppReducer';
+import { getAddress, getSettings } from '@store/app/AppSelectors';
+import { useDispatch, useSelector } from '@store/store';
+import { isMobileDevice, truncateAddress, validateAddress } from '@utils/helpers';
 import {
   ConnectedAddressButton,
   ConnectedAddressIconWrapper,
@@ -108,7 +108,10 @@ const Connect = ({ hasButton = false }: ConnectProps) => {
   return (
     <>
       {inputVisible && (
-        <Box component="form" onSubmit={handleSubmit(onSubmit)}>
+        <Box
+          component="form"
+          onSubmit={handleSubmit(onSubmit)}
+          sx={{ display: 'flex', width: '100%', minWidth: 0 }}>
           <AddressInput style={hasButton ? { paddingRight: 20 } : undefined}>
             <AddressIconWrapper>
               <AccountBalanceWalletIcon />
@@ -144,7 +147,7 @@ const Connect = ({ hasButton = false }: ConnectProps) => {
         </Box>
       )}
       {!inputVisible && address && (
-        <Box display="flex" alignItems="center">
+        <Box display="flex" alignItems="center" sx={{ width: '100%', minWidth: 0 }}>
           <ConnectedAddressButton>
             <ConnectedAddressIconWrapper>
               <AccountBalanceWalletIcon />

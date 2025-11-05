@@ -1,7 +1,17 @@
+import Head from 'next/head';
+import Script from 'next/script';
+import { PropsWithChildren, useMemo } from 'react';
+import { Provider } from 'react-redux';
+import { Bounce, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { PersistGate } from 'redux-persist/integration/react';
+import 'reflect-metadata';
 import { DARK_MODE_DEFAULT, DARK_MODE_ENABLED, DARK_MODE_FORCE } from '@config/config';
 import { Container } from '@mui/material';
 import GlobalStyles from '@mui/material/GlobalStyles';
 import { ThemeProvider, useTheme } from '@mui/material/styles';
+import Footer from '@components/layouts/Footer';
+import Header from '@components/layouts/Header';
 import { setColorMode } from '@store/app/AppReducer';
 import { getColorMode } from '@store/app/AppSelectors';
 import { AppStore, persistor, useDispatch, useSelector } from '@store/store';
@@ -11,21 +21,62 @@ import '@styles/scss/globals.scss';
 import customTheme from '@styles/theme';
 import '@utils/dayjsSetup';
 import '@utils/i18n';
-import dynamic from 'next/dynamic';
-import Head from 'next/head';
-import Script from 'next/script';
-import { PropsWithChildren, useMemo } from 'react';
-import { Provider } from 'react-redux';
-import { Bounce, ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import { PersistGate } from 'redux-persist/integration/react';
-import 'reflect-metadata';
+
+function ModeThemeProvider({ children }: PropsWithChildren) {
+  const outerTheme = useTheme();
+  const dispatch = useDispatch();
+  const storedMode = useSelector(getColorMode) || DARK_MODE_DEFAULT;
+  const mode: 'light' | 'dark' = DARK_MODE_FORCE ? 'dark' : storedMode;
+  const colorMode = useMemo(
+    () => ({
+      mode,
+      toggle: () => {
+        if (!DARK_MODE_ENABLED || DARK_MODE_FORCE) return;
+        dispatch(setColorMode(mode === 'light' ? 'dark' : 'light'));
+      },
+      setMode: (m: 'light' | 'dark') => {
+        if (!DARK_MODE_ENABLED || DARK_MODE_FORCE) return;
+        dispatch(setColorMode(m));
+      }
+    }),
+    [mode, dispatch]
+  );
+
+  return (
+    <ColorModeContext.Provider value={colorMode}>
+      <ThemeProvider theme={customTheme(outerTheme, mode)}>
+        <GlobalStyles
+          styles={(theme) => ({
+            body: {
+              backgroundColor:
+                mode === 'light'
+                  ? `${SECONDARY_GREY_3} !important`
+                  : `${theme.palette.background.default} !important`,
+              color: theme.palette.text.primary
+            }
+          })}
+        />
+        {children}
+        <ToastContainer
+          className="custom-toast-container"
+          position="top-right"
+          autoClose={2000}
+          hideProgressBar={false}
+          newestOnTop
+          closeOnClick={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          theme={mode}
+          transition={Bounce}
+        />
+      </ThemeProvider>
+    </ColorModeContext.Provider>
+  );
+}
 
 const App = (props: any) => {
   const { Component, pageProps } = props;
-  const outerTheme: any = useTheme();
-  const Header = dynamic(() => import('@components/layouts/Header'), { ssr: false });
-  const Footer = dynamic(() => import('@components/layouts/Footer'), { ssr: false });
   const hideChrome = (Component as any)?.hideChrome === true;
 
   return (
@@ -77,57 +128,3 @@ const App = (props: any) => {
 };
 
 export default App;
-
-// Internal provider to initialize theme from Redux store (after Provider is mounted)
-function ModeThemeProvider({ children }: PropsWithChildren) {
-  const outerTheme: any = useTheme();
-  const dispatch = useDispatch();
-  const storedMode = useSelector(getColorMode) || DARK_MODE_DEFAULT;
-  const mode: 'light' | 'dark' = DARK_MODE_FORCE ? 'dark' : storedMode;
-  const colorMode = useMemo(
-    () => ({
-      mode,
-      toggle: () => {
-        if (!DARK_MODE_ENABLED || DARK_MODE_FORCE) return;
-        dispatch(setColorMode(mode === 'light' ? 'dark' : 'light'));
-      },
-      setMode: (m: 'light' | 'dark') => {
-        if (!DARK_MODE_ENABLED || DARK_MODE_FORCE) return;
-        dispatch(setColorMode(m));
-      }
-    }),
-    [mode, dispatch]
-  );
-
-  return (
-    <ColorModeContext.Provider value={colorMode}>
-      <ThemeProvider theme={customTheme(outerTheme, mode)}>
-        <GlobalStyles
-          styles={(theme) => ({
-            body: {
-              backgroundColor:
-                mode === 'light'
-                  ? `${SECONDARY_GREY_3} !important`
-                  : `${theme.palette.background.default} !important`,
-              color: theme.palette.text.primary
-            }
-          })}
-        />
-        {children}
-        <ToastContainer
-          className="custom-toast-container"
-          position="top-right"
-          autoClose={2000}
-          hideProgressBar={false}
-          newestOnTop
-          closeOnClick={false}
-          pauseOnFocusLoss
-          draggable
-          pauseOnHover
-          theme={mode}
-          transition={Bounce}
-        />
-      </ThemeProvider>
-    </ColorModeContext.Provider>
-  );
-}

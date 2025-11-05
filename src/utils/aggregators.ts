@@ -1,7 +1,7 @@
-import { toSeconds, fromEpoch } from '@utils/time';
+import type { IAggregatedShares } from '@objects/interfaces/IAggregatedShares';
 import type { IShareEvent } from '@objects/interfaces/IShareEvent';
 import { BlockStatusEnum } from '@objects/interfaces/IShareEvent';
-import type { IAggregatedShares } from '@objects/interfaces/IAggregatedShares';
+import { fromEpoch, toSeconds } from '@utils/time';
 
 export const aggregateSharesByInterval = (
   shares: IShareEvent[],
@@ -46,7 +46,9 @@ export const aggregateSharesByInterval = (
         if (sec !== null && sec > latest) latest = sec;
       }
       if (Number.isFinite(latest)) {
-        return aggregateSharesByInterval(shares, intervalSec, windowSec, latest, { fallbackToLatest: false });
+        return aggregateSharesByInterval(shares, intervalSec, windowSec, latest, {
+          fallbackToLatest: false
+        });
       }
     }
     return { xLabels: [], workers: [], dataByWorker: [] };

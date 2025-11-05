@@ -3,9 +3,10 @@ import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Box, Skeleton } from '@mui/material';
 import HashrateChart from '@components/charts/HashrateChart';
-import PayoutsTable from '@components/tables/payouts/PayoutsTable';
 import PayoutsChart from '@components/charts/PayoutsChart';
 import SharenoteChart from '@components/charts/SharenoteChart';
+import WorkerSharenoteStats from '@components/charts/WorkerSharenoteStats';
+import PayoutsTable from '@components/tables/payouts/PayoutsTable';
 import SharesTable from '@components/tables/shares/SharesTable';
 import { useHasRelayConfig } from '@hooks/useHasRelayConfig';
 import { useNotification } from '@hooks/UseNotificationHook';
@@ -101,19 +102,42 @@ const AddressPage = () => {
 
       {enableSkeleton ? (
         <>
-          <Skeleton
-            variant="rounded"
-            animation="wave"
-            sx={{ height: 50, width: '100%', marginBottom: 1 }}
-          />
-          <Skeleton
-            variant="rounded"
-            animation="wave"
-            sx={{ height: 200, width: '100%', marginBottom: 3 }}
-          />
+          <Skeleton variant="rounded" animation="wave" sx={{ height: 50, width: '100%', mb: 1 }} />
+          <Skeleton variant="rounded" animation="wave" sx={{ height: 200, width: '100%', mb: 3 }} />
         </>
       ) : (
-        <SharenoteChart />
+        <Box
+          sx={{
+            width: '100%',
+            display: 'flex',
+            flexDirection: { xs: 'column', lg: 'row' },
+            gap: { xs: 0, lg: 3 },
+            alignItems: 'stretch',
+            mb: { xs: 0, lg: 3 }
+          }}>
+          <Box
+            sx={{
+              flex: { xs: 'auto', lg: 7 },
+              display: 'flex',
+              height: { xs: 'auto', lg: 320 },
+              '& > *': { flexGrow: 1, height: '100%', mb: 0 }
+            }}>
+            <SharenoteChart />
+          </Box>
+          <Box
+            sx={{
+              flex: { xs: 'auto', lg: 4 },
+              display: 'flex',
+              height: { xs: 'auto', lg: 320 },
+              '& > *': {
+                flexGrow: 1,
+                height: '100%',
+                marginBottom: 0
+              }
+            }}>
+            <WorkerSharenoteStats />
+          </Box>
+        </Box>
       )}
 
       {enableSkeleton ? (

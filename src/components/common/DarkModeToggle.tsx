@@ -1,8 +1,8 @@
 import React, { useContext } from 'react';
-import IconButton from '@mui/material/IconButton';
-import Tooltip from '@mui/material/Tooltip';
 import DarkModeOutlinedIcon from '@mui/icons-material/DarkModeOutlined';
 import LightModeOutlinedIcon from '@mui/icons-material/LightModeOutlined';
+import IconButton from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
 import { ColorModeContext } from '@styles/ColorModeContext';
 import { DARK_MODE_ENABLED, DARK_MODE_FORCE } from 'src/config/config';
 

@@ -1,6 +1,6 @@
 import React from 'react';
-import Chip from '@mui/material/Chip';
 import Box from '@mui/material/Box';
+import Chip from '@mui/material/Chip';
 import Typography from '@mui/material/Typography';
 import { ChartsTooltipContainer, useAxesTooltip } from '@mui/x-charts';
 
@@ -58,7 +58,10 @@ const StackedTotalTooltip: React.FC<Props> = ({ valueFormatter }) => {
                             mr: 1
                           }}
                         />
-                        <Typography component="span" variant="body2" sx={{ color: 'text.secondary' }}>
+                        <Typography
+                          component="span"
+                          variant="body2"
+                          sx={{ color: 'text.secondary' }}>
                           {formattedLabel || ''}
                         </Typography>
                       </td>

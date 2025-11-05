@@ -1,5 +1,6 @@
 import { useRouter } from 'next/router';
 import { useEffect } from 'react';
+import { Typography } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import { Box } from '@mui/system';
 import LanguageSwitcher from '@components/common/LanguageSwitcher';
@@ -10,7 +11,13 @@ import { clearAddress } from '@store/app/AppReducer';
 import { getAddress } from '@store/app/AppSelectors';
 import { stopHashrates, stopPayouts, stopShares } from '@store/app/AppThunks';
 import { useDispatch, useSelector } from '@store/store';
-import { PRIMARY_BLACK, PRIMARY_COLOR, PRIMARY_COLOR_1, PRIMARY_COLOR_3 } from '@styles/colors';
+import {
+  PRIMARY_BLACK,
+  PRIMARY_COLOR,
+  PRIMARY_COLOR_1,
+  PRIMARY_COLOR_3,
+  PRIMARY_WHITE
+} from '@styles/colors';
 import { HOME_PAGE_ENABLED } from 'src/config/config';
 
 const Home = () => {
@@ -57,7 +64,18 @@ const Home = () => {
         gap: 2,
         pt: { xs: '3vh', md: '8vh' }
       }}>
-      <img src="/assets/logo.svg" alt="ShareNote" style={{ width: '260px', maxWidth: '70vw' }} />
+      <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+        <Typography
+          variant="h4"
+          sx={{
+            fontWeight: 700,
+            letterSpacing: -0.5,
+            color: PRIMARY_WHITE,
+            fontSize: { xs: '1.75rem', md: '2.5rem' }
+          }}>
+          myHashboard
+        </Typography>
+      </Box>
       <Box
         sx={{
           width: '100%',

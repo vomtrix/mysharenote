@@ -1,7 +1,7 @@
 import { address, networks } from 'flokicoinjs-lib';
 import { NetworkTypeType } from '@objects/Enums';
 import { IDataPoint } from '@objects/interfaces/IDatapoint';
-import { BlockStatusEnum, IShareEvent } from '@objects/interfaces/IShareEvent';
+import { BlockStatusEnum } from '@objects/interfaces/IShareEvent';
 
 export const setWidthStyle = (width?: any) => {
   if (width && typeof width === 'number') {
@@ -167,4 +167,61 @@ export const makeIdsSignature = (ids: any[]): string => {
 
   const combined = (BigInt(h1) << 32n) | BigInt(h2);
   return combined.toString(36);
+};
+
+export const beautifyWorkerUserAgent = (userAgent?: string | null): string | undefined => {
+  if (userAgent === undefined || userAgent === null) return undefined;
+
+  const trimmed = userAgent.trim();
+  if (!trimmed) return undefined;
+
+  const withoutMeta = trimmed.split(/\s*\(/)[0].split(';')[0].trim();
+  if (!withoutMeta) return undefined;
+
+  const versionRegex = /v?\d+(?:\.\d+)*(?:[-+][\w.]+)?/i;
+  const versionMatch = withoutMeta.match(versionRegex);
+
+  let versionLabel: string | undefined;
+  let nameCandidate = withoutMeta;
+
+  if (versionMatch && versionMatch.index !== undefined) {
+    const start = versionMatch.index;
+    const end = start + versionMatch[0].length;
+    const before = withoutMeta.slice(0, start);
+    const after = withoutMeta.slice(end);
+    nameCandidate = before.trim() ? before : after;
+    const normalizedVersionBody = versionMatch[0].replace(/^v/i, '');
+    versionLabel = `v${normalizedVersionBody}`;
+  }
+
+  const sanitizedName = nameCandidate
+    .replace(/[/_-]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  const finalName =
+    sanitizedName.length > 0
+      ? sanitizedName
+          .split(' ')
+          .map((chunk) => {
+            if (!chunk) return '';
+            const isAllUpper = chunk === chunk.toUpperCase();
+            const isAllLower = chunk === chunk.toLowerCase();
+            if (isAllLower || isAllUpper) {
+              return chunk.charAt(0).toUpperCase() + chunk.slice(1).toLowerCase();
+            }
+            return chunk;
+          })
+          .join(' ')
+      : undefined;
+
+  if (finalName && versionLabel) return `${finalName} ${versionLabel}`;
+  if (finalName) return finalName;
+  if (versionLabel) return versionLabel;
+
+  const fallback = withoutMeta
+    .replace(/[/_-]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  return fallback || trimmed;
 };

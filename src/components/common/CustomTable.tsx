@@ -1,8 +1,8 @@
+import { useState } from 'react';
 import { gridClasses, useGridApiRef } from '@mui/x-data-grid';
 import { getVisibleRows } from '@mui/x-data-grid/internals';
 import StyledDataGrid from '@components/styled/StyledDataGrid';
 import { IPaginationModel } from '@objects/interfaces/IPaginationModel';
-import { useState } from 'react';
 import { makeIdsSignature } from '@utils/helpers';
 
 interface CustomTableProps {

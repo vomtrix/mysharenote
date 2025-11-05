@@ -1,8 +1,8 @@
 import React from 'react';
-import Box from '@mui/material/Box';
-import Tooltip from '@mui/material/Tooltip';
-import IconButton from '@mui/material/IconButton';
 import InfoOutlined from '@mui/icons-material/InfoOutlined';
+import Box from '@mui/material/Box';
+import IconButton from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
 
 type Props = {
   title: React.ReactNode;
@@ -17,8 +17,7 @@ const InfoHeader: React.FC<Props> = ({ title, tooltip }) => {
         title={tooltip}
         slotProps={{ tooltip: { sx: { maxWidth: 320 } } }}
         placement="top"
-        arrow
-      >
+        arrow>
         <IconButton size="small" sx={{ color: (theme) => theme.palette.text.secondary, p: 0.25 }}>
           <InfoOutlined fontSize="small" />
         </IconButton>

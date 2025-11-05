@@ -1,9 +1,8 @@
-import dayjs from 'dayjs';
+import numeral from 'numeral';
+import { useTranslation } from 'react-i18next';
 import { Chip } from '@mui/material';
 import { lokiToFlc } from '@utils/helpers';
 import { fromEpoch } from '@utils/time';
-import numeral from 'numeral';
-import { useTranslation } from 'react-i18next';
 import { EXPLORER_URL } from 'src/config/config';
 
 const payoutsColumns = () => {

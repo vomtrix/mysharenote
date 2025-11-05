@@ -1,5 +1,4 @@
 import { useRouter } from 'next/router';
-import { nip19 } from 'nostr-tools';
 import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import * as Yup from 'yup';
@@ -22,6 +21,11 @@ import { clearAddress, clearSettings } from '@store/app/AppReducer';
 import { getSettings } from '@store/app/AppSelectors';
 import { changeRelay } from '@store/app/AppThunks';
 import { useDispatch, useSelector } from '@store/store';
+import {
+  isValidPublicKeyInput,
+  normalizePublicKeyInput,
+  publicKeyInputToDisplayValue
+} from '@utils/nostr';
 import {
   EXPLORER_URL,
   HOME_PAGE_ENABLED,
@@ -58,14 +62,14 @@ const SettingsModal = () => {
       ),
     payerPublicKey: Yup.string()
       .required(t('settings.authorPubKeyRequired'))
-      .test('is-valid-payer-pubkey', t('settings.invalidPublicKeyFormat'), (value: any) => {
-        return !!nip19.NostrTypeGuard.isNPub(value);
-      }),
+      .test('is-valid-payer-pubkey', t('settings.invalidPublicKeyFormat'), (value: any) =>
+        isValidPublicKeyInput(value)
+      ),
     workProviderPublicKey: Yup.string()
       .required(t('settings.authorPubKeyRequired'))
-      .test('is-valid-work-provider-pubkey', t('settings.invalidPublicKeyFormat'), (value: any) => {
-        return !!nip19.NostrTypeGuard.isNPub(value);
-      }),
+      .test('is-valid-work-provider-pubkey', t('settings.invalidPublicKeyFormat'), (value: any) =>
+        isValidPublicKeyInput(value)
+      ),
     network: Yup.string()
       .oneOf(
         networkOptions.map((option) => option.value),
@@ -84,10 +88,8 @@ const SettingsModal = () => {
     resolver: yupResolver(validationSchema),
     defaultValues: {
       relay: settings.relay || '',
-      payerPublicKey: settings.payerPublicKey ? nip19.npubEncode(settings.payerPublicKey) : '',
-      workProviderPublicKey: settings.workProviderPublicKey
-        ? nip19.npubEncode(settings.workProviderPublicKey)
-        : '',
+      payerPublicKey: publicKeyInputToDisplayValue(settings.payerPublicKey),
+      workProviderPublicKey: publicKeyInputToDisplayValue(settings.workProviderPublicKey),
       explorer: settings.explorer || '',
       network: settings.network || ''
     }
@@ -97,8 +99,8 @@ const SettingsModal = () => {
     try {
       data = {
         ...data,
-        payerPublicKey: nip19.decode(data.payerPublicKey).data,
-        workProviderPublicKey: nip19.decode(data.workProviderPublicKey).data
+        payerPublicKey: normalizePublicKeyInput(data.payerPublicKey),
+        workProviderPublicKey: normalizePublicKeyInput(data.workProviderPublicKey)
       };
       await dispatch(changeRelay(data));
     } catch (err: any) {
@@ -117,10 +119,8 @@ const SettingsModal = () => {
     reset({
       relay: RELAY_URL || '',
       network: NetworkTypeType.Mainnet,
-      payerPublicKey: PAYER_PUBLIC_KEY ? nip19.npubEncode(PAYER_PUBLIC_KEY) : '',
-      workProviderPublicKey: WORK_PROVIDER_PUBLIC_KEY
-        ? nip19.npubEncode(WORK_PROVIDER_PUBLIC_KEY)
-        : '',
+      payerPublicKey: publicKeyInputToDisplayValue(PAYER_PUBLIC_KEY),
+      workProviderPublicKey: publicKeyInputToDisplayValue(WORK_PROVIDER_PUBLIC_KEY),
       explorer: EXPLORER_URL || ''
     });
     dispatch(clearSettings());
@@ -134,7 +134,11 @@ const SettingsModal = () => {
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        flexDirection: 'column'
+        flexDirection: 'column',
+        maxHeight: '90vh',
+        overflow: 'hidden',
+        width: '100%',
+        px: { xs: 1, md: 2 }
       }}>
       <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', mb: 2 }}>
         <Box sx={{ flex: 1 }}>
@@ -163,7 +167,17 @@ const SettingsModal = () => {
         <Box sx={{ flex: 1 }} />
       </Box>
 
-      <form onSubmit={handleSubmit(onSubmit)} style={{ width: '100%' }}>
+      <Box
+        component="form"
+        onSubmit={handleSubmit(onSubmit)}
+        sx={{
+          width: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          overflowY: 'auto',
+          maxHeight: { xs: '70vh', md: '72vh' },
+          pr: { xs: 0.5, md: 1 }
+        }}>
         <Box sx={{ py: 1 }}>
           <FormLabel component="legend" sx={{ paddingBottom: 1 }}>
             {t('settings.relay')}
@@ -244,7 +258,7 @@ const SettingsModal = () => {
             {t('settings.save')}
           </Button>
         </Box>
-      </form>
+      </Box>
     </Box>
   );
 };

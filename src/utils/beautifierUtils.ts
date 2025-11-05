@@ -11,15 +11,177 @@ export const beautify = (event: any) => {
     id: event.id,
     timestamp: event.created_at
   };
+  const workerHashrates: Record<string, number> = {};
+  const workerDetails: Record<
+    string,
+    {
+      hashrate?: number;
+      sharenote?: string | number;
+      meanSharenote?: string | number;
+      meanTime?: number;
+      lastShareTimestamp?: number;
+      userAgent?: string;
+    }
+  > = {};
 
-  event.tags.forEach(([tagKey, tagValue1, tagValue2, tagValue3]: any) => {
-    const fieldKey = map[tagKey];
-    if (fieldKey) {
-      result[fieldKey] = isNaN(Number(tagValue1)) ? tagValue1 : Number(tagValue1);
+  event.tags.forEach((tagEntry: any) => {
+    if (!Array.isArray(tagEntry) || tagEntry.length === 0) return;
+    const [tagKey, ...rest] = tagEntry;
+
+    if (event.kind === 35502 && typeof tagKey === 'string' && tagKey.startsWith('w:')) {
+      const workerId = tagKey.slice(2);
+      if (!workerId) return;
+
+      if (!workerDetails[workerId]) workerDetails[workerId] = {};
+      const detail = workerDetails[workerId];
+
+      const hasKeyValueSegments = rest.some(
+        (segment) => typeof segment === 'string' && segment.includes(':')
+      );
+
+      if (hasKeyValueSegments) {
+        rest.forEach((segment) => {
+          if (typeof segment !== 'string') return;
+          const separatorIndex = segment.indexOf(':');
+          if (separatorIndex === -1) return;
+          const key = segment.slice(0, separatorIndex);
+          const valueRaw = segment.slice(separatorIndex + 1);
+          if (!key) return;
+
+          switch (key) {
+            case 'h': {
+              const numericValue = Number(valueRaw);
+              if (!Number.isNaN(numericValue)) {
+                workerHashrates[workerId] = numericValue;
+                detail.hashrate = numericValue;
+              }
+              break;
+            }
+            case 'sn': {
+              if (valueRaw !== '') {
+                const numericSharenote = Number(valueRaw);
+                detail.sharenote = Number.isNaN(numericSharenote) ? valueRaw : numericSharenote;
+              }
+              break;
+            }
+            case 'msn': {
+              if (valueRaw !== '') {
+                const trimmedValue = valueRaw.trim();
+                detail.meanSharenote = trimmedValue === '' ? undefined : trimmedValue;
+              }
+              break;
+            }
+            case 'mt': {
+              const meanTimeValue = Number(valueRaw);
+              if (!Number.isNaN(meanTimeValue)) {
+                detail.meanTime = meanTimeValue;
+              }
+              break;
+            }
+            case 'lsn': {
+              const lastShareTimestamp = Number(valueRaw);
+              if (!Number.isNaN(lastShareTimestamp)) {
+                detail.lastShareTimestamp = lastShareTimestamp;
+              }
+              break;
+            }
+            case 'ua': {
+              if (valueRaw.trim().length > 0) {
+                detail.userAgent = valueRaw.trim();
+              }
+              break;
+            }
+            default:
+              break;
+          }
+        });
+        return;
+      }
+
+      const [tagValue1, tagValue2, tagValue3, tagValue4, tagValue5, tagValue6] = rest;
+
+      const numericValue = Number(tagValue1);
+      const sharenoteRaw = tagValue2;
+      const meanTimeValue = Number(tagValue3);
+      const lastShareTimestamp = Number(tagValue4);
+      const userAgentRaw = tagValue5;
+      const meanSharenoteRaw = tagValue6;
+
+      if (!Number.isNaN(numericValue)) {
+        workerHashrates[workerId] = numericValue;
+        detail.hashrate = numericValue;
+      }
+      if (sharenoteRaw !== undefined && sharenoteRaw !== null && sharenoteRaw !== '') {
+        const numericSharenote = Number(sharenoteRaw);
+        detail.sharenote = Number.isNaN(numericSharenote) ? String(sharenoteRaw) : numericSharenote;
+      }
+      if (meanSharenoteRaw !== undefined && meanSharenoteRaw !== null && meanSharenoteRaw !== '') {
+        const trimmedMeanSn =
+          typeof meanSharenoteRaw === 'string' ? meanSharenoteRaw.trim() : String(meanSharenoteRaw);
+        detail.meanSharenote = trimmedMeanSn === '' ? undefined : trimmedMeanSn;
+      }
+      if (!Number.isNaN(meanTimeValue)) {
+        detail.meanTime = meanTimeValue;
+      }
+      if (!Number.isNaN(lastShareTimestamp)) {
+        detail.lastShareTimestamp = lastShareTimestamp;
+      }
+      if (typeof userAgentRaw === 'string' && userAgentRaw.trim().length > 0) {
+        detail.userAgent = userAgentRaw.trim();
+      }
+      return;
     }
 
-    if (event.kind === 35505 && tagKey == 'x') {
-      result.txId = tagValue1;
+    const fieldKey = map[tagKey];
+    if (fieldKey) {
+      const primaryValue = rest.find(
+        (segment) => typeof segment === 'string' && segment !== '' && !segment.includes(':')
+      );
+      if (primaryValue !== undefined) {
+        const numericPrimary = Number(primaryValue);
+        result[fieldKey] = Number.isNaN(numericPrimary) ? primaryValue : numericPrimary;
+      }
+
+      rest.forEach((segment) => {
+        if (typeof segment !== 'string') return;
+        const separatorIndex = segment.indexOf(':');
+        if (separatorIndex === -1) return;
+        const key = segment.slice(0, separatorIndex);
+        const valueRaw = segment.slice(separatorIndex + 1);
+        if (!key) return;
+
+        switch (key) {
+          case 'msn': {
+            if (valueRaw === '') break;
+            const trimmed = valueRaw.trim();
+            if (trimmed === '') break;
+            const numericValue = Number(trimmed);
+            result.meanSharenote = Number.isNaN(numericValue) ? trimmed : numericValue;
+            break;
+          }
+          case 'mt': {
+            const numericValue = Number(valueRaw);
+            if (!Number.isNaN(numericValue)) {
+              result.meanTime = numericValue;
+            }
+            break;
+          }
+          case 'lsn': {
+            const numericValue = Number(valueRaw);
+            if (!Number.isNaN(numericValue)) {
+              result.lastShareTimestamp = numericValue;
+            }
+            break;
+          }
+          default:
+            break;
+        }
+      });
+    }
+
+    if (event.kind === 35505 && tagKey === 'x') {
+      const [txId, tagValue2, tagValue3] = rest;
+      result.txId = txId;
       if (tagValue2 && tagValue3) {
         result.confirmedTx = true;
         result.txBlockHeight = tagValue2;
@@ -27,6 +189,41 @@ export const beautify = (event: any) => {
       }
     }
   });
+
+  if (event.kind === 35502) {
+    if (Object.keys(workerHashrates).length > 0) {
+      result.workers = workerHashrates;
+    }
+    const detailedWorkers = Object.entries(workerDetails).reduce(
+      (acc, [workerId, detail]) => {
+        if (
+          detail.hashrate !== undefined ||
+          detail.sharenote !== undefined ||
+          detail.meanSharenote !== undefined ||
+          detail.meanTime !== undefined ||
+          detail.lastShareTimestamp !== undefined ||
+          detail.userAgent !== undefined
+        ) {
+          acc[workerId] = detail;
+        }
+        return acc;
+      },
+      {} as Record<
+        string,
+        {
+          hashrate?: number;
+          sharenote?: string | number;
+          meanSharenote?: string | number;
+          meanTime?: number;
+          lastShareTimestamp?: number;
+          userAgent?: string;
+        }
+      >
+    );
+    if (Object.keys(detailedWorkers).length > 0) {
+      result.workerDetails = detailedWorkers;
+    }
+  }
 
   return result;
 };

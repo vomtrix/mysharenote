@@ -83,7 +83,7 @@ const StyledDataGrid: any = styled(DataGrid)(({ theme }) => ({
     backgroundColor:
       theme.palette.mode === 'dark' ? SECONDARY_GREY_4 : theme.palette.background.default,
     '& .MuiDataGrid-columnHeaderTitle': {
-      fontWeight: 'bold'
+      fontWeight: 'normal'
     }
   },
   '& .MuiDataGrid-footerContainer': {

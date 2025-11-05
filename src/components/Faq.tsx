@@ -1,8 +1,8 @@
-import GlassCard from '@components/styled/GlassCard';
+import { useTranslation } from 'react-i18next';
 import { Box, Container, Link, Stack, Typography } from '@mui/material';
 import { alpha } from '@mui/material/styles';
+import GlassCard from '@components/styled/GlassCard';
 import { PRIMARY_COLOR_1, PRIMARY_WHITE, SECONDARY_COLOR } from '@styles/colors';
-import { useTranslation } from 'react-i18next';
 import { FAQ_LINKS } from 'src/config/config';
 
 const renderWithLinks = (text: string, t: any) => {
@@ -49,12 +49,15 @@ const Faq = () => {
           <Stack spacing={2.5}>
             {questions.map((item, idx) => (
               <Box key={idx}>
-                <Typography sx={{ fontSize: "large", fontWeight: 600, color: PRIMARY_WHITE, mb: 1 }}>
-                    {item.q}
-                  </Typography>
-                  <Typography variant="body1" sx={{ color: alpha(PRIMARY_WHITE, 0.86), lineHeight: 1.65 }}>
-                    {renderWithLinks(item.a, t)}
-                  </Typography>
+                <Typography
+                  sx={{ fontSize: 'large', fontWeight: 600, color: PRIMARY_WHITE, mb: 1 }}>
+                  {item.q}
+                </Typography>
+                <Typography
+                  variant="body1"
+                  sx={{ color: alpha(PRIMARY_WHITE, 0.86), lineHeight: 1.65 }}>
+                  {renderWithLinks(item.a, t)}
+                </Typography>
                 {idx < questions.length - 1 && (
                   <Box
                     sx={{

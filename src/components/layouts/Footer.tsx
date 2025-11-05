@@ -1,18 +1,18 @@
+import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import SettingsIcon from '@mui/icons-material/Settings';
+import IconButton from '@mui/material/IconButton';
+import { useTheme } from '@mui/material/styles';
+import Tooltip from '@mui/material/Tooltip';
 import CustomModal from '@components/common/CustomModal';
 import DarkModeToggle from '@components/common/DarkModeToggle';
 import SettingsModal from '@components/modals/SettingsModal';
 import { useHasRelayConfig } from '@hooks/useHasRelayConfig';
 import { useNotification } from '@hooks/UseNotificationHook';
-import SettingsIcon from '@mui/icons-material/Settings';
-import IconButton from '@mui/material/IconButton';
-import { useTheme } from '@mui/material/styles';
-import Tooltip from '@mui/material/Tooltip';
 import { setSkeleton } from '@store/app/AppReducer';
 import { getError, getRelayReady } from '@store/app/AppSelectors';
 import { useDispatch, useSelector } from '@store/store';
 import styles from '@styles/scss/Footer.module.scss';
-import { useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
 
 const Footer = () => {
   const { t } = useTranslation();

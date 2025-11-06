@@ -11,6 +11,7 @@
   "totalShares": "总 Sharenotes",
   "unconfirmedBalance": "未确认余额",
   "pendingBalance": "待结算余额",
+  "pendingBalanceTooltip": "最近 500 个 sharenotes",
   "orphanBlock": "孤立区块",
   "orphanCheck": "孤块检查",
   "profit": "收益 (FLC)",

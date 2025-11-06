@@ -5,7 +5,21 @@ import { SECONDARY_GREY_4, SECONDARY_RED_1 } from '@styles/colors';
 const getAdditionalRowStyles = (theme: any) => {
   const primary = theme.palette.primary.main;
   const evenBg = theme.palette.mode === 'dark' ? alpha('#fff', 0.03) : alpha('#000', 0.02);
+  const highlightColor =
+    theme.palette.mode === 'dark' ? alpha(primary, 0.35) : alpha(primary, 0.18);
   return {
+    '@keyframes rowHighlightPulse': {
+      '0%': {
+        backgroundColor: highlightColor
+      },
+      '60%': {
+        backgroundColor:
+          theme.palette.mode === 'dark' ? alpha(primary, 0.22) : alpha(primary, 0.1)
+      },
+      '100%': {
+        backgroundColor: 'inherit'
+      }
+    },
     [`& .${gridClasses.row}.even`]: {
       backgroundColor: evenBg,
       '&:hover, &.Mui-hovered': {
@@ -58,6 +72,19 @@ const getAdditionalRowStyles = (theme: any) => {
           // Reset on touch devices, it doesn't add specificity
           '@media (hover: none)': {
             backgroundColor: alpha(SECONDARY_RED_1, 1)
+          }
+        }
+      }
+    },
+    [`& .${gridClasses.row}.recently-added`]: {
+      backgroundColor: highlightColor,
+      animation: 'rowHighlightPulse 2.4s ease-out',
+      '&.Mui-selected': {
+        backgroundColor: alpha(primary, 0.3),
+        '&:hover, &.Mui-hovered': {
+          backgroundColor: alpha(primary, 0.36),
+          '@media (hover: none)': {
+            backgroundColor: alpha(primary, 0.36)
           }
         }
       }

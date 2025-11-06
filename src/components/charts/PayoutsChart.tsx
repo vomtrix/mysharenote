@@ -94,7 +94,7 @@ const PayoutsChart = () => {
         {isLoading && address && <ProgressLoader value={payouts.length} />}
         {!isLoading &&
           (hasData && address ? (
-            <Box sx={{ width: '100%', height: 300 }}>
+            <Box sx={{ width: '100%', height: { xs: 240, sm: 260 } }}>
               <BarChart
                 series={[
                   {
@@ -113,8 +113,8 @@ const PayoutsChart = () => {
                   }
                 ]}
                 yAxis={[{ position: 'none' }]}
-                height={300}
-                margin={{ bottom: 40, left: 10, right: 10, top: 10 }}
+                height={260}
+                margin={{ bottom: 18, left: 12, right: 12, top: 10 }}
               />
             </Box>
           ) : (

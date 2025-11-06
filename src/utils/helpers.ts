@@ -3,6 +3,8 @@ import { NetworkTypeType } from '@objects/Enums';
 import { IDataPoint } from '@objects/interfaces/IDatapoint';
 import { BlockStatusEnum } from '@objects/interfaces/IShareEvent';
 
+const LOKI_PER_FLC = 100000000;
+
 export const setWidthStyle = (width?: any) => {
   if (width && typeof width === 'number') {
     return { width: `${width}px !important` };
@@ -67,8 +69,33 @@ export const truncateAddress = (addr: string) => {
   return `${addr.slice(0, 10)}...${addr.slice(-10)}`;
 };
 
-export const lokiToFlc = (amount: number) => (amount / 100000000).toFixed(6);
+export const lokiToFlc = (amount: number) => (amount / LOKI_PER_FLC).toFixed(6);
 export const lokiToFlcNumber = (amount: number) => parseFloat(lokiToFlc(amount));
+
+interface FormatFlcOptions {
+  isLoki?: boolean;
+  includeSymbol?: boolean;
+  minimumFractionDigits?: number;
+  maximumFractionDigits?: number;
+}
+
+export const formatFlcCurrency = (
+  value: number,
+  {
+    isLoki = true,
+    includeSymbol = true,
+    minimumFractionDigits = 2,
+    maximumFractionDigits = 6
+  }: FormatFlcOptions = {}
+) => {
+  const flcAmount = isLoki ? value / LOKI_PER_FLC : value;
+  const formatter = new Intl.NumberFormat(undefined, {
+    minimumFractionDigits,
+    maximumFractionDigits
+  });
+  const formatted = formatter.format(flcAmount);
+  return includeSymbol ? `${formatted} FLC` : formatted;
+};
 
 export const calculateSMA = (data: IDataPoint[], period: number): IDataPoint[] => {
   const smaData: IDataPoint[] = [];

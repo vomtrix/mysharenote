@@ -10,7 +10,8 @@
   "pendingShares": "Pending Sharenotes",
   "totalShares": "Total sharenotes",
   "unconfirmedBalance": "Unconfirmed balance",
-  "pendingBalance": "Pending balance",
+  "pendingBalance": "Pending profit",
+  "pendingBalanceTooltip": "Last 500 sharenotes",
   "orphanBlock": "Orphan block",
   "orphanCheck": "Orphan check",
   "profit": "Profit (FLC)",
@@ -38,7 +39,7 @@
     "regtest": "Regtest",
     "save": "Save",
     "reset": "Reset",
-    "goHome": "Go home",
+    "goHome": "Back",
     "configError": "configuration error"
   },
   "payouts": "Payouts",

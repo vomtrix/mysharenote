@@ -78,6 +78,34 @@ export const initialState: AppState = {
   error: undefined
 };
 
+const applyPayoutEvent = (state: AppState, event: IPayoutEvent) => {
+  const eventIndex = state.payouts.findIndex((payout) => payout.id === event.id);
+
+  if (eventIndex !== -1) {
+    const oldEvent = state.payouts[eventIndex];
+    if (!oldEvent.confirmedTx) state.unconfirmedBalance -= event.amount;
+    state.payouts[eventIndex] = event;
+  } else {
+    if (!event.confirmedTx) state.unconfirmedBalance += event.amount;
+    state.payouts.push(event);
+  }
+};
+
+const applyShareEvent = (state: AppState, event: IShareEvent) => {
+  if (!state.lastBlockHeight || event.blockHeight > state.lastBlockHeight) {
+    state.lastBlockHeight = event.blockHeight;
+  }
+  state.pendingBalance += event.amount;
+  state.shares.push(event);
+};
+
+const applyHashrateEvent = (state: AppState, event: IHashrateEvent) => {
+  const lastHashrate = state.hashrates.at(-1)?.timestamp;
+  if (event.timestamp !== lastHashrate) {
+    state.hashrates.push(event);
+  }
+};
+
 export const slice = createSlice({
   name: 'app',
   initialState,
@@ -131,25 +159,16 @@ export const slice = createSlice({
       state.visibleSharesSig = action.payload;
     },
     addPayout: (state: AppState, action: PayloadAction<IPayoutEvent>) => {
-      const event = action.payload;
-      const eventIndex = state.payouts.findIndex((payout) => payout.id === event.id);
-
-      if (eventIndex != -1) {
-        const oldEvent = state.payouts[eventIndex];
-        if (!oldEvent.confirmedTx) state.unconfirmedBalance -= event.amount;
-        state.payouts[eventIndex] = event;
-      } else {
-        if (!event.confirmedTx) state.unconfirmedBalance += event.amount;
-        state.payouts = [...state.payouts, event];
-      }
+      applyPayoutEvent(state, action.payload);
+    },
+    addPayoutsBatch: (state: AppState, action: PayloadAction<IPayoutEvent[]>) => {
+      action.payload.forEach((event) => applyPayoutEvent(state, event));
     },
     addShare: (state: AppState, action: PayloadAction<IShareEvent>) => {
-      const event = action.payload;
-      if (!state.lastBlockHeight || event.blockHeight > state.lastBlockHeight) {
-        state.lastBlockHeight = event.blockHeight;
-      }
-      state.pendingBalance += event.amount;
-      state.shares = [...state.shares, event];
+      applyShareEvent(state, action.payload);
+    },
+    addSharesBatch: (state: AppState, action: PayloadAction<IShareEvent[]>) => {
+      action.payload.forEach((event) => applyShareEvent(state, event));
     },
     updateShare: (
       state: AppState,
@@ -165,11 +184,10 @@ export const slice = createSlice({
       }
     },
     addHashrate: (state: AppState, action: PayloadAction<IHashrateEvent>) => {
-      const event = action.payload;
-      const lastHashrate = state.hashrates.at(-1)?.timestamp;
-      if (event.timestamp !== lastHashrate) {
-        state.hashrates = [...state.hashrates, event];
-      }
+      applyHashrateEvent(state, action.payload);
+    },
+    addHashratesBatch: (state: AppState, action: PayloadAction<IHashrateEvent[]>) => {
+      action.payload.forEach((event) => applyHashrateEvent(state, event));
     }
   },
   extraReducers: (builder) => {
@@ -287,8 +305,11 @@ const { reducer: appReducer } = slice;
 
 export const {
   addHashrate,
+  addHashratesBatch,
   addPayout,
+  addPayoutsBatch,
   addShare,
+  addSharesBatch,
   updateShare,
   addAddress,
   clearSettings,

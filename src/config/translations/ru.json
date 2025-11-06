@@ -11,6 +11,7 @@
   "totalShares": "Всего sharenotes",
   "unconfirmedBalance": "Неподтверждённый баланс",
   "pendingBalance": "Ожидающий баланс",
+  "pendingBalanceTooltip": "Последние 500 sharenotes",
   "orphanBlock": "Осиротевший блок",
   "orphanCheck": "Проверка осиротевших блоков",
   "profit": "Доход (FLC)",

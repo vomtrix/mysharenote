@@ -1,7 +1,9 @@
 import { Container } from 'typedi';
 import { ORHAN_BLOCK_MATURITY } from '@config/config';
+import { IHashrateEvent } from '@objects/interfaces/IHashrateEvent';
+import { IPayoutEvent } from '@objects/interfaces/IPayoutEvent';
+import { BlockStatusEnum, IShareEvent } from '@objects/interfaces/IShareEvent';
 import { ISettings } from '@objects/interfaces/ISettings';
-import { BlockStatusEnum } from '@objects/interfaces/IShareEvent';
 import { ElectrumService } from '@services/api/ElectrumService';
 import { RelayService } from '@services/api/RelayService';
 import { createAppAsyncThunk } from '@store/createAppAsyncThunk';
@@ -9,9 +11,9 @@ import { beautify } from '@utils/beautifierUtils';
 import { makeIdsSignature } from '@utils/helpers';
 import { toHexPublicKey } from '@utils/nostr';
 import {
-  addHashrate,
-  addPayout,
-  addShare,
+  addHashratesBatch,
+  addPayoutsBatch,
+  addSharesBatch,
   setHashratesLoader,
   setPayoutLoader,
   setShareLoader,
@@ -19,6 +21,8 @@ import {
   setVisibleSharesSig,
   updateShare
 } from './AppReducer';
+
+const BATCH_FLUSH_DEBOUNCE_MS = 750;
 
 export const getPayouts = createAppAsyncThunk(
   'relay/getPayouts',
@@ -28,6 +32,26 @@ export const getPayouts = createAppAsyncThunk(
       const relayService: any = Container.get(RelayService);
       const payerPublicKeyHex = toHexPublicKey(settings.payerPublicKey);
       let timeoutId: NodeJS.Timeout | undefined;
+      const payoutBuffer: IPayoutEvent[] = [];
+      let flushHandle: NodeJS.Timeout | undefined;
+
+      const flushPayouts = () => {
+        if (!payoutBuffer.length) return;
+        const batch = payoutBuffer.splice(0, payoutBuffer.length);
+        dispatch(addPayoutsBatch(batch));
+        if (flushHandle) {
+          clearTimeout(flushHandle);
+          flushHandle = undefined;
+        }
+      };
+
+      const scheduleFlush = () => {
+        if (flushHandle) clearTimeout(flushHandle);
+        flushHandle = setTimeout(() => {
+          flushHandle = undefined;
+          flushPayouts();
+        }, BATCH_FLUSH_DEBOUNCE_MS);
+      };
 
       const resetTimeout = () => {
         if (timeoutId) clearTimeout(timeoutId);
@@ -39,9 +63,14 @@ export const getPayouts = createAppAsyncThunk(
 
       relayService.subscribePayouts(address, payerPublicKeyHex, {
         onevent: (event: any) => {
-          const payoutEvent = beautify(event);
-          dispatch(addPayout(payoutEvent));
+          payoutBuffer.push(beautify(event) as IPayoutEvent);
+          scheduleFlush();
           resetTimeout();
+        },
+        oneose: () => {
+          flushPayouts();
+          if (timeoutId) clearTimeout(timeoutId);
+          dispatch(setPayoutLoader(false));
         }
       });
 
@@ -109,6 +138,26 @@ export const getShares = createAppAsyncThunk(
       const relayService: any = Container.get(RelayService);
       const workProviderPublicKeyHex = toHexPublicKey(settings.workProviderPublicKey);
       let timeoutId: NodeJS.Timeout | undefined;
+      const shareBuffer: IShareEvent[] = [];
+      let flushHandle: NodeJS.Timeout | undefined;
+
+      const flushShares = () => {
+        if (!shareBuffer.length) return;
+        const batch = shareBuffer.splice(0, shareBuffer.length);
+        dispatch(addSharesBatch(batch));
+        if (flushHandle) {
+          clearTimeout(flushHandle);
+          flushHandle = undefined;
+        }
+      };
+
+      const scheduleFlush = () => {
+        if (flushHandle) clearTimeout(flushHandle);
+        flushHandle = setTimeout(() => {
+          flushHandle = undefined;
+          flushShares();
+        }, BATCH_FLUSH_DEBOUNCE_MS);
+      };
 
       const resetTimeout = () => {
         if (timeoutId) clearTimeout(timeoutId);
@@ -119,11 +168,13 @@ export const getShares = createAppAsyncThunk(
 
       relayService.subscribeShares(address, workProviderPublicKeyHex, {
         onevent: (event: any) => {
-          const shareEvent = beautify(event);
-          dispatch(addShare({ ...shareEvent, status: BlockStatusEnum.New }));
+          const shareEvent = beautify(event) as IShareEvent;
+          shareBuffer.push({ ...shareEvent, status: BlockStatusEnum.New });
+          scheduleFlush();
           resetTimeout();
         },
         oneose: () => {
+          flushShares();
           if (timeoutId) clearTimeout(timeoutId);
           dispatch(setShareLoader(false));
         }
@@ -148,6 +199,26 @@ export const getHashrates = createAppAsyncThunk(
       const relayService: any = Container.get(RelayService);
       const workProviderPublicKeyHex = toHexPublicKey(settings.workProviderPublicKey);
       let timeoutId: NodeJS.Timeout | undefined;
+      const hashrateBuffer: IHashrateEvent[] = [];
+      let flushHandle: NodeJS.Timeout | undefined;
+
+      const flushHashrates = () => {
+        if (!hashrateBuffer.length) return;
+        const batch = hashrateBuffer.splice(0, hashrateBuffer.length);
+        dispatch(addHashratesBatch(batch));
+        if (flushHandle) {
+          clearTimeout(flushHandle);
+          flushHandle = undefined;
+        }
+      };
+
+      const scheduleFlush = () => {
+        if (flushHandle) clearTimeout(flushHandle);
+        flushHandle = setTimeout(() => {
+          flushHandle = undefined;
+          flushHashrates();
+        }, BATCH_FLUSH_DEBOUNCE_MS);
+      };
 
       const resetTimeout = () => {
         if (timeoutId) clearTimeout(timeoutId);
@@ -158,11 +229,12 @@ export const getHashrates = createAppAsyncThunk(
 
       relayService.subscribeHashrates(address, workProviderPublicKeyHex, {
         onevent: (event: any) => {
-          const hashrateEvent = beautify(event);
-          dispatch(addHashrate(hashrateEvent));
+          hashrateBuffer.push(beautify(event) as IHashrateEvent);
+          scheduleFlush();
           resetTimeout();
         },
         oneose: () => {
+          flushHashrates();
           if (timeoutId) clearTimeout(timeoutId);
           dispatch(setHashratesLoader(false));
         }

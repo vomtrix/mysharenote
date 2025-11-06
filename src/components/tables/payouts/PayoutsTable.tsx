@@ -1,16 +1,14 @@
 import { useTranslation } from 'react-i18next';
-import { IS_ADMIN_MODE } from '@config/config';
-import { Chip } from '@mui/material';
 import Box from '@mui/material/Box';
 import CustomTable from '@components/common/CustomTable';
-import CustomTooltip from '@components/common/CustomTooltip';
 import InfoHeader from '@components/common/InfoHeader';
+import MetricPill from '@components/common/MetricPill';
 import ProgressLoader from '@components/common/ProgressLoader';
 import { SectionHeader } from '@components/styled/SectionHeader';
 import { StyledCard } from '@components/styled/StyledCard';
 import { getIsPayoutsLoading, getPayouts, getUnconfirmedBalance } from '@store/app/AppSelectors';
 import { useSelector } from '@store/store';
-import { lokiToFlc } from '@utils/helpers';
+import { formatFlcCurrency } from '@utils/helpers';
 import payoutsColumns from './PayoutsColumns';
 
 const PayoutsTable = () => {
@@ -39,14 +37,11 @@ const PayoutsTable = () => {
                 justifyContent: 'center',
                 alignItems: 'center'
               }}>
-              {unconfirmedBalance > 0 && !isLoading && IS_ADMIN_MODE && (
-                <CustomTooltip title={t('unconfirmedBalance')} placement="top" textBold>
-                  <Chip
-                    label={lokiToFlc(unconfirmedBalance) + ' FLC'}
-                    sx={{ fontWeight: 'bold', borderRadius: 1, marginLeft: 1 }}
-                    size="small"
-                  />
-                </CustomTooltip>
+              {unconfirmedBalance > 0 && !isLoading && (
+                <MetricPill
+                  label={t('unconfirmedBalance')}
+                  value={formatFlcCurrency(unconfirmedBalance)}
+                />
               )}
             </Box>
           </Box>

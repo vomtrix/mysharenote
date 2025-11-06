@@ -1,10 +1,9 @@
 import { useTranslation } from 'react-i18next';
-import { IS_ADMIN_MODE } from '@config/config';
-import { Chip } from '@mui/material';
 import Box from '@mui/material/Box';
 import CustomTable from '@components/common/CustomTable';
 import CustomTooltip from '@components/common/CustomTooltip';
 import InfoHeader from '@components/common/InfoHeader';
+import MetricPill from '@components/common/MetricPill';
 import ProgressLoader from '@components/common/ProgressLoader';
 import { SectionHeader } from '@components/styled/SectionHeader';
 import { StyledCard } from '@components/styled/StyledCard';
@@ -16,7 +15,7 @@ import {
 } from '@store/app/AppSelectors';
 import { syncBlock } from '@store/app/AppThunks';
 import { useDispatch, useSelector } from '@store/store';
-import { lokiToFlc } from '@utils/helpers';
+import { formatFlcCurrency } from '@utils/helpers';
 import sharesColumns from './SharesColumns';
 
 const SharesTable = () => {
@@ -50,12 +49,11 @@ const SharesTable = () => {
                 justifyContent: 'center',
                 alignItems: 'center'
               }}>
-              {pendingBalance > 0 && !isLoading && IS_ADMIN_MODE && (
-                <CustomTooltip title={t('pendingBalance')} placement="top" textBold>
-                  <Chip
-                    label={lokiToFlc(pendingBalance) + ' FLC'}
-                    sx={{ fontWeight: 'bold', borderRadius: 1, marginLeft: 1 }}
-                    size="small"
+              {pendingBalance > 0 && !isLoading && (
+                <CustomTooltip title={t('pendingBalanceTooltip')} placement="top" textBold>
+                  <MetricPill
+                    label={t('pendingBalance')}
+                    value={formatFlcCurrency(pendingBalance)}
                   />
                 </CustomTooltip>
               )}

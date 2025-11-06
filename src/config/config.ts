@@ -3,7 +3,6 @@ export const EXPLORER_URL: string = process.env.NEXT_PUBLIC_EXPLORER_URL!;
 export const PAYER_PUBLIC_KEY: string = process.env.NEXT_PUBLIC_PAYER_PUBLIC_KEY!;
 export const WORK_PROVIDER_PUBLIC_KEY: string = process.env.NEXT_PUBLIC_WORK_PROVIDER_PUBLIC_KEY!;
 export const ELECTRUM_API_URL: string = `${EXPLORER_URL}/api`;
-export const IS_ADMIN_MODE: boolean = process.env.NEXT_PUBLIC_ADMIN_MODE === 'true'!;
 export const ORHAN_BLOCK_MATURITY: number = process.env.ORHAN_BLOCK_MATURITY
   ? parseInt(process.env.ORHAN_BLOCK_MATURITY, 10) || 5
   : 5;
@@ -33,7 +32,6 @@ export const THEME_BADGE_RATIO_SUCCESS: string = '#2ED573'; // mempool green
 export const THEME_BADGE_RATIO_EXCEED: string = '#6F42C1'; // accent purple
 export const WORKER_COLORS: string[] = [
   '#3A9BE8', // sky blue
-  '#56D3FF', // icy cyan
   '#FF8B5C', // warm coral
   '#4DD17A', // fresh green
   '#2EC4FF', // electric blue
@@ -46,7 +44,9 @@ export const WORKER_COLORS: string[] = [
   '#2FBF71', // emerald
   '#FF6898', // candy rose
   '#FF9F43', // amber glow
-  '#C06CFF' // lavender punch
+  '#C06CFF', // lavender punch
+  '#56D3FF', // icy cyan
+
 ];
 
 export const DARK_MODE_ENABLED: boolean = false;

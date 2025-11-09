@@ -24,10 +24,11 @@ export const aggregateSharesByInterval = (
     if (sec === null || sec < start || sec > now) continue;
     const idxRaw = Math.floor((sec - start) / intervalSec);
     const idx = Math.min(bins - 1, Math.max(0, idxRaw));
-    let arr = perWorker.get(s.workerId);
+    const workerKey = String(s.workerId ?? '');
+    let arr = perWorker.get(workerKey);
     if (!arr) {
       arr = new Float64Array(bins);
-      perWorker.set(s.workerId, arr);
+      perWorker.set(workerKey, arr);
     }
     const amt = s.amount || 0;
     arr[idx] += amt;

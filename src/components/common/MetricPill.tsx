@@ -23,14 +23,10 @@ const MetricPill = ({ label, value }: MetricPillProps) => {
         alignItems: 'baseline',
         border: (theme) =>
           `1px solid ${
-            theme.palette.mode === 'dark'
-              ? 'rgba(255,255,255,0.12)'
-              : 'rgba(17,24,39,0.12)'
+            theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.12)' : 'rgba(17,24,39,0.12)'
           }`,
         backgroundColor: (theme) =>
-          theme.palette.mode === 'dark'
-            ? 'rgba(147, 119, 255, 0.08)'
-            : 'rgba(111, 66, 193, 0.06)'
+          theme.palette.mode === 'dark' ? 'rgba(147, 119, 255, 0.08)' : 'rgba(111, 66, 193, 0.06)'
       }}>
       <Box
         sx={{
@@ -47,16 +43,14 @@ const MetricPill = ({ label, value }: MetricPillProps) => {
             fontWeight: 600,
             fontSize: { xs: '0.56rem', sm: '0.64rem' },
             color: (theme) =>
-              theme.palette.mode === 'dark'
-                ? 'rgba(255,255,255,0.7)'
-                : 'rgba(17,24,39,0.55)',
+              theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.7)' : 'rgba(17,24,39,0.55)',
             display: {
               xs: 'none',
               sm: label ? 'inline' : 'none'
             }
-        }}>
-        {label}
-      </Typography>
+          }}>
+          {label}
+        </Typography>
         <Typography
           component="span"
           sx={{

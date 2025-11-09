@@ -13,8 +13,7 @@ const getAdditionalRowStyles = (theme: any) => {
         backgroundColor: highlightColor
       },
       '60%': {
-        backgroundColor:
-          theme.palette.mode === 'dark' ? alpha(primary, 0.22) : alpha(primary, 0.1)
+        backgroundColor: theme.palette.mode === 'dark' ? alpha(primary, 0.22) : alpha(primary, 0.1)
       },
       '100%': {
         backgroundColor: 'inherit'

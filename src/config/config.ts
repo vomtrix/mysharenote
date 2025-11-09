@@ -45,8 +45,7 @@ export const WORKER_COLORS: string[] = [
   '#FF6898', // candy rose
   '#FF9F43', // amber glow
   '#C06CFF', // lavender punch
-  '#56D3FF', // icy cyan
-
+  '#56D3FF' // icy cyan
 ];
 
 export const DARK_MODE_ENABLED: boolean = false;

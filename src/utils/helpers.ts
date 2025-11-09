@@ -1,9 +1,11 @@
 import { address, networks } from 'flokicoinjs-lib';
+import { noteFromCentZBits, noteFromZBits } from '@soprinter/sharenotejs';
 import { NetworkTypeType } from '@objects/Enums';
 import { IDataPoint } from '@objects/interfaces/IDatapoint';
 import { BlockStatusEnum } from '@objects/interfaces/IShareEvent';
 
 const LOKI_PER_FLC = 100000000;
+const MUST_CENTZ = 25600;
 
 export const setWidthStyle = (width?: any) => {
   if (width && typeof width === 'number') {
@@ -251,4 +253,25 @@ export const beautifyWorkerUserAgent = (userAgent?: string | null): string | und
     .replace(/\s+/g, ' ')
     .trim();
   return fallback || trimmed;
+};
+
+export const formatSharenoteLabel = (value: number | string | null | undefined): string => {
+  if (value === undefined || value === null) return '';
+  if (typeof value === 'string' && value.trim() === '') return '';
+  const numeric = typeof value === 'number' ? value : Number(value);
+  if (!Number.isFinite(numeric)) {
+    return String(value);
+  }
+
+  if (Number.isInteger(numeric) && numeric >= MUST_CENTZ) {
+    return 'Invalid';
+  }
+
+  try {
+    return Number.isInteger(numeric)
+      ? noteFromCentZBits(numeric).label
+      : noteFromZBits(numeric).label;
+  } catch {
+    return String(value);
+  }
 };

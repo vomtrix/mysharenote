@@ -1,7 +1,7 @@
 import numeral from 'numeral';
 import { useTranslation } from 'react-i18next';
 import { Chip } from '@mui/material';
-import { lokiToFlc } from '@utils/helpers';
+import { formatSharenoteLabel, lokiToFlc } from '@utils/helpers';
 import { fromEpoch } from '@utils/time';
 import { EXPLORER_URL } from 'src/config/config';
 
@@ -42,7 +42,8 @@ const payoutsColumns = () => {
       flex: 1,
       minWidth: 90,
       headerClassName: 'text-blue text-uppercase',
-      cellClassName: 'text-bold'
+      cellClassName: 'text-bold',
+      valueFormatter: (value: any) => formatSharenoteLabel(value)
     },
     {
       headerName: t('totalShares'),
@@ -50,7 +51,8 @@ const payoutsColumns = () => {
       flex: 2,
       minWidth: 100,
       headerClassName: 'text-blue text-uppercase',
-      cellClassName: 'text-bold'
+      cellClassName: 'text-bold',
+      valueFormatter: (value: any) => formatSharenoteLabel(value)
     },
     {
       headerName: t('fee'),

@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { Chip, Tooltip } from '@mui/material';
 import { BlockStatusEnum } from '@objects/interfaces/IShareEvent';
-import { lokiToFlc, shareChipColor, shareChipVariant } from '@utils/helpers';
+import { formatSharenoteLabel, lokiToFlc, shareChipColor, shareChipVariant } from '@utils/helpers';
 import { fromEpoch } from '@utils/time';
 import { EXPLORER_URL } from 'src/config/config';
 
@@ -103,7 +103,8 @@ const sharesColumns = () => {
       flex: 1,
       minWidth: 90,
       headerClassName: 'text-blue text-uppercase',
-      cellClassName: 'text-bold'
+      cellClassName: 'text-bold',
+      valueFormatter: (value: any) => formatSharenoteLabel(value)
     },
     {
       headerName: t('totalShares'),
@@ -111,7 +112,8 @@ const sharesColumns = () => {
       flex: 2,
       minWidth: 100,
       headerClassName: 'text-blue text-uppercase',
-      cellClassName: 'text-bold'
+      cellClassName: 'text-bold',
+      valueFormatter: (value: any) => formatSharenoteLabel(value)
     },
     {
       headerName: t('profit'),

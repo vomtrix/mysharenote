@@ -1,7 +1,8 @@
 import numeral from 'numeral';
 import { useTranslation } from 'react-i18next';
 import { Chip } from '@mui/material';
-import { formatSharenoteLabel, lokiToFlc } from '@utils/helpers';
+import ShareNoteLabel from '@components/common/ShareNoteLabel';
+import { lokiToFlc } from '@utils/helpers';
 import { fromEpoch } from '@utils/time';
 import { EXPLORER_URL } from 'src/config/config';
 
@@ -43,7 +44,7 @@ const payoutsColumns = () => {
       minWidth: 90,
       headerClassName: 'text-blue text-uppercase',
       cellClassName: 'text-bold',
-      valueFormatter: (value: any) => formatSharenoteLabel(value)
+      renderCell: (params: any) => <ShareNoteLabel value={params.value} />
     },
     {
       headerName: t('totalShares'),
@@ -52,7 +53,7 @@ const payoutsColumns = () => {
       minWidth: 100,
       headerClassName: 'text-blue text-uppercase',
       cellClassName: 'text-bold',
-      valueFormatter: (value: any) => formatSharenoteLabel(value)
+      renderCell: (params: any) => <ShareNoteLabel value={params.value} />
     },
     {
       headerName: t('fee'),

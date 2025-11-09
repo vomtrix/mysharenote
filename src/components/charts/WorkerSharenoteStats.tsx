@@ -11,6 +11,7 @@ import Typography from '@mui/material/Typography';
 import { ReliabilityId, requiredHashrate } from '@soprinter/sharenotejs';
 import InfoHeader from '@components/common/InfoHeader';
 import ProgressLoader from '@components/common/ProgressLoader';
+import ShareNoteLabel from '@components/common/ShareNoteLabel';
 import WorkerCircuitIcon from '@components/icons/WorkerCircuitIcon';
 import { SectionHeader } from '@components/styled/SectionHeader';
 import { StyledCard } from '@components/styled/StyledCard';
@@ -784,7 +785,7 @@ const WorkerSharenoteStats = () => {
                             display: 'flex',
                             alignItems: 'center'
                           }}>
-                          {workerData.sharenote ?? '--'}
+                          <ShareNoteLabel value={workerData.sharenote} placeholder="--" />
                         </Typography>
                         {workerData.hashrateFromNoteDisplay && (
                           <Box
@@ -895,7 +896,7 @@ const WorkerSharenoteStats = () => {
                                 letterSpacing: 0,
                                 textTransform: 'none'
                               }}>
-                              {workerData.meanSharenote}
+                              <ShareNoteLabel value={workerData.meanSharenote} placeholder="--" />
                             </Box>
                           </Typography>
                         )}

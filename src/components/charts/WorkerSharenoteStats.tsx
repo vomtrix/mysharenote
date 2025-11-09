@@ -228,13 +228,14 @@ const WorkerSharenoteStats = () => {
         let derivedHashrate: number | undefined;
         if (sharenoteLabelForCalc && sharenoteLabelForCalc.length > 0) {
           try {
-            const computed = requiredHashrate(
+            const computedMeasurement = requiredHashrate(
               sharenoteLabelForCalc,
               HASHRATE_BASE_INTERVAL_MS / 1000,
               {
                 reliability: ReliabilityId.Mean
               }
             );
+            const computed = computedMeasurement.floatValue();
             derivedHashrate = Number.isFinite(computed) && computed > 0 ? computed : undefined;
           } catch {
             derivedHashrate = undefined;

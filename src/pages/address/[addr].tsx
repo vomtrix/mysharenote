@@ -4,10 +4,11 @@ import { useTranslation } from 'react-i18next';
 import { Box, Skeleton } from '@mui/material';
 import HashrateChart from '@components/charts/HashrateChart';
 import PayoutsChart from '@components/charts/PayoutsChart';
-import SharenoteChart from '@components/charts/SharenoteChart';
-import WorkerSharenoteStats from '@components/charts/WorkerSharenoteStats';
 import PayoutsTable from '@components/tables/payouts/PayoutsTable';
 import SharesTable from '@components/tables/shares/SharesTable';
+import LiveSharenotes from '@components/workers/LiveSharenotes';
+import WorkersInsights from '@components/workers/WorkersInsights';
+import WorkersProfit from '@components/workers/WorkersProfit';
 import { useHasRelayConfig } from '@hooks/useHasRelayConfig';
 import { useNotification } from '@hooks/UseNotificationHook';
 import { addAddress, clearAddress } from '@store/app/AppReducer';
@@ -16,9 +17,11 @@ import {
   connectRelay,
   getHashrates,
   getLastBlockHeight,
+  getLiveSharenotes,
   getPayouts,
   getShares,
   stopHashrates,
+  stopLiveSharenotes,
   stopPayouts,
   stopShares
 } from '@store/app/AppThunks';
@@ -37,6 +40,18 @@ const AddressPage = () => {
   const relayIsReady = useSelector(getRelayReady);
   const { showError } = useNotification();
   const hasConnectedRelayRef = useRef(false);
+  const rightColumnStyles = {
+    flex: { xs: 'auto', lg: 4 },
+    maxWidth: { lg: 'calc((4 / 11) * 100%)' },
+    display: 'flex',
+    flexShrink: 1,
+    height: { xs: 'auto', lg: 320 },
+    '& > *': {
+      flexGrow: 1,
+      height: '100%',
+      marginBottom: 0
+    }
+  };
 
   useEffect(() => {
     if (!hasConfig || !addr || typeof addr !== 'string') return;
@@ -59,9 +74,11 @@ const AddressPage = () => {
       dispatch(getLastBlockHeight());
       dispatch(stopHashrates());
       dispatch(stopShares());
+      dispatch(stopLiveSharenotes());
       dispatch(stopPayouts());
       dispatch(getHashrates(currentAddress));
       dispatch(getShares(currentAddress));
+      dispatch(getLiveSharenotes(currentAddress));
       dispatch(getPayouts(currentAddress));
     }
   }, [currentAddress, hasConfig, hasConnectedRelayRef, relayIsReady]);
@@ -118,43 +135,74 @@ const AddressPage = () => {
           <Box
             sx={{
               flex: { xs: 'auto', lg: 7 },
+              minWidth: 0,
+              flexShrink: 1,
               display: 'flex',
               height: { xs: 'auto', lg: 320 },
               '& > *': { flexGrow: 1, height: '100%', mb: 0 }
             }}>
-            <SharenoteChart />
+            <WorkersProfit />
           </Box>
-          <Box
-            sx={{
-              flex: { xs: 'auto', lg: 4 },
-              display: 'flex',
-              height: { xs: 'auto', lg: 320 },
-              '& > *': {
-                flexGrow: 1,
-                height: '100%',
-                marginBottom: 0
-              }
-            }}>
-            <WorkerSharenoteStats />
+          <Box sx={rightColumnStyles}>
+            <WorkersInsights />
           </Box>
         </Box>
       )}
 
       {enableSkeleton ? (
-        <>
+        <Box
+          sx={{
+            width: '100%',
+            display: 'flex',
+            flexDirection: { xs: 'column', lg: 'row' },
+            gap: { xs: 1, lg: 3 },
+            alignItems: 'stretch',
+            mb: { xs: 3, lg: 3 }
+          }}>
           <Skeleton
             variant="rounded"
             animation="wave"
-            sx={{ height: 50, width: '100%', marginBottom: 1 }}
+            sx={{
+              flex: { xs: 'auto', lg: 7 },
+              height: { xs: 220, lg: 280 },
+              width: '100%'
+            }}
           />
           <Skeleton
             variant="rounded"
             animation="wave"
-            sx={{ height: 200, width: '100%', marginBottom: 3 }}
+            sx={{
+              ...rightColumnStyles,
+              height: { xs: 220, lg: 280 },
+              width: '100%'
+            }}
           />
-        </>
+        </Box>
       ) : (
-        <SharesTable />
+        <Box
+          sx={{
+            width: '100%',
+            display: 'flex',
+            flexDirection: { xs: 'column', lg: 'row' },
+            gap: { xs: 0, lg: 3 },
+            alignItems: 'stretch',
+            mb: { xs: 0, lg: 3 }
+          }}>
+          <Box
+            sx={{
+              flex: { xs: 'auto', lg: 7 },
+              minWidth: 0,
+              flexShrink: 1,
+              display: 'flex',
+              flexDirection: 'column',
+              '& > *': { flexGrow: 1, height: '100%' }
+            }}>
+            <SharesTable />
+          </Box>
+          <Box sx={rightColumnStyles}>
+            <LiveSharenotes />
+          </Box>
+        </Box>
       )}
 
       {enableSkeleton ? (

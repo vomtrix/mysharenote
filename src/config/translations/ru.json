@@ -47,6 +47,18 @@
   "sharenotesSummary": "Сводка sharenotes",
   "workersProfit": "Доход по работникам",
   "workersInsights": "Статистика работников",
+  "liveSharenotes": "Живые Sharenotes",
+  "liveSharenotes.block": "Блок №{{height}}",
+  "liveSharenotes.sum": "Сумма блока: {{label}}",
+  "liveSharenotes.sumLabel": "Сумма блока",
+  "liveSharenotes.empty": "Нет данных",
+  "liveSharenotes.count": "{{count}} записей",
+  "liveSharenotes.lastBlock": "Последний блок №{{height}}",
+  "liveSharenotes.address": "Адрес: {{value}}",
+  "liveSharenotes.heightHash": "Хэш высоты: {{value}}",
+  "liveSharenotes.headerHash": "Хэш заголовка: {{value}}",
+  "liveSharenotes.headerHex": "Заголовок (hex): {{value}}",
+  "liveSharenotes.id": "ID: {{id}}",
   "worker": "Работник",
   "info": {
     "payouts": "Подтверждённые выплаты из созревших блоков, включая вознаграждения за действительные sharenotes. Полезно для отслеживания полученного дохода и проверки зачислений.",
@@ -55,7 +67,8 @@
     "workersInsights": "Карточки по каждому работнику с текущим обрабатываемым sharenote, скоростью печати и последним напечатанным sharenote.",
     "pendingShares": "Работники с действительными sharenotes из блоков, ещё не созревших или не оплаченных — ожидают будущих выплат после подтверждения.",
     "workersProfit": "Невыплаченные, несозревшие вознаграждения по работникам во времени — суммы могут измениться после подтверждения блоков.",
-    "hashrateChart": "Хешрейт во времени для всех или выбранных работников с вариантами просмотра в реальном времени и усреднённого значения."
+    "hashrateChart": "Хешрейт во времени для всех или выбранных работников с вариантами просмотра в реальном времени и усреднённого значения.",
+    "liveSharenotes": "Живые sharenotes от ваших майнеров, обновляются сразу после публикации."
   },
   "pageNotFound": "Страница не найдена",
   "loading": "Загрузка...",

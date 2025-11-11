@@ -47,6 +47,18 @@
   "sharenotesSummary": "Sharenotes 汇总",
   "workersProfit": "工人收益",
   "workersInsights": "工人概览",
+  "liveSharenotes": "实时 Sharenotes",
+  "liveSharenotes.block": "区块 #{{height}}",
+  "liveSharenotes.sum": "区块总和：{{label}}",
+  "liveSharenotes.sumLabel": "区块总和",
+  "liveSharenotes.empty": "暂无数据",
+  "liveSharenotes.count": "{{count}} 条记录",
+  "liveSharenotes.lastBlock": "最近区块 #{{height}}",
+  "liveSharenotes.address": "地址：{{value}}",
+  "liveSharenotes.heightHash": "高度哈希：{{value}}",
+  "liveSharenotes.headerHash": "区块头哈希：{{value}}",
+  "liveSharenotes.headerHex": "区块头 hex：{{value}}",
+  "liveSharenotes.id": "事件 ID：{{id}}",
   "worker": "工人",
   "info": {
     "payouts": "来自已成熟区块的已确认支付，包括有效 sharenotes 的奖励。用于跟踪已完成收益并核对到账资金。",
@@ -55,7 +67,8 @@
     "workersInsights": "每个工人的卡片概览，显示正在进行的 sharenote、打印速度以及最近打印的 sharenote。",
     "pendingShares": "包含尚未成熟或支付的区块中有效 sharenotes 的工人，显示确认后将支付的奖励。",
     "workersProfit": "各工人未支付、未成熟的奖励随时间变化 — 区块确认后金额可能调整。",
-    "hashrateChart": "所有或选定工人的算力随时间变化，可切换实时和平均视图。"
+    "hashrateChart": "所有或选定工人的算力随时间变化，可切换实时和平均视图。",
+    "liveSharenotes": "矿工实时打印的 sharenotes，一旦发布就会刷新。"
   },
   "pageNotFound": "页面未找到",
   "loading": "加载中...",

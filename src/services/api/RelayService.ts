@@ -9,6 +9,7 @@ export class RelayService {
   public payoutsSubscription: any;
   public sharesSubscription: any;
   public hashratesSubscription: any;
+  public liveSharenotesSubscription: any;
 
   constructor() {}
 
@@ -73,6 +74,34 @@ export class RelayService {
     }
   }
 
+  subscribeLiveSharenotes(
+    address: string,
+    workProviderPublicKey: string,
+    subscriptionParams: SubscriptionParams
+  ) {
+    this.stopLiveSharenotes();
+
+    const filters: Filter[] = [
+      {
+        kinds: [35510],
+        authors: [workProviderPublicKey],
+        limit: 500,
+        since: getTimeBeforeDaysInSeconds(1),
+        [`#a`]: [address]
+      }
+    ];
+
+    this.liveSharenotesSubscription = this.nostrClient.subscribeEvent(filters, subscriptionParams);
+    return this.liveSharenotesSubscription;
+  }
+
+  async stopLiveSharenotes() {
+    if (this.liveSharenotesSubscription) {
+      await this.liveSharenotesSubscription.close();
+      this.liveSharenotesSubscription = null;
+    }
+  }
+
   subscribeHashrates(
     address: string,
     workProviderPublicKey: string,
@@ -112,6 +141,7 @@ export class RelayService {
         await this.stopPayouts();
         await this.stopShares();
         await this.stopHashrates();
+        await this.stopLiveSharenotes();
         await this.nostrClient.relay.close();
         this.nostrClient = new NostrClient({ relayUrl, privateKey });
         await this.nostrClient.connect();

@@ -225,5 +225,20 @@ export const beautify = (event: any) => {
     }
   }
 
+  if (event.kind === 35510) {
+    const addressTag = event.tags.find(
+      (tagEntry: any) => Array.isArray(tagEntry) && tagEntry.length > 2 && tagEntry[0] === 'a'
+    );
+    if (addressTag) {
+      const [, addressValue, workerValue] = addressTag;
+      if (addressValue) {
+        result.address = addressValue;
+      }
+      if (workerValue) {
+        result.worker = workerValue;
+      }
+    }
+  }
+
   return result;
 };

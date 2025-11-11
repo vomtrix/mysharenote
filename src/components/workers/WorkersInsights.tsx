@@ -20,6 +20,7 @@ import { getHashrates, getIsHashratesLoading } from '@store/app/AppSelectors';
 import { useSelector } from '@store/store';
 import { getWorkerColor } from '@utils/colors';
 import { beautifyWorkerUserAgent, formatHashrate } from '@utils/helpers';
+import { formatRelativeTime, toDateFromMaybeSeconds } from '@utils/time';
 
 const HASHRATE_BASE_INTERVAL_MS = 5000;
 const HASHRATE_REEVALUATE_INTERVAL_MS = HASHRATE_BASE_INTERVAL_MS * 2;
@@ -47,42 +48,7 @@ const formatMeanTime = (secondsValue: number | string | undefined) => {
   return `${minutes}m ${remainingSeconds.toString().padStart(2, '0')}s`;
 };
 
-const formatRelativeTime = (date: Date) => {
-  const diffMs = Date.now() - date.getTime();
-  const diffSeconds = Math.max(0, Math.floor(diffMs / 1000));
-
-  const hours = Math.floor(diffSeconds / 3600);
-  const minutes = Math.floor((diffSeconds % 3600) / 60);
-  const seconds = diffSeconds % 60;
-
-  if (hours === 0 && minutes === 0) return `${seconds}s ago`;
-  if (hours === 0) return `${minutes}m ${seconds.toString().padStart(2, '0')}s ago`;
-  if (hours < 24) return `${hours}h ${minutes.toString().padStart(2, '0')}m ago`;
-  const days = Math.floor(hours / 24);
-  const remHours = hours % 24;
-  const dayPart = days === 1 ? '1 day' : `${days} days`;
-  if (days < 7) {
-    return `${dayPart} ${remHours}h ago`;
-  }
-
-  return new Intl.DateTimeFormat(undefined, {
-    day: '2-digit',
-    month: 'short',
-    hour: '2-digit',
-    minute: '2-digit'
-  }).format(date);
-};
-
-const toDateFromMaybeSeconds = (value: number | undefined): Date | undefined => {
-  if (value === undefined || value <= 0) return undefined;
-  const ms = value > 1e12 ? value : value * 1000;
-  if (!Number.isFinite(ms)) return undefined;
-  const date = new Date(ms);
-  if (Number.isNaN(date.getTime())) return undefined;
-  return date;
-};
-
-const WorkerSharenoteStats = () => {
+const WorkersInsights = () => {
   const { t } = useTranslation();
   const theme = useTheme();
   const hashrates = useSelector(getHashrates) as IHashrateEvent[];
@@ -316,7 +282,6 @@ const WorkerSharenoteStats = () => {
         border: `1px solid ${shellBorder}`,
         boxShadow: '0 15px 45px -35px rgba(40, 40, 125, 0.45)',
         height: { xs: 'auto', lg: 320 },
-        mb: { xs: 3, lg: 0 },
         display: 'flex',
         flexDirection: 'column'
       }}>
@@ -434,7 +399,8 @@ const WorkerSharenoteStats = () => {
               alignItems: 'center',
               justifyContent: 'center',
               minHeight: '45px',
-              fontSize: '0.9rem'
+              fontSize: '0.9rem',
+              flexGrow: 1
             }}>
             No data
           </Box>
@@ -952,4 +918,4 @@ const WorkerSharenoteStats = () => {
   );
 };
 
-export default WorkerSharenoteStats;
+export default WorkersInsights;

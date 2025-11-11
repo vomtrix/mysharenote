@@ -29,5 +29,15 @@ export const beautifierConfig: Record<number, KeysMap> = {
     shares: 'shares',
     totalshares: 'totalShares',
     timestamp: 'timestamp'
+  },
+  35510: {
+    sn: 'sharenote',
+    z: 'zLabel',
+    zb: 'zBits',
+    h: 'blockHeight',
+    hh: 'heightHash',
+    d: 'headerHash',
+    dd: 'headerHex',
+    a: 'address'
   }
 };

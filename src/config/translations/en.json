@@ -47,6 +47,17 @@
   "sharenotesSummary": "Sharenotes Summary",
   "workersProfit": "Workers Profit",
   "workersInsights": "Workers Insights",
+  "liveSharenotes": "Live Sharenotes",
+  "liveSharenotes.block": "Block #{{height}}",
+  "liveSharenotes.sum": "Sum: {{label}}",
+  "liveSharenotes.sumLabel": "",
+  "liveSharenotes.empty": "No data",
+  "liveSharenotes.count": "{{count}} Sharenotes",
+  "liveSharenotes.address": "Address: {{value}}",
+  "liveSharenotes.heightHash": "Height hash: {{value}}",
+  "liveSharenotes.headerHash": "Header hash: {{value}}",
+  "liveSharenotes.headerHex": "Header hex: {{value}}",
+  "liveSharenotes.id": "ID: {{id}}",
   "worker": "Worker",
   "info": {
     "payouts": "Confirmed payments from matured blocks, including rewards from valid sharenotes. Useful for tracking completed earnings and verifying received funds.",
@@ -55,7 +66,8 @@
     "workersInsights": "Per-worker overview highlighting the current sharenote in progress, printing speed, and latest printed sharenote.",
     "pendingShares": "Workers with valid sharenotes from blocks still awaiting maturity or payment, queued for future payouts once confirmations complete.",
     "workersProfit": "Unpaid, immature rewards by worker over time — amounts may change once blocks confirm.",
-    "hashrateChart": "Hashrate over time for all or selected workers, with live and averaged view options."
+    "hashrateChart": "Hashrate over time for all or selected workers, with live and averaged view options.",
+    "liveSharenotes": "Live sharenotes printed by your miners, refreshed the moment each one reaches the relay."
   },
   "pageNotFound": "This page could not be found",
   "loading": "Loading...",

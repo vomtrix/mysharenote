@@ -18,7 +18,7 @@ type Props = {
   intervalMinutes?: number; // default 60 min
 };
 
-const SharenoteChart = ({ intervalMinutes = 60 }: Props) => {
+const WorkersProfit = ({ intervalMinutes = 60 }: Props) => {
   const { t } = useTranslation();
   const shares = useSelector(getShares) as IShareEvent[];
   const isLoading = useSelector(getIsSharesLoading);
@@ -57,7 +57,7 @@ const SharenoteChart = ({ intervalMinutes = 60 }: Props) => {
   const formatShareValueNumber = (value: number) => `${(value / 100000000).toFixed(8)} FLC`;
 
   return (
-    <StyledCard sx={{ height: { xs: 'auto', lg: 320 }, mb: { xs: 3, lg: 0 } }}>
+    <StyledCard sx={{ height: { xs: 'auto', lg: 320 } }}>
       <Box
         component="section"
         sx={{
@@ -120,4 +120,4 @@ const SharenoteChart = ({ intervalMinutes = 60 }: Props) => {
   );
 };
 
-export default SharenoteChart;
+export default WorkersProfit;

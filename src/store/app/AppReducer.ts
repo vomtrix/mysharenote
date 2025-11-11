@@ -3,6 +3,7 @@ import { ICustomError } from '@interfaces/ICustomError';
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import { NetworkTypeType } from '@objects/Enums';
 import { IHashrateEvent } from '@objects/interfaces/IHashrateEvent';
+import type { ILiveSharenoteEvent } from '@objects/interfaces/ILiveSharenoteEvent';
 import { IPayoutEvent } from '@objects/interfaces/IPayoutEvent';
 import { ISettings } from '@objects/interfaces/ISettings';
 import { BlockStatusEnum, IShareEvent } from '@objects/interfaces/IShareEvent';
@@ -11,9 +12,11 @@ import {
   connectRelay,
   getHashrates,
   getLastBlockHeight,
+  getLiveSharenotes,
   getPayouts,
   getShares,
   stopHashrates,
+  stopLiveSharenotes,
   stopShares,
   syncBlock
 } from '@store/app/AppThunks';
@@ -35,6 +38,7 @@ export interface AppState {
   hashrates: IHashrateEvent[];
   shares: IShareEvent[];
   payouts: IPayoutEvent[];
+  liveSharenotes: ILiveSharenoteEvent[];
   visibleSharesSig?: string | null;
   pendingBalance: number;
   unconfirmedBalance: number;
@@ -48,6 +52,7 @@ export interface AppState {
   skeleton: boolean;
   relayReady?: boolean;
   error?: ICustomError;
+  isLiveSharenotesLoading: boolean;
 }
 
 const initialColorMode: 'light' | 'dark' = DARK_MODE_FORCE ? 'dark' : DARK_MODE_DEFAULT;
@@ -57,6 +62,7 @@ export const initialState: AppState = {
   hashrates: [],
   shares: [],
   payouts: [],
+  liveSharenotes: [],
   visibleSharesSig: null,
   unconfirmedBalance: 0,
   pendingBalance: 0,
@@ -75,7 +81,8 @@ export const initialState: AppState = {
   isPayoutsLoading: false,
   skeleton: false,
   relayReady: undefined,
-  error: undefined
+  error: undefined,
+  isLiveSharenotesLoading: false
 };
 
 const applyPayoutEvent = (state: AppState, event: IPayoutEvent) => {
@@ -104,6 +111,10 @@ const applyHashrateEvent = (state: AppState, event: IHashrateEvent) => {
   if (event.timestamp !== lastHashrate) {
     state.hashrates.push(event);
   }
+};
+
+const applyLiveSharenoteEvent = (state: AppState, event: ILiveSharenoteEvent) => {
+  state.liveSharenotes.push(event);
 };
 
 export const slice = createSlice({
@@ -137,6 +148,9 @@ export const slice = createSlice({
     clearPayouts: (state: AppState) => {
       state.payouts = [];
     },
+    clearLiveSharenotes: (state: AppState) => {
+      state.liveSharenotes = [];
+    },
     setHashratesLoader: (state: AppState, action: PayloadAction<boolean>) => {
       state.isHashrateLoading = action.payload;
     },
@@ -157,6 +171,9 @@ export const slice = createSlice({
     },
     setVisibleSharesSig: (state: AppState, action: PayloadAction<string | null>) => {
       state.visibleSharesSig = action.payload;
+    },
+    setLiveSharenotesLoader: (state: AppState, action: PayloadAction<boolean>) => {
+      state.isLiveSharenotesLoading = action.payload;
     },
     addPayout: (state: AppState, action: PayloadAction<IPayoutEvent>) => {
       applyPayoutEvent(state, action.payload);
@@ -188,6 +205,12 @@ export const slice = createSlice({
     },
     addHashratesBatch: (state: AppState, action: PayloadAction<IHashrateEvent[]>) => {
       action.payload.forEach((event) => applyHashrateEvent(state, event));
+    },
+    addLiveSharenote: (state: AppState, action: PayloadAction<ILiveSharenoteEvent>) => {
+      applyLiveSharenoteEvent(state, action.payload);
+    },
+    addLiveSharenotesBatch: (state: AppState, action: PayloadAction<ILiveSharenoteEvent[]>) => {
+      action.payload.forEach((event) => applyLiveSharenoteEvent(state, event));
     }
   },
   extraReducers: (builder) => {
@@ -217,6 +240,25 @@ export const slice = createSlice({
       .addCase(stopShares.rejected, (state, action) => {
         state.error = action.payload;
         state.isSharesLoading = false;
+      })
+      .addCase(getLiveSharenotes.pending, (state) => {
+        state.liveSharenotes = [];
+        state.isLiveSharenotesLoading = true;
+      })
+      .addCase(getLiveSharenotes.rejected, (state, action) => {
+        state.error = action.payload;
+        state.isLiveSharenotesLoading = false;
+      })
+      .addCase(stopLiveSharenotes.pending, (state) => {
+        state.error = undefined;
+      })
+      .addCase(stopLiveSharenotes.fulfilled, (state) => {
+        state.liveSharenotes = [];
+        state.isLiveSharenotesLoading = false;
+      })
+      .addCase(stopLiveSharenotes.rejected, (state, action) => {
+        state.error = action.payload;
+        state.isLiveSharenotesLoading = false;
       })
       .addCase(getHashrates.pending, (state) => {
         state.hashrates = [];
@@ -310,16 +352,20 @@ export const {
   addPayoutsBatch,
   addShare,
   addSharesBatch,
+  addLiveSharenote,
+  addLiveSharenotesBatch,
   updateShare,
   addAddress,
   clearSettings,
   clearAddress,
   clearPayouts,
   clearShares,
+  clearLiveSharenotes,
   clearHashrates,
   setHashratesLoader,
   setPayoutLoader,
   setShareLoader,
+  setLiveSharenotesLoader,
   setSettings,
   setColorMode,
   setSkeleton,

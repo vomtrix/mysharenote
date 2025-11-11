@@ -1,6 +1,7 @@
 import { Container } from 'typedi';
 import { ORHAN_BLOCK_MATURITY } from '@config/config';
 import { IHashrateEvent } from '@objects/interfaces/IHashrateEvent';
+import type { ILiveSharenoteEvent } from '@objects/interfaces/ILiveSharenoteEvent';
 import { IPayoutEvent } from '@objects/interfaces/IPayoutEvent';
 import { ISettings } from '@objects/interfaces/ISettings';
 import { BlockStatusEnum, IShareEvent } from '@objects/interfaces/IShareEvent';
@@ -12,9 +13,11 @@ import { makeIdsSignature } from '@utils/helpers';
 import { toHexPublicKey } from '@utils/nostr';
 import {
   addHashratesBatch,
+  addLiveSharenotesBatch,
   addPayoutsBatch,
   addSharesBatch,
   setHashratesLoader,
+  setLiveSharenotesLoader,
   setPayoutLoader,
   setShareLoader,
   setSkeleton,
@@ -181,6 +184,94 @@ export const getShares = createAppAsyncThunk(
       });
 
       resetTimeout();
+    } catch (err: any) {
+      return rejectWithValue({
+        message: err?.message,
+        code: err.code,
+        status: err.status
+      });
+    }
+  }
+);
+
+export const getLiveSharenotes = createAppAsyncThunk(
+  'relay/getLiveSharenotes',
+  async (address: string, { rejectWithValue, dispatch, getState }) => {
+    try {
+      const { settings } = getState();
+      const relayService: any = Container.get(RelayService);
+      const workProviderPublicKeyHex = toHexPublicKey(settings.workProviderPublicKey);
+      let timeoutId: NodeJS.Timeout | undefined;
+      const liveBuffer: ILiveSharenoteEvent[] = [];
+      let flushHandle: NodeJS.Timeout | undefined;
+      let hasLoaded = false;
+
+      const flushLive = () => {
+        if (!liveBuffer.length) return;
+        const batch = liveBuffer.splice(0, liveBuffer.length);
+        dispatch(addLiveSharenotesBatch(batch));
+        if (!hasLoaded) {
+          hasLoaded = true;
+          dispatch(setLiveSharenotesLoader(false));
+        }
+        if (flushHandle) {
+          clearTimeout(flushHandle);
+          flushHandle = undefined;
+        }
+      };
+
+      const scheduleFlush = () => {
+        if (flushHandle) clearTimeout(flushHandle);
+        flushHandle = setTimeout(() => {
+          flushHandle = undefined;
+          flushLive();
+        }, BATCH_FLUSH_DEBOUNCE_MS);
+      };
+
+      const resetTimeout = () => {
+        if (timeoutId) clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => {
+          if (!hasLoaded) {
+            hasLoaded = true;
+            dispatch(setLiveSharenotesLoader(false));
+          }
+        }, 5000);
+      };
+
+      relayService.subscribeLiveSharenotes(address, workProviderPublicKeyHex, {
+        onevent: (event: any) => {
+          const liveEvent = beautify(event) as ILiveSharenoteEvent;
+          liveBuffer.push(liveEvent);
+          scheduleFlush();
+          resetTimeout();
+        },
+        oneose: () => {
+          flushLive();
+          if (timeoutId) clearTimeout(timeoutId);
+          if (!hasLoaded) {
+            hasLoaded = true;
+            dispatch(setLiveSharenotesLoader(false));
+          }
+        }
+      });
+
+      resetTimeout();
+    } catch (err: any) {
+      return rejectWithValue({
+        message: err?.message,
+        code: err.code,
+        status: err.status
+      });
+    }
+  }
+);
+
+export const stopLiveSharenotes = createAppAsyncThunk(
+  'relay/stopLiveSharenotes',
+  async (_, { rejectWithValue }) => {
+    try {
+      const relayService: any = Container.get(RelayService);
+      await relayService.stopLiveSharenotes();
     } catch (err: any) {
       return rejectWithValue({
         message: err?.message,

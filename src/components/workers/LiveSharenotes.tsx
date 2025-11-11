@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
 import { useTheme } from '@mui/material/styles';
 import { BarChart } from '@mui/x-charts/BarChart';
-import { noteFromZBits, Sharenote } from '@soprinter/sharenotejs';
+import { combineNotesSerial, noteFromZBits, Sharenote } from '@soprinter/sharenotejs';
 import StackedTotalTooltip from '@components/charts/StackedTotalTooltip';
 import InfoHeader from '@components/common/InfoHeader';
 import ProgressLoader from '@components/common/ProgressLoader';
@@ -33,6 +33,12 @@ const formatNumber = (value?: number) => {
   return value.toLocaleString(undefined, { maximumFractionDigits: 2 });
 };
 
+const toLinearValue = (note?: Sharenote) => {
+  if (!note || !Number.isFinite(note.zBits)) return 0;
+  const linear = Math.pow(2, note.zBits);
+  return Number.isFinite(linear) ? linear : 0;
+};
+
 const LiveSharenotes = () => {
   const { t } = useTranslation();
   const theme = useTheme();
@@ -47,31 +53,27 @@ const LiveSharenotes = () => {
   const shareCount = visibleSharenotes.length;
 
   const liveChartData = useMemo(() => {
-    const baseBlockMap = new Map<number, Map<string, number>>();
-    const solvedBlockTotals = new Map<number, number>();
+    const baseBlockMap = new Map<number, Map<string, Sharenote>>();
+    const solvedBlockTotals = new Map<number, Sharenote>();
 
     visibleSharenotes.forEach((event) => {
       if (typeof event.blockHeight !== 'number' || !Number.isFinite(event.blockHeight)) return;
       const workerId = event.worker ?? event.workerId ?? 'unknown';
-      const note = toSharenote(event);
-      const delta =
-        typeof note?.zBits === 'number' && Number.isFinite(note.zBits)
-          ? note.zBits
-          : typeof event.zBits === 'number' && Number.isFinite(event.zBits)
-            ? event.zBits
-            : 0;
-      if (!Number.isFinite(delta) || delta === 0) return;
+      const deltaNote = toSharenote(event);
+      if (!deltaNote) return;
+      if (!Number.isFinite(deltaNote.zBits) || deltaNote.zBits === 0) return;
 
       if (event.solved) {
-        solvedBlockTotals.set(
-          event.blockHeight,
-          (solvedBlockTotals.get(event.blockHeight) ?? 0) + delta
-        );
+        const existing = solvedBlockTotals.get(event.blockHeight);
+        const combined = existing ? combineNotesSerial([existing, deltaNote]) : deltaNote;
+        solvedBlockTotals.set(event.blockHeight, combined);
         return;
       }
 
-      const workerSum = baseBlockMap.get(event.blockHeight) ?? new Map<string, number>();
-      workerSum.set(workerId, (workerSum.get(workerId) ?? 0) + delta);
+      const workerSum = baseBlockMap.get(event.blockHeight) ?? new Map<string, Sharenote>();
+      const existing = workerSum.get(workerId);
+      const combined = existing ? combineNotesSerial([existing, deltaNote]) : deltaNote;
+      workerSum.set(workerId, combined);
       baseBlockMap.set(event.blockHeight, workerSum);
     });
 
@@ -96,13 +98,13 @@ const LiveSharenotes = () => {
       .map((workerId) => ({
         id: workerId,
         label: workerId === 'unknown' ? t('worker') : workerId,
-        data: blockHeights.map((height) => baseBlockMap.get(height)?.get(workerId) ?? 0),
+        data: blockHeights.map((height) => toLinearValue(baseBlockMap.get(height)?.get(workerId))),
         color: getWorkerColor(theme, workerId),
         stack: 'liveSharenotes'
       }))
       .filter((series) => series.data.some((value) => value > 0));
 
-    const solvedData = blockHeights.map((height) => solvedBlockTotals.get(height) ?? 0);
+    const solvedData = blockHeights.map((height) => toLinearValue(solvedBlockTotals.get(height)));
     const series: Array<Record<string, any>> = [...baseSeries];
     if (solvedData.some((value) => value > 0)) {
       series.push({
@@ -119,10 +121,13 @@ const LiveSharenotes = () => {
 
   const hasLiveChartData = liveChartData.blockLabels.length > 0 && liveChartData.series.length > 0;
 
-  const formatChartValue = (value?: number | null) =>
-    value === null || value === undefined || Number.isNaN(value)
-      ? '--'
-      : `${formatNumber(value)} zBits`;
+  const formatChartValue = (value?: number | null) => {
+    if (value === null || value === undefined || Number.isNaN(value) || value <= 0) {
+      return '--';
+    }
+    const zBits = Math.log2(value);
+    return `${formatNumber(zBits)} zBits`;
+  };
 
   const chartSeries = liveChartData.series.map((series) => ({
     ...series,
@@ -154,7 +159,12 @@ const LiveSharenotes = () => {
             flexDirection: 'column',
             minHeight: 0
           }}>
-          <Box sx={{ flexGrow: 1, minHeight: 0 }}>
+          <Box
+            sx={{
+              flexGrow: 1,
+              minHeight: 0,
+              display: 'flex'
+            }}>
             {isLoading ? (
               <ProgressLoader value={shareCount} />
             ) : !hasLiveChartData ? (
@@ -171,8 +181,15 @@ const LiveSharenotes = () => {
                 {t('liveSharenotes.empty')}
               </Box>
             ) : (
-              <Box sx={{ width: '100%', flexGrow: 1, minHeight: 0 }}>
+              <Box
+                sx={{
+                  width: '100%',
+                  flexGrow: 1,
+                  minHeight: 0,
+                  display: 'flex'
+                }}>
                 <BarChart
+                  sx={{ flexGrow: 1, minHeight: 0 }}
                   series={chartSeries}
                   xAxis={[
                     {

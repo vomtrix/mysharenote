@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
 import { useTheme } from '@mui/material/styles';
 import { BarChart } from '@mui/x-charts/BarChart';
-import { noteFromZBits, parseNoteLabel, Sharenote } from '@soprinter/sharenotejs';
+import { noteFromZBits, Sharenote } from '@soprinter/sharenotejs';
 import StackedTotalTooltip from '@components/charts/StackedTotalTooltip';
 import InfoHeader from '@components/common/InfoHeader';
 import ProgressLoader from '@components/common/ProgressLoader';
@@ -20,21 +20,6 @@ const toSharenote = (event: ILiveSharenoteEvent): Sharenote | undefined => {
       return noteFromZBits(event.zBits);
     } catch {
       // ignore invalid conversions
-    }
-  }
-
-  const rawLabel = event.sharenote ?? event.zLabel;
-  const labelCandidate =
-    typeof rawLabel === 'string'
-      ? rawLabel
-      : rawLabel !== undefined && rawLabel !== null
-        ? String(rawLabel)
-        : undefined;
-  if (labelCandidate && typeof labelCandidate === 'string' && labelCandidate.trim().length > 0) {
-    try {
-      return parseNoteLabel(labelCandidate.trim());
-    } catch {
-      // ignore parsing failures
     }
   }
 
@@ -91,10 +76,7 @@ const LiveSharenotes = () => {
     });
 
     const blockHeights = Array.from(
-      new Set<number>([
-        ...baseBlockMap.keys(),
-        ...solvedBlockTotals.keys()
-      ])
+      new Set<number>([...baseBlockMap.keys(), ...solvedBlockTotals.keys()])
     ).sort((a, b) => a - b);
 
     if (!blockHeights.length) {

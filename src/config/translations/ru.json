@@ -53,6 +53,7 @@
   "liveSharenotes.sumLabel": "Сумма блока",
   "liveSharenotes.empty": "Нет данных",
   "liveSharenotes.count": "{{count}} записей",
+  "liveSharenotes.solved": "Решено",
   "liveSharenotes.lastBlock": "Последний блок №{{height}}",
   "liveSharenotes.address": "Адрес: {{value}}",
   "liveSharenotes.heightHash": "Хэш высоты: {{value}}",

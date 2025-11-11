@@ -1,23 +1,18 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
-import { alpha, useTheme } from '@mui/material/styles';
-import Typography from '@mui/material/Typography';
-import {
-  combineNotesSerial,
-  noteFromZBits,
-  parseNoteLabel,
-  Sharenote
-} from '@soprinter/sharenotejs';
+import { useTheme } from '@mui/material/styles';
+import { BarChart } from '@mui/x-charts/BarChart';
+import { noteFromZBits, parseNoteLabel, Sharenote } from '@soprinter/sharenotejs';
+import StackedTotalTooltip from '@components/charts/StackedTotalTooltip';
 import InfoHeader from '@components/common/InfoHeader';
 import ProgressLoader from '@components/common/ProgressLoader';
-import ShareNoteLabel from '@components/common/ShareNoteLabel';
 import { SectionHeader } from '@components/styled/SectionHeader';
 import { StyledCard } from '@components/styled/StyledCard';
 import type { ILiveSharenoteEvent } from '@objects/interfaces/ILiveSharenoteEvent';
 import { getIsLiveSharenotesLoading, getLiveSharenotes } from '@store/app/AppSelectors';
 import { useSelector } from '@store/store';
-import { formatRelativeFromTimestamp } from '@utils/time';
+import { getWorkerColor } from '@utils/colors';
 
 const toSharenote = (event: ILiveSharenoteEvent): Sharenote | undefined => {
   if (typeof event.zBits === 'number' && Number.isFinite(event.zBits)) {
@@ -28,8 +23,14 @@ const toSharenote = (event: ILiveSharenoteEvent): Sharenote | undefined => {
     }
   }
 
-  const labelCandidate = event.sharenote?.toString() ?? event.zLabel;
-  if (labelCandidate && labelCandidate.trim().length > 0) {
+  const rawLabel = event.sharenote ?? event.zLabel;
+  const labelCandidate =
+    typeof rawLabel === 'string'
+      ? rawLabel
+      : rawLabel !== undefined && rawLabel !== null
+        ? String(rawLabel)
+        : undefined;
+  if (labelCandidate && typeof labelCandidate === 'string' && labelCandidate.trim().length > 0) {
     try {
       return parseNoteLabel(labelCandidate.trim());
     } catch {
@@ -40,11 +41,7 @@ const toSharenote = (event: ILiveSharenoteEvent): Sharenote | undefined => {
   return undefined;
 };
 
-const formatSince = (value?: number) => {
-  const formatted = formatRelativeFromTimestamp(value);
-  if (formatted === '--') return formatted;
-  return `Since ${formatted.replace(/ ago$/, '')}`;
-};
+const SOLVED_BAR_COLOR = '#FFD700';
 
 const formatNumber = (value?: number) => {
   if (value === undefined || value === null || Number.isNaN(value)) return '--';
@@ -62,52 +59,98 @@ const LiveSharenotes = () => {
     [liveSharenotes]
   );
 
-  const latestBlock = useMemo(
-    () => visibleSharenotes.find((note) => typeof note.blockHeight === 'number')?.blockHeight,
-    [visibleSharenotes]
-  );
+  const shareCount = visibleSharenotes.length;
 
-  const latestBlockEvents = useMemo(
-    () =>
-      visibleSharenotes.filter(
-        (note) => note.blockHeight === latestBlock && latestBlock !== undefined
-      ),
-    [visibleSharenotes, latestBlock]
-  );
+  const liveChartData = useMemo(() => {
+    const baseBlockMap = new Map<number, Map<string, number>>();
+    const solvedBlockTotals = new Map<number, number>();
 
-  const blockNotes = useMemo(
-    () =>
-      latestBlockEvents.map(toSharenote).filter((note): note is Sharenote => note !== undefined),
-    [latestBlockEvents]
-  );
+    visibleSharenotes.forEach((event) => {
+      if (typeof event.blockHeight !== 'number' || !Number.isFinite(event.blockHeight)) return;
+      const workerId = event.worker ?? event.workerId ?? 'unknown';
+      const note = toSharenote(event);
+      const delta =
+        typeof note?.zBits === 'number' && Number.isFinite(note.zBits)
+          ? note.zBits
+          : typeof event.zBits === 'number' && Number.isFinite(event.zBits)
+            ? event.zBits
+            : 0;
+      if (!Number.isFinite(delta) || delta === 0) return;
 
-  const blockSumLabel = blockNotes.length > 0 ? combineNotesSerial(blockNotes).label : undefined;
+      if (event.solved) {
+        solvedBlockTotals.set(
+          event.blockHeight,
+          (solvedBlockTotals.get(event.blockHeight) ?? 0) + delta
+        );
+        return;
+      }
 
-  const sortedBlockEvents = useMemo(
-    () => [...latestBlockEvents].sort((a, b) => (b.timestamp ?? 0) - (a.timestamp ?? 0)),
-    [latestBlockEvents]
-  );
+      const workerSum = baseBlockMap.get(event.blockHeight) ?? new Map<string, number>();
+      workerSum.set(workerId, (workerSum.get(workerId) ?? 0) + delta);
+      baseBlockMap.set(event.blockHeight, workerSum);
+    });
 
-  const summaryText = [
-    `block #${typeof latestBlock === 'number' ? latestBlock : '-'}`,
-    `${sortedBlockEvents.length} sharenotes`,
-    `sum ${blockSumLabel ?? '--'}`
-  ].join(' - ');
+    const blockHeights = Array.from(
+      new Set<number>([
+        ...baseBlockMap.keys(),
+        ...solvedBlockTotals.keys()
+      ])
+    ).sort((a, b) => a - b);
 
-  const metaTypographySx = {
-    fontFamily: theme.typography.fontFamily,
-    fontSize: { xs: '0.65rem', sm: '0.75rem' }
-  };
-  const noteCardBackground =
-    theme.palette.mode === 'dark'
-      ? alpha(theme.palette.primary.main, 0.08)
-      : alpha(theme.palette.primary.main, 0.04);
-  const noteCardBorder = alpha(theme.palette.primary.main, 0.4);
+    if (!blockHeights.length) {
+      return { blockLabels: [], series: [] as Array<Record<string, any>> };
+    }
+
+    const workerIds = Array.from(
+      baseBlockMap.values().reduce<Set<string>>((acc, map) => {
+        map.forEach((_value, worker) => acc.add(worker));
+        return acc;
+      }, new Set<string>())
+    ).sort((a, b) => a.localeCompare(b));
+
+    const blockLabels = blockHeights.map((height) => `#${height}`);
+
+    const baseSeries = workerIds
+      .map((workerId) => ({
+        id: workerId,
+        label: workerId === 'unknown' ? t('worker') : workerId,
+        data: blockHeights.map((height) => baseBlockMap.get(height)?.get(workerId) ?? 0),
+        color: getWorkerColor(theme, workerId),
+        stack: 'liveSharenotes'
+      }))
+      .filter((series) => series.data.some((value) => value > 0));
+
+    const solvedData = blockHeights.map((height) => solvedBlockTotals.get(height) ?? 0);
+    const series: Array<Record<string, any>> = [...baseSeries];
+    if (solvedData.some((value) => value > 0)) {
+      series.push({
+        id: 'solved',
+        label: t('liveSharenotes.solved'),
+        data: solvedData,
+        color: SOLVED_BAR_COLOR,
+        stack: 'liveSharenotes'
+      });
+    }
+
+    return { blockLabels, series };
+  }, [visibleSharenotes, t, theme]);
+
+  const hasLiveChartData = liveChartData.blockLabels.length > 0 && liveChartData.series.length > 0;
+
+  const formatChartValue = (value?: number | null) =>
+    value === null || value === undefined || Number.isNaN(value)
+      ? '--'
+      : `${formatNumber(value)} zBits`;
+
+  const chartSeries = liveChartData.series.map((series) => ({
+    ...series,
+    valueFormatter: formatChartValue
+  }));
 
   return (
     <StyledCard
       sx={{
-        height: { xs: 'auto', lg: 320 },
+        height: { xs: 'auto', lg: 360 },
         mb: { xs: 3, lg: 0 }
       }}>
       <Box
@@ -118,123 +161,54 @@ const LiveSharenotes = () => {
           flexDirection: 'column',
           height: '100%'
         }}>
-        <SectionHeader
-          sx={{
-            flexDirection: 'column',
-            alignItems: 'flex-start',
-            gap: 0.5
-          }}>
+        <SectionHeader sx={{ flexDirection: 'column', alignItems: 'flex-start', gap: 0.5 }}>
           <InfoHeader title={t('liveSharenotes')} tooltip={t('info.liveSharenotes')} />
-          <Typography
-            variant="body2"
-            sx={{
-              color: theme.palette.text.secondary,
-              fontSize: '0.75rem'
-            }}>
-            {summaryText}
-          </Typography>
         </SectionHeader>
         <Box
           sx={{
             flexGrow: 1,
+            mt: 2,
             display: 'flex',
             flexDirection: 'column',
             minHeight: 0
           }}>
-          {isLoading ? (
-            <ProgressLoader value={sortedBlockEvents.length} />
-          ) : sortedBlockEvents.length === 0 ? (
-            <Box
-              sx={{
-                width: '100%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '0.95rem',
-                minHeight: 0,
-                flexGrow: 1
-              }}>
-              {t('liveSharenotes.empty')}
-            </Box>
-          ) : (
-            <Box
-              sx={{
-                flexGrow: 1,
-                overflowY: 'auto',
-                minHeight: 0,
-                pb: 1,
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 1.5
-              }}>
-              {sortedBlockEvents.map((note) => {
-                const sharenoteValue = note.sharenote ?? note.zLabel ?? note.id;
-                return (
-                  <Box
-                    key={note.id}
-                    sx={{
-                      borderRadius: 2,
-                      p: { xs: 1.5, sm: 2 },
-                      border: `1px solid ${noteCardBorder}`,
-                      backgroundColor: noteCardBackground,
-                      minWidth: 0,
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: 1
-                    }}>
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'flex-start',
-                        flexWrap: 'wrap',
-                        gap: 1
-                      }}>
-                      <Typography
-                        variant="body1"
-                        sx={{
-                          fontWeight: 600,
-                          lineHeight: 1.2,
-                          fontSize: { xs: '0.95rem', sm: '1.05rem', md: '1rem' },
-                          color: theme.palette.text.primary,
-                          fontFamily: theme.typography.fontFamily
-                        }}>
-                        <ShareNoteLabel value={sharenoteValue} placeholder="--" />
-                      </Typography>
-                      <Typography
-                        variant="caption"
-                        color="text.secondary"
-                        sx={{
-                          fontSize: { xs: '0.65rem', sm: '0.75rem' },
-                          whiteSpace: 'nowrap',
-                          fontFamily: theme.typography.fontFamily
-                        }}>
-                        {formatSince(note.timestamp)}
-                      </Typography>
-                    </Box>
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        flexWrap: 'wrap',
-                        alignItems: 'center',
-                        gap: 1,
-                        color: theme.palette.text.secondary
-                      }}>
-                      <Typography variant="caption" sx={metaTypographySx}>
-                        {note.worker ?? note.workerId ?? t('worker')}
-                      </Typography>
-                      <Box component="span" sx={{ color: theme.palette.text.secondary }}>
-                        •
-                      </Box>
-                      <Typography variant="caption" sx={metaTypographySx}>
-                        {`${formatNumber(note.zBits)} zBits`}
-                      </Typography>
-                    </Box>
-                  </Box>
-                );
-              })}
-            </Box>
-          )}
+          <Box sx={{ flexGrow: 1, minHeight: 0 }}>
+            {isLoading ? (
+              <ProgressLoader value={shareCount} />
+            ) : !hasLiveChartData ? (
+              <Box
+                sx={{
+                  width: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '0.95rem',
+                  minHeight: 0,
+                  flexGrow: 1
+                }}>
+                {t('liveSharenotes.empty')}
+              </Box>
+            ) : (
+              <Box sx={{ width: '100%', flexGrow: 1, minHeight: 0 }}>
+                <BarChart
+                  series={chartSeries}
+                  xAxis={[
+                    {
+                      scaleType: 'band',
+                      data: liveChartData.blockLabels,
+                      tickLabelStyle: { fontSize: 11 }
+                    }
+                  ]}
+                  yAxis={[{ position: 'none' }]}
+                  margin={{ bottom: 0, left: 10, right: 10, top: 16 }}
+                  slots={{ tooltip: StackedTotalTooltip as any }}
+                  slotProps={{
+                    tooltip: { trigger: 'axis', valueFormatter: formatChartValue } as any
+                  }}
+                />
+              </Box>
+            )}
+          </Box>
         </Box>
       </Box>
     </StyledCard>

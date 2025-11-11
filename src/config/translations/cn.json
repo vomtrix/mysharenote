@@ -53,6 +53,7 @@
   "liveSharenotes.sumLabel": "区块总和",
   "liveSharenotes.empty": "暂无数据",
   "liveSharenotes.count": "{{count}} 条记录",
+  "liveSharenotes.solved": "已解决",
   "liveSharenotes.lastBlock": "最近区块 #{{height}}",
   "liveSharenotes.address": "地址：{{value}}",
   "liveSharenotes.heightHash": "高度哈希：{{value}}",

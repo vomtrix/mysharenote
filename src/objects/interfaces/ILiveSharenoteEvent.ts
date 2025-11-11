@@ -3,12 +3,9 @@ export interface ILiveSharenoteEvent {
   timestamp: number;
   content?: string;
   blockHeight?: number;
+  solved?: boolean;
   workerId?: string;
   worker?: string;
-  tags?: Array<(string | number)[]>;
-  metadata?: Record<string, unknown>;
-  sharenote?: string;
-  zLabel?: string;
   zBits?: number;
   heightHash?: string;
   headerHash?: string;

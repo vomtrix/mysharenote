@@ -236,9 +236,18 @@ export const beautify = (event: any) => {
       }
       if (workerValue) {
         result.worker = workerValue;
+        }
+      }
+
+      if (event.kind === 35510 && tagKey === 'h') {
+        const solvedFlag = rest.find((segment) => segment === 'true' || segment === 'false');
+        if (solvedFlag === 'true') {
+          result.solved = true;
+        } else if (solvedFlag === 'false') {
+          result.solved = false;
+        }
       }
     }
-  }
 
   return result;
 };

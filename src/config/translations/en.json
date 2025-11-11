@@ -53,6 +53,7 @@
   "liveSharenotes.sumLabel": "",
   "liveSharenotes.empty": "No data",
   "liveSharenotes.count": "{{count}} Sharenotes",
+  "liveSharenotes.solved": "Solved",
   "liveSharenotes.address": "Address: {{value}}",
   "liveSharenotes.heightHash": "Height hash: {{value}}",
   "liveSharenotes.headerHash": "Header hash: {{value}}",

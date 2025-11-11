@@ -31,9 +31,7 @@ export const beautifierConfig: Record<number, KeysMap> = {
     timestamp: 'timestamp'
   },
   35510: {
-    sn: 'sharenote',
-    z: 'zLabel',
-    zb: 'zBits',
+    z: 'zBits',
     h: 'blockHeight',
     hh: 'heightHash',
     d: 'headerHash',

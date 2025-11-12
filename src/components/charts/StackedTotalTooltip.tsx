@@ -6,9 +6,17 @@ import { ChartsTooltipContainer, useAxesTooltip } from '@mui/x-charts';
 
 type Props = {
   valueFormatter: (v: number) => string;
+  totalFormatter?: (v: number) => string;
+  axisEventCounts?: Record<string, number>;
+  eventCountFormatter?: (count: number) => string;
 };
 
-const StackedTotalTooltip: React.FC<Props> = ({ valueFormatter }) => {
+const StackedTotalTooltip: React.FC<Props> = ({
+  valueFormatter,
+  totalFormatter,
+  axisEventCounts,
+  eventCountFormatter
+}) => {
   const tooltipData = useAxesTooltip();
   if (!tooltipData) return null;
 
@@ -16,7 +24,9 @@ const StackedTotalTooltip: React.FC<Props> = ({ valueFormatter }) => {
     <ChartsTooltipContainer trigger="axis">
       {tooltipData.map(({ axisId, axisFormattedValue, seriesItems }) => {
         const total = seriesItems.reduce((sum, it) => sum + (Number(it.value) || 0), 0);
-        const formattedTotal = valueFormatter(total);
+        const formattedTotal = (totalFormatter ?? valueFormatter)(total);
+        const eventCount =
+          axisFormattedValue && axisEventCounts ? axisEventCounts[axisFormattedValue] : undefined;
         return (
           <Box
             key={axisId}
@@ -39,6 +49,11 @@ const StackedTotalTooltip: React.FC<Props> = ({ valueFormatter }) => {
               })}>
               <Typography variant="caption">{axisFormattedValue}</Typography>
               <Chip size="small" label={formattedTotal} />
+              {typeof eventCount === 'number' && (
+                <Typography variant="caption" color="text.secondary">
+                  {eventCountFormatter ? eventCountFormatter(eventCount) : `${eventCount} events`}
+                </Typography>
+              )}
             </Box>
             <Box component="table" sx={{ borderSpacing: 0, width: '100%' }}>
               <tbody>

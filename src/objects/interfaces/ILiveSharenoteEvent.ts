@@ -6,7 +6,10 @@ export interface ILiveSharenoteEvent {
   solved?: boolean;
   workerId?: string;
   worker?: string;
-  zBits?: number;
+  /**
+   * formerly numeric zBits; now carries the sharenote label (e.g. "12z12").
+   */
+  zBits?: number | string;
   heightHash?: string;
   headerHash?: string;
   headerHex?: string;

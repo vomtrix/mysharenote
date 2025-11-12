@@ -3,7 +3,12 @@ import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
 import { useTheme } from '@mui/material/styles';
 import { BarChart } from '@mui/x-charts/BarChart';
-import { combineNotesSerial, noteFromZBits, Sharenote } from '@soprinter/sharenotejs';
+import {
+  combineNotesSerial,
+  noteFromZBits,
+  parseNoteLabel,
+  Sharenote
+} from '@soprinter/sharenotejs';
 import StackedTotalTooltip from '@components/charts/StackedTotalTooltip';
 import InfoHeader from '@components/common/InfoHeader';
 import ProgressLoader from '@components/common/ProgressLoader';
@@ -13,8 +18,17 @@ import type { ILiveSharenoteEvent } from '@objects/interfaces/ILiveSharenoteEven
 import { getIsLiveSharenotesLoading, getLiveSharenotes } from '@store/app/AppSelectors';
 import { useSelector } from '@store/store';
 import { getWorkerColor } from '@utils/colors';
+import { formatSharenoteLabel } from '@utils/helpers';
 
 const toSharenote = (event: ILiveSharenoteEvent): Sharenote | undefined => {
+  if (typeof event.zBits === 'string' && event.zBits.trim()) {
+    try {
+      return parseNoteLabel(event.zBits);
+    } catch {
+      // ignore invalid labels
+    }
+  }
+
   if (typeof event.zBits === 'number' && Number.isFinite(event.zBits)) {
     try {
       return noteFromZBits(event.zBits);
@@ -26,17 +40,26 @@ const toSharenote = (event: ILiveSharenoteEvent): Sharenote | undefined => {
   return undefined;
 };
 
-const SOLVED_BAR_COLOR = '#FFD700';
-
-const formatNumber = (value?: number) => {
-  if (value === undefined || value === null || Number.isNaN(value)) return '--';
-  return value.toLocaleString(undefined, { maximumFractionDigits: 2 });
-};
+const MAX_LIVE_BLOCKS = 15;
 
 const toLinearValue = (note?: Sharenote) => {
   if (!note || !Number.isFinite(note.zBits)) return 0;
   const linear = Math.pow(2, note.zBits);
   return Number.isFinite(linear) ? linear : 0;
+};
+
+const formatLinearValueAsSharenoteLabel = (value?: number | null) => {
+  if (value === null || value === undefined || Number.isNaN(value) || value <= 0) {
+    return '--';
+  }
+  const zBits = Math.log2(value);
+  return formatSharenoteLabel(zBits) || '--';
+};
+
+type LiveChartData = {
+  blockLabels: string[];
+  series: Array<Record<string, any>>;
+  blockEventCounts: Record<string, number>;
 };
 
 const LiveSharenotes = () => {
@@ -52,8 +75,9 @@ const LiveSharenotes = () => {
 
   const shareCount = visibleSharenotes.length;
 
-  const liveChartData = useMemo(() => {
+  const liveChartData = useMemo<LiveChartData>(() => {
     const baseBlockMap = new Map<number, Map<string, Sharenote>>();
+    const blockEventCounts = new Map<number, number>();
     const solvedBlockTotals = new Map<number, Sharenote>();
 
     visibleSharenotes.forEach((event) => {
@@ -63,12 +87,7 @@ const LiveSharenotes = () => {
       if (!deltaNote) return;
       if (!Number.isFinite(deltaNote.zBits) || deltaNote.zBits === 0) return;
 
-      if (event.solved) {
-        const existing = solvedBlockTotals.get(event.blockHeight);
-        const combined = existing ? combineNotesSerial([existing, deltaNote]) : deltaNote;
-        solvedBlockTotals.set(event.blockHeight, combined);
-        return;
-      }
+      blockEventCounts.set(event.blockHeight, (blockEventCounts.get(event.blockHeight) ?? 0) + 1);
 
       const workerSum = baseBlockMap.get(event.blockHeight) ?? new Map<string, Sharenote>();
       const existing = workerSum.get(workerId);
@@ -80,9 +99,14 @@ const LiveSharenotes = () => {
     const blockHeights = Array.from(
       new Set<number>([...baseBlockMap.keys(), ...solvedBlockTotals.keys()])
     ).sort((a, b) => a - b);
+    const trackedBlockHeights = blockHeights.slice(-MAX_LIVE_BLOCKS);
 
-    if (!blockHeights.length) {
-      return { blockLabels: [], series: [] as Array<Record<string, any>> };
+    if (!trackedBlockHeights.length) {
+      return {
+        blockLabels: [],
+        series: [] as Array<Record<string, any>>,
+        blockEventCounts: {}
+      };
     }
 
     const workerIds = Array.from(
@@ -92,42 +116,36 @@ const LiveSharenotes = () => {
       }, new Set<string>())
     ).sort((a, b) => a.localeCompare(b));
 
-    const blockLabels = blockHeights.map((height) => `#${height}`);
+    const blockLabels = trackedBlockHeights.map((height) => `#${height}`);
 
     const baseSeries = workerIds
       .map((workerId) => ({
         id: workerId,
         label: workerId === 'unknown' ? t('worker') : workerId,
-        data: blockHeights.map((height) => toLinearValue(baseBlockMap.get(height)?.get(workerId))),
+        data: trackedBlockHeights.map((height) =>
+          toLinearValue(baseBlockMap.get(height)?.get(workerId))
+        ),
         color: getWorkerColor(theme, workerId),
         stack: 'liveSharenotes'
       }))
       .filter((series) => series.data.some((value) => value > 0));
 
-    const solvedData = blockHeights.map((height) => toLinearValue(solvedBlockTotals.get(height)));
-    const series: Array<Record<string, any>> = [...baseSeries];
-    if (solvedData.some((value) => value > 0)) {
-      series.push({
-        id: 'solved',
-        label: t('liveSharenotes.solved'),
-        data: solvedData,
-        color: SOLVED_BAR_COLOR,
-        stack: 'liveSharenotes'
-      });
-    }
+    const blockEventCountRecords = trackedBlockHeights.reduce<Record<string, number>>(
+      (acc, height) => {
+        acc[`#${height}`] = blockEventCounts.get(height) ?? 0;
+        return acc;
+      },
+      {}
+    );
 
-    return { blockLabels, series };
+    return { blockLabels, series: baseSeries, blockEventCounts: blockEventCountRecords };
   }, [visibleSharenotes, t, theme]);
 
   const hasLiveChartData = liveChartData.blockLabels.length > 0 && liveChartData.series.length > 0;
 
-  const formatChartValue = (value?: number | null) => {
-    if (value === null || value === undefined || Number.isNaN(value) || value <= 0) {
-      return '--';
-    }
-    const zBits = Math.log2(value);
-    return `${formatNumber(zBits)} zBits`;
-  };
+  const formatChartValue = (value?: number | null) => formatLinearValueAsSharenoteLabel(value);
+  const formatTotalSharenote = formatLinearValueAsSharenoteLabel;
+  const formatEventCountText = (count: number) => t('liveSharenotes.count', { count });
 
   const chartSeries = liveChartData.series.map((series) => ({
     ...series,
@@ -137,7 +155,7 @@ const LiveSharenotes = () => {
   return (
     <StyledCard
       sx={{
-        height: { xs: 'auto', lg: 360 },
+        maxHeight: '555px',
         mb: { xs: 3, lg: 0 }
       }}>
       <Box
@@ -202,7 +220,13 @@ const LiveSharenotes = () => {
                   margin={{ bottom: 0, left: 10, right: 10, top: 16 }}
                   slots={{ tooltip: StackedTotalTooltip as any }}
                   slotProps={{
-                    tooltip: { trigger: 'axis', valueFormatter: formatChartValue } as any
+                    tooltip: {
+                      trigger: 'axis',
+                      valueFormatter: formatChartValue,
+                      totalFormatter: formatTotalSharenote,
+                      axisEventCounts: liveChartData.blockEventCounts,
+                      eventCountFormatter: formatEventCountText
+                    } as any
                   }}
                 />
               </Box>

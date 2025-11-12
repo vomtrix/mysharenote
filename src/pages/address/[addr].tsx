@@ -195,11 +195,17 @@ const AddressPage = () => {
               flexShrink: 1,
               display: 'flex',
               flexDirection: 'column',
-              '& > *': { flexGrow: 1, height: '100%' }
+              mb: { xs: 3, lg: 0 },
+              '& > *': { flexGrow: 1, height: 'auto', mb: 0 }
             }}>
             <SharesTable />
           </Box>
-          <Box sx={rightColumnStyles}>
+
+          <Box
+            sx={{
+              ...rightColumnStyles,
+              height: 'auto'
+            }}>
             <LiveSharenotes />
           </Box>
         </Box>

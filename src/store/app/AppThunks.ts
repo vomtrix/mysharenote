@@ -81,7 +81,7 @@ export const syncBlock = createAppAsyncThunk(
         const targetShare = sharesToSync[index];
         if (!targetShare) return;
 
-        if (status === 'rejected' && reason?.message === 'Failed to get block') {
+        if (status === 'rejected' && (reason?.message === 'Failed to get block' || reason?.message === 'Block not found')) {
           dispatch(updateShare({ id: targetShare.id, status: BlockStatusEnum.Orphan }));
         } else if (status === 'fulfilled' && value?.id) {
           dispatch(updateShare({ id: targetShare.id, status: BlockStatusEnum.Valid }));

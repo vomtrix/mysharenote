@@ -32,14 +32,14 @@ const App = (props: any) => {
     <Provider store={AppStore}>
       <PersistGate persistor={persistor}>
         <Head>
-          <title>myShareNote</title>
-          <meta name="description" content="myShareNote - mySharenote Your Hashboard" />
+          <title>ViaFLC</title>
+          <meta name="description" content="ViaFLC - More Coins Same Power" />
           <meta name="viewport" content="width=device-width, initial-scale=1" />
           <link rel="icon" type="image/png" href="/assets/favicon-96x96.png" sizes="96x96"></link>
           <link rel="icon" href="/assets/favicon.ico" type="image/x-icon" />
           <link rel="shortcut icon" href="/assets/favicon.ico"></link>
           <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png"></link>
-          <meta name="apple-mobile-web-app-title" content="myShareNote"></meta>
+          <meta name="apple-mobile-web-app-title" content="ViaFLC"></meta>
           <link rel="manifest" href="/assets/site.webmanifest"></link>
         </Head>
         <Script

@@ -9,7 +9,7 @@ export const ORHAN_BLOCK_MATURITY: number = process.env.ORHAN_BLOCK_MATURITY
   : 5;
 
 export const SOCIAL_URLS: Record<string, string> = {
-  github: 'https://github.com/vomtrix/mysharenote'
+  github: 'https://github.com/entanglo/viaflc-shares'
 };
 
 export const FAQ_LINKS: Record<string, string> = {
@@ -22,15 +22,15 @@ export const FAQ_LINKS: Record<string, string> = {
 };
 
 // UI/Theme configuration (static values; not env-driven)
-export const THEME_PRIMARY_COLOR: string = '#9c27b0';
-export const THEME_SECONDARY_COLOR: string = '#c2db4e';
-export const THEME_PRIMARY_COLOR_1: string = '#a86dcb';
-export const THEME_PRIMARY_COLOR_2: string = '#d49de9';
-export const THEME_PRIMARY_COLOR_3: string = '#ff8bda';
+export const THEME_PRIMARY_COLOR: string = '#42a5f5';
+export const THEME_SECONDARY_COLOR: string = '#d19810';
+export const THEME_PRIMARY_COLOR_1: string = '#72b9f3ff';
+export const THEME_PRIMARY_COLOR_2: string = '#90caf9';
+export const THEME_PRIMARY_COLOR_3: string = 'q';
 
 export const DARK_MODE_ENABLED: boolean = true;
 export const DARK_MODE_FORCE: boolean = false;
-export const DARK_MODE_DEFAULT: 'light' | 'dark' = 'light';
+export const DARK_MODE_DEFAULT: 'light' | 'dark' = 'dark';
 
 // Text colors
 export const THEME_TEXT_LIGHT_PRIMARY: string = '#1f1f1f';
@@ -39,11 +39,9 @@ export const THEME_TEXT_DARK_PRIMARY: string = '#e0e0e0';
 export const THEME_TEXT_DARK_SECONDARY: string = '#a6a6a6';
 
 // Charts (area gradient colors)
-export const THEME_CHART_AREA_TOP: string = 'rgba(156, 39, 176, 0.4)';
-export const THEME_CHART_AREA_BOTTOM: string = 'rgba(156, 39, 176, 0.0)';
+export const THEME_CHART_AREA_TOP: string = 'rgba(98, 158, 241, 0.4)';
+export const THEME_CHART_AREA_BOTTOM: string = 'rgba(22, 123, 246, 0)';
 
 // App behavior (static option)
-export const HOME_PAGE_ENABLED: boolean = true;
-
-// Loader behavior
+export const HOME_PAGE_ENABLED: boolean = false;
 export const LOADER_IDLE_MS: number = 3000;

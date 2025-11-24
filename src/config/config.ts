@@ -7,6 +7,37 @@ export const ORHAN_BLOCK_MATURITY: number = process.env.ORHAN_BLOCK_MATURITY
   ? parseInt(process.env.ORHAN_BLOCK_MATURITY, 10) || 5
   : 5;
 
+export type ChainKey = 'bellscoin' | 'dogecoin' | 'flokicoin' | 'pepecoin';
+
+export type ChainMetadata = {
+  chainIds: string[];
+  currencySymbol: string;
+  decimals: number;
+};
+
+export const CHAIN_METADATA: Record<ChainKey, ChainMetadata> = {
+  flokicoin: {
+    chainIds: ['21', '0x21'],
+    currencySymbol: 'FLC',
+    decimals: 8
+  },
+  pepecoin: {
+    chainIds: ['3f', '0x3f'],
+    currencySymbol: 'PEP',
+    decimals: 8
+  },
+  bellscoin: {
+    chainIds: ['10', '0x10'],
+    currencySymbol: 'BEL',
+    decimals: 8
+  },
+  dogecoin: {
+    chainIds: ['62', '0x62'],
+    currencySymbol: 'DOGE',
+    decimals: 8
+  }
+};
+
 export const SOCIAL_URLS: Record<string, string> = {
   github: 'https://github.com/vomtrix/mysharenote'
 };

@@ -1,18 +1,72 @@
 import { useTranslation } from 'react-i18next';
-import { Chip, Tooltip } from '@mui/material';
+import { EXPLORER_URL } from 'src/config/config';
+import { getChainIconPath, getChainMetadata, getChainName } from '@constants/chainIcons';
+import { Avatar, Box, Chip, Tooltip } from '@mui/material';
 import ShareNoteLabel from '@components/common/ShareNoteLabel';
 import { BlockStatusEnum } from '@objects/interfaces/IShareEvent';
-import { lokiToFlc, shareChipColor, shareChipVariant } from '@utils/helpers';
+import { shareChipColor, shareChipVariant } from '@utils/helpers';
 import { fromEpoch } from '@utils/time';
-import { EXPLORER_URL } from 'src/config/config';
 
 const sharesColumns = () => {
   const { t } = useTranslation();
+  const formatProfitAmount = (amount: number, chainId?: string) => {
+    const meta = getChainMetadata(chainId);
+    const decimals = meta?.decimals ?? 8;
+    const divisor = 10 ** decimals;
+    const symbol = meta?.currencySymbol ?? 'FLC';
+    const numericAmount = Number(amount);
+    if (!Number.isFinite(numericAmount)) return `0 ${symbol}`;
+    const formatted = (numericAmount / divisor).toFixed(6);
+    return `${formatted} ${symbol}`;
+  };
+  const renderSharenoteCell = (value: any, count?: number) => {
+    const parsedCount = Number(count);
+    const hasCount = Number.isFinite(parsedCount);
+    const tooltipTitleParts: string[] = [];
+    if (value !== undefined && value !== null && value !== '') {
+      tooltipTitleParts.push(t('liveSharenotes.sum', { label: value }));
+    }
+    if (hasCount) {
+      tooltipTitleParts.push(t('liveSharenotes.count', { count: parsedCount }));
+    }
+    const tooltipTitle = tooltipTitleParts.join(' • ');
+
+    const content = (
+      <Box display="flex" alignItems="center" gap={0.5}>
+        <ShareNoteLabel value={value} />
+        {hasCount ? (
+          <Box
+            component="span"
+            sx={{
+              ml: 0.25,
+              px: 0.75,
+              py: 0.25,
+              borderRadius: 1,
+              bgcolor: 'action.selected',
+              color: 'text.secondary',
+              fontSize: 11,
+              fontWeight: 700,
+              lineHeight: 1.2
+            }}>
+            ×{parsedCount}
+          </Box>
+        ) : null}
+      </Box>
+    );
+
+    return tooltipTitle ? (
+      <Tooltip title={tooltipTitle} placement="top">
+        {content}
+      </Tooltip>
+    ) : (
+      content
+    );
+  };
   return [
     {
       headerName: t('time'),
       field: 'timestamp',
-      flex: 2,
+      flex: 1,
       minWidth: 150,
       headerClassName: 'text-blue text-uppercase',
       cellClassName: 'text-bold',
@@ -34,8 +88,22 @@ const sharesColumns = () => {
       headerClassName: 'text-blue text-uppercase',
       cellClassName: 'text-blue',
       renderCell: (params: any) => {
+        const chainName = getChainName(params.row?.chainId);
+        const chainIcon = getChainIconPath(chainName);
+        const chainAvatar = chainIcon ? (
+          <Avatar
+            alt={`${chainName ?? params.row?.chainId ?? t('liveSharenotes.unknownChain')} logo`}
+            src={chainIcon}
+            variant="rounded"
+            sx={{
+              width: 20,
+              height: 20
+            }}
+          />
+        ) : undefined;
         const chip = (
           <Chip
+            avatar={chainAvatar}
             label={params.value}
             sx={{ fontWeight: 'bold', borderRadius: 1 }}
             size="small"
@@ -47,50 +115,35 @@ const sharesColumns = () => {
             variant={shareChipVariant(params.row?.status)}
           />
         );
-        return [BlockStatusEnum.Orphan, BlockStatusEnum.Checked].includes(params.row?.status) ? (
-          <Tooltip
-            title={
-              params.row?.status == BlockStatusEnum.Orphan ? t('orphanBlock') : t('orphanCheck')
-            }
-            placement="top">
-            {chip}
-          </Tooltip>
-        ) : (
-          chip
-        );
-      }
-    },
-    {
-      headerName: t('paymentHeight'),
-      field: 'paymentHeight',
-      flex: 1,
-      minWidth: 100,
-      headerClassName: 'text-blue text-uppercase',
-      cellClassName: 'text-blue',
-      renderCell: (params: any) => {
-        const chip = (
-          <Chip
-            label={params.value}
-            sx={{
-              fontWeight: 'bold',
-              borderRadius: 1,
-              '& .MuiChip-label':
-                params.row?.status === BlockStatusEnum.Orphan
-                  ? { textDecoration: 'line-through' }
-                  : undefined
-            }}
-            size="small"
-            color={shareChipColor(params.row?.status)}
-            variant={shareChipVariant(params.row?.status)}
-          />
-        );
 
-        return [BlockStatusEnum.Orphan, BlockStatusEnum.Checked].includes(params.row?.status) ? (
-          <Tooltip
-            title={
-              params.row?.status == BlockStatusEnum.Orphan ? t('orphanBlock') : t('orphanCheck')
-            }
-            placement="top">
+        const tooltipLines: string[] = [];
+        if (params.row?.paymentHeight != null) {
+          tooltipLines.push(`${t('paymentHeight')}: ${params.row.paymentHeight}`);
+        }
+        const statusTooltip =
+          params.row?.status === BlockStatusEnum.Orphan
+            ? t('orphanBlock')
+            : params.row?.status === BlockStatusEnum.Checked
+              ? t('orphanCheck')
+              : undefined;
+        if (statusTooltip) {
+          tooltipLines.push(statusTooltip);
+        }
+
+        const tooltipTitle =
+          tooltipLines.length > 0 ? (
+            <>
+              {tooltipLines.map((line, index) => (
+                <span key={index}>
+                  {line}
+                  {index < tooltipLines.length - 1 ? <br /> : null}
+                </span>
+              ))}
+            </>
+          ) : undefined;
+
+        return tooltipTitle ? (
+          <Tooltip title={tooltipTitle} placement="top">
             {chip}
           </Tooltip>
         ) : (
@@ -105,16 +158,16 @@ const sharesColumns = () => {
       minWidth: 90,
       headerClassName: 'text-blue text-uppercase',
       cellClassName: 'text-bold',
-      renderCell: (params: any) => <ShareNoteLabel value={params.value} />
+      renderCell: (params: any) => renderSharenoteCell(params.value, params.row?.sharesCount)
     },
     {
       headerName: t('totalShares'),
       field: 'totalShares',
-      flex: 2,
+      flex: 1,
       minWidth: 100,
       headerClassName: 'text-blue text-uppercase',
       cellClassName: 'text-bold',
-      renderCell: (params: any) => <ShareNoteLabel value={params.value} />
+      renderCell: (params: any) => renderSharenoteCell(params.value, params.row?.totalSharesCount)
     },
     {
       headerName: t('profit'),
@@ -126,7 +179,7 @@ const sharesColumns = () => {
       renderCell: (params: any) => {
         const chip = (
           <Chip
-            label={lokiToFlc(params.value)}
+            label={formatProfitAmount(params.value, params.row?.chainId)}
             sx={{
               fontWeight: 'bold',
               '& .MuiChip-label':

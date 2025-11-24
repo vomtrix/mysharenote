@@ -1,4 +1,5 @@
 import { beautifierConfig } from '@constants/beautifierConfig';
+import { CHAIN_ID_TO_NAME } from '@constants/chainIcons';
 
 export const beautify = (event: any) => {
   const map = beautifierConfig[event.kind];
@@ -24,9 +25,166 @@ export const beautify = (event: any) => {
     }
   > = {};
 
+  const auxBlocks: {
+    chain?: string;
+    height?: number;
+    hash?: string;
+    solved?: boolean;
+  }[] = [];
+  let parentBlock:
+    | {
+        chain?: string;
+        height?: number;
+        hash?: string;
+        solved?: boolean;
+      }
+    | undefined;
+  let hasProcessedParentChain = false;
+  const mapChainIdentifierToName = (chain?: string) => {
+    if (!chain) return undefined;
+    const normalized = chain.trim().toLowerCase();
+    if (!normalized) return undefined;
+    const hexNormalized = normalized.startsWith('0x') ? normalized.slice(2) : normalized;
+    const mappedChain =
+      CHAIN_ID_TO_NAME[normalized] ?? CHAIN_ID_TO_NAME[hexNormalized] ?? normalized;
+    return mappedChain;
+  };
+
   event.tags.forEach((tagEntry: any) => {
     if (!Array.isArray(tagEntry) || tagEntry.length === 0) return;
     const [tagKey, ...rest] = tagEntry;
+
+    if (event.kind === 35510 && tagKey === 'h') {
+      if (rest.length >= 2) {
+        const [hashRaw, chainOrHeightRaw, heightOrChainRaw, solvedRaw] = rest;
+        const auxBlock: {
+          chain?: string;
+          height?: number;
+          hash?: string;
+          solved?: boolean;
+        } = {};
+
+        if (typeof hashRaw === 'string' && hashRaw.trim().length > 0) {
+          auxBlock.hash = hashRaw.trim();
+        }
+
+        const potentialNewFormatHeight = Number(heightOrChainRaw);
+        const potentialLegacyHeight = Number(chainOrHeightRaw);
+        const hasNewFormatHeight = !Number.isNaN(potentialNewFormatHeight);
+        if (hasNewFormatHeight) {
+          auxBlock.height = potentialNewFormatHeight;
+        } else if (!Number.isNaN(potentialLegacyHeight)) {
+          auxBlock.height = potentialLegacyHeight;
+        }
+
+        const chainCandidate = hasNewFormatHeight ? chainOrHeightRaw : heightOrChainRaw;
+        if (
+          (typeof chainCandidate === 'string' || typeof chainCandidate === 'number') &&
+          String(chainCandidate).trim().length > 0
+        ) {
+          const chainString = String(chainCandidate).trim();
+          auxBlock.chain = mapChainIdentifierToName(chainString) ?? chainString;
+        }
+
+        if (typeof solvedRaw === 'string') {
+          const normalizedSolved = solvedRaw.trim().toLowerCase();
+          if (normalizedSolved === 'true') {
+            auxBlock.solved = true;
+          } else if (normalizedSolved === 'false') {
+            auxBlock.solved = false;
+          }
+        }
+
+        if (
+          auxBlock.chain ||
+          auxBlock.height !== undefined ||
+          auxBlock.hash ||
+          auxBlock.solved !== undefined
+        ) {
+          if (!hasProcessedParentChain) {
+            hasProcessedParentChain = true;
+            parentBlock = auxBlock;
+            if (auxBlock.height !== undefined) {
+              result.blockHeight = auxBlock.height;
+            }
+            if (auxBlock.solved !== undefined) {
+              result.solved = auxBlock.solved;
+            }
+            return;
+          }
+
+          auxBlocks.push(auxBlock);
+
+          if (result.blockHeight === undefined && auxBlock.height !== undefined) {
+            result.blockHeight = auxBlock.height;
+          }
+          if (result.solved === undefined && auxBlock.solved !== undefined) {
+            result.solved = auxBlock.solved;
+          }
+        }
+      } else {
+        const primaryValue = rest.find(
+          (segment) => typeof segment === 'string' && segment !== '' && !segment.includes(':')
+        );
+        const auxBlock: {
+          chain?: string;
+          height?: number | string;
+          hash?: string;
+          solved?: boolean;
+        } = {};
+        if (primaryValue !== undefined) {
+          const numericPrimary = Number(primaryValue);
+          if (!Number.isNaN(numericPrimary)) {
+            auxBlock.height = numericPrimary;
+            result.blockHeight = numericPrimary;
+          } else if (typeof primaryValue === 'string') {
+            auxBlock.hash = primaryValue;
+          }
+        }
+        const solvedFlag = rest.find((segment) => segment === 'true' || segment === 'false');
+        if (solvedFlag === 'true') {
+          auxBlock.solved = true;
+          result.solved = true;
+        } else if (solvedFlag === 'false') {
+          auxBlock.solved = false;
+          result.solved = false;
+        }
+
+        if (!hasProcessedParentChain) {
+          hasProcessedParentChain = true;
+          parentBlock = {
+            ...parentBlock,
+            ...auxBlock
+          };
+        } else if (
+          auxBlock.chain ||
+          auxBlock.height !== undefined ||
+          auxBlock.hash ||
+          auxBlock.solved !== undefined
+        ) {
+          auxBlocks.push(auxBlock);
+        }
+      }
+      return;
+    }
+
+    if (
+      event.kind === 35503 &&
+      typeof tagKey === 'string' &&
+      (tagKey === 'chain' || tagKey === 'chainid')
+    ) {
+      const primaryValue = rest.find(
+        (segment) => typeof segment === 'string' && segment !== '' && !segment.includes(':')
+      );
+      if (primaryValue !== undefined) {
+        const chainString = String(primaryValue).trim();
+        if (chainString) {
+          const mappedChain = mapChainIdentifierToName(chainString) ?? chainString;
+          result.chainId = mappedChain;
+        }
+      }
+      return;
+    }
 
     if (event.kind === 35502 && typeof tagKey === 'string' && tagKey.startsWith('w:')) {
       const workerId = tagKey.slice(2);
@@ -135,11 +293,26 @@ export const beautify = (event: any) => {
     const fieldKey = map[tagKey];
     if (fieldKey) {
       const primaryValue = rest.find(
-        (segment) => typeof segment === 'string' && segment !== '' && !segment.includes(':')
+        (segment) =>
+          (typeof segment === 'string' && segment !== '' && !segment.includes(':')) ||
+          typeof segment === 'number'
       );
       if (primaryValue !== undefined) {
         const numericPrimary = Number(primaryValue);
         result[fieldKey] = Number.isNaN(numericPrimary) ? primaryValue : numericPrimary;
+      }
+
+      if (fieldKey === 'shares' || fieldKey === 'totalShares') {
+        const countValue = rest.slice(1).find(
+          (segment) =>
+            (typeof segment === 'string' && segment !== '' && !segment.includes(':')) ||
+            typeof segment === 'number'
+        );
+        const numericCount = Number(countValue);
+        if (Number.isFinite(numericCount)) {
+          const countKey = fieldKey === 'shares' ? 'sharesCount' : 'totalSharesCount';
+          result[countKey] = numericCount;
+        }
       }
 
       rest.forEach((segment) => {
@@ -186,15 +359,6 @@ export const beautify = (event: any) => {
         result.confirmedTx = true;
         result.txBlockHeight = tagValue2;
         result.txBlockHash = tagValue3;
-      }
-    }
-
-    if (event.kind === 35510 && tagKey === 'h') {
-      const solvedFlag = rest.find((segment) => segment === 'true' || segment === 'false');
-      if (solvedFlag === 'true') {
-        result.solved = true;
-      } else if (solvedFlag === 'false') {
-        result.solved = false;
       }
     }
   });
@@ -245,6 +409,19 @@ export const beautify = (event: any) => {
       }
       if (workerValue) {
         result.worker = workerValue;
+      }
+    }
+
+    if (auxBlocks.length > 0) {
+      result.auxBlocks = auxBlocks;
+    }
+    if (parentBlock) {
+      result.parentBlock = parentBlock;
+      if (result.blockHeight === undefined && parentBlock.height !== undefined) {
+        result.blockHeight = parentBlock.height;
+      }
+      if (result.solved === undefined && parentBlock.solved !== undefined) {
+        result.solved = parentBlock.solved;
       }
     }
   }

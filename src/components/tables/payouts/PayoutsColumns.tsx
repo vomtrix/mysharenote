@@ -1,18 +1,61 @@
 import numeral from 'numeral';
 import { useTranslation } from 'react-i18next';
-import { Chip } from '@mui/material';
+import { EXPLORER_URL } from 'src/config/config';
+import { Box, Chip, Tooltip } from '@mui/material';
 import ShareNoteLabel from '@components/common/ShareNoteLabel';
 import { lokiToFlc } from '@utils/helpers';
 import { fromEpoch } from '@utils/time';
-import { EXPLORER_URL } from 'src/config/config';
 
 const payoutsColumns = () => {
   const { t } = useTranslation();
+  const renderSharenoteCell = (value: any, count?: number) => {
+    const parsedCount = Number(count);
+    const hasCount = Number.isFinite(parsedCount);
+    const tooltipTitleParts: string[] = [];
+    if (value !== undefined && value !== null && value !== '') {
+      tooltipTitleParts.push(t('liveSharenotes.sum', { label: value }));
+    }
+    if (hasCount) {
+      tooltipTitleParts.push(t('liveSharenotes.count', { count: parsedCount }));
+    }
+    const tooltipTitle = tooltipTitleParts.join(' • ');
+
+    const content = (
+      <Box display="flex" alignItems="center" gap={0.5}>
+        <ShareNoteLabel value={value} />
+        {hasCount ? (
+          <Box
+            component="span"
+            sx={{
+              ml: 0.25,
+              px: 0.75,
+              py: 0.25,
+              borderRadius: 1,
+              bgcolor: 'action.selected',
+              color: 'text.secondary',
+              fontSize: 11,
+              fontWeight: 700,
+              lineHeight: 1.2
+            }}>
+            ×{parsedCount}
+          </Box>
+        ) : null}
+      </Box>
+    );
+
+    return tooltipTitle ? (
+      <Tooltip title={tooltipTitle} placement="top">
+        {content}
+      </Tooltip>
+    ) : (
+      content
+    );
+  };
   return [
     {
       headerName: t('time'),
       field: 'timestamp',
-      flex: 2,
+      flex: 1,
       minWidth: 150,
       headerClassName: 'text-blue text-uppercase',
       cellClassName: 'text-bold',
@@ -44,16 +87,16 @@ const payoutsColumns = () => {
       minWidth: 90,
       headerClassName: 'text-blue text-uppercase',
       cellClassName: 'text-bold',
-      renderCell: (params: any) => <ShareNoteLabel value={params.value} />
+      renderCell: (params: any) => renderSharenoteCell(params.value, params.row?.sharesCount)
     },
     {
       headerName: t('totalShares'),
       field: 'totalShares',
-      flex: 2,
+      flex: 1,
       minWidth: 100,
       headerClassName: 'text-blue text-uppercase',
       cellClassName: 'text-bold',
-      renderCell: (params: any) => <ShareNoteLabel value={params.value} />
+      renderCell: (params: any) => renderSharenoteCell(params.value, params.row?.totalSharesCount)
     },
     {
       headerName: t('fee'),

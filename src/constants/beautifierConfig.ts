@@ -18,7 +18,8 @@ export const beautifierConfig: Record<number, KeysMap> = {
     shares: 'shares',
     totalshares: 'totalShares',
     eph: 'paymentHeight',
-    timestamp: 'timestamp'
+    timestamp: 'timestamp',
+    chain: 'chain'
   },
   35505: {
     d: 'id',
@@ -32,7 +33,6 @@ export const beautifierConfig: Record<number, KeysMap> = {
   },
   35510: {
     z: 'zBits',
-    h: 'blockHeight',
     hh: 'heightHash',
     d: 'headerHash',
     dd: 'headerHex',

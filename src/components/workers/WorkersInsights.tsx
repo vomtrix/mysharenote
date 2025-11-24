@@ -122,7 +122,7 @@ const WorkersInsights = () => {
     const now = Date.now();
 
     const mapped = Object.entries(latestHashrateEvent.workerDetails)
-      .map(([worker, detail]) => {
+      .map(([worker, detail], index) => {
         if (!worker) return null;
 
         const meanTimeNumeric = parseMeanTime(detail?.meanTime);
@@ -221,7 +221,9 @@ const WorkersInsights = () => {
           hashrateFromNote: derivedHashrate,
           hashrateFromNoteDisplay,
           lastShareTimestamp: detail?.lastShareTimestamp,
+          lastShareMs: lastShareDate?.getTime(),
           timestamp: latestHashrateEvent.timestamp,
+          originalIndex: index,
           userAgent:
             typeof detail?.userAgent === 'string' && detail.userAgent.trim().length > 0
               ? detail.userAgent
@@ -249,10 +251,10 @@ const WorkersInsights = () => {
     });
 
     return withShare.sort((a, b) => {
-      const rateA = a.hashrate ?? 0;
-      const rateB = b.hashrate ?? 0;
-      if (rateA === rateB) return a.worker.localeCompare(b.worker);
-      return rateB - rateA;
+      const lastA = a.lastShareMs ?? -Infinity;
+      const lastB = b.lastShareMs ?? -Infinity;
+      if (lastA === lastB) return (a.originalIndex ?? 0) - (b.originalIndex ?? 0);
+      return lastB - lastA;
     });
   }, [latestHashrateEvent, reevaluateTick]);
 
@@ -264,8 +266,9 @@ const WorkersInsights = () => {
     return map;
   }, [workers, theme]);
 
-  const hasData = workers.length > 0;
-  const showScrollHint = workers.length > 2;
+  const workerCount = workers.length;
+  const hasData = workerCount > 0;
+  const showScrollHint = workerCount > 2;
   const listMaxHeight = showScrollHint ? 'calc(100% - 56px)' : 'none';
   const shellBorder = muiAlpha(
     theme.palette.primary.main,
@@ -302,7 +305,14 @@ const WorkersInsights = () => {
             justifyContent: 'space-between',
             gap: 1
           }}>
-          <InfoHeader title={t('workersInsights')} tooltip={t('info.workersInsights')} />
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.25 }}>
+            <InfoHeader title={t('workersInsights')} tooltip={t('info.workersInsights')} />
+            {workerCount > 1 && (
+              <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 400 }}>
+                {t('workersInsights.count', { count: workerCount })}
+              </Typography>
+            )}
+          </Box>
           {showRefreshIndicator ? (
             <Box
               sx={{

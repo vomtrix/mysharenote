@@ -78,7 +78,9 @@ const WorkersProfit = ({ intervalMinutes = 60 }: Props) => {
                 width: '100%',
                 flexGrow: 1,
                 minHeight: 0,
-                display: 'flex'
+                display: 'flex',
+                maxHeight: 250,
+                height: 250
               }}>
               <BarChart
                 series={series.map((s) => ({

@@ -1,9 +1,17 @@
+export interface IAuxiliaryBlock {
+  chain?: string;
+  height?: number;
+  hash?: string;
+  solved?: boolean;
+}
+
 export interface ILiveSharenoteEvent {
   id: string;
   timestamp: number;
   content?: string;
   blockHeight?: number;
   solved?: boolean;
+  parentBlock?: IAuxiliaryBlock;
   workerId?: string;
   worker?: string;
   /**
@@ -14,4 +22,5 @@ export interface ILiveSharenoteEvent {
   headerHash?: string;
   headerHex?: string;
   address?: string;
+  auxBlocks?: IAuxiliaryBlock[];
 }

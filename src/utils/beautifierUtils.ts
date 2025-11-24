@@ -128,7 +128,7 @@ export const beautify = (event: any) => {
         );
         const auxBlock: {
           chain?: string;
-          height?: number | string;
+          height?: number;
           hash?: string;
           solved?: boolean;
         } = {};

@@ -19,7 +19,7 @@ type Props = {
     formattedValue: string | number | null | undefined;
     value: number | null | undefined;
     seriesId: string | number;
-    formattedLabel?: string;
+    formattedLabel?: string | null;
     color?: string;
     count?: number;
   }) => React.ReactNode;

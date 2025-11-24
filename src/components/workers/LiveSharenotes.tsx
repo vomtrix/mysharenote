@@ -794,7 +794,13 @@ const LiveSharenotes = () => {
                         axisEventCounts: liveChartData.blockEventCounts,
                         axisSeriesCounts: liveChartData.blockSeriesCounts,
                         eventCountFormatter: formatEventCountText,
-                        renderSeriesValue: ({ formattedValue, count }) => (
+                        renderSeriesValue: ({
+                          formattedValue,
+                          count
+                        }: {
+                          formattedValue: string | number | null | undefined;
+                          count?: number;
+                        }) => (
                           <Box
                             sx={{
                               display: 'flex',
@@ -810,7 +816,11 @@ const LiveSharenotes = () => {
                             )}
                           </Box>
                         ),
-                        renderTotalValue: ({ formattedTotal }) => (
+                        renderTotalValue: ({
+                          formattedTotal
+                        }: {
+                          formattedTotal: string | number;
+                        }) => (
                           <ShareNoteLabel value={formattedTotal} placeholder="--" />
                         )
                       } as any

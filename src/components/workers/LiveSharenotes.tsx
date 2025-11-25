@@ -511,21 +511,21 @@ const LiveSharenotes = () => {
                   flexDirection: 'column',
                   gap: 2
                 }}>
-                <Box
-                  sx={{
-                    display: 'flex',
-                    flexWrap: { xs: 'wrap', md: 'nowrap' },
-                    alignItems: 'center',
-                    justifyContent: { md: 'center', xs: 'flex-start', lg: 'flex-start' },
-                    gap: { xs: 0.85, md: 1.1 },
-                    minHeight: 32,
-                    overflowX: { xs: 'visible', md: 'auto' },
-                    padding: { md: '10px 10px 20px 10px' },
-                    scrollbarWidth: 'none',
-                    '&::-webkit-scrollbar': {
-                      display: 'none'
-                    }
-                  }}>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      flexWrap: 'nowrap',
+                      alignItems: 'center',
+                      justifyContent: { md: 'center', xs: 'flex-start', lg: 'flex-start' },
+                      gap: { xs: 0.85, md: 1.1 },
+                      minHeight: 32,
+                      overflowX: 'auto',
+                      padding: { xs: '0 4px 12px 4px', md: '10px 10px 20px 10px' },
+                      scrollbarWidth: 'none',
+                      '&::-webkit-scrollbar': {
+                        display: 'none'
+                      }
+                    }}>
                   {parentChainBlock &&
                     (() => {
                       const chainName =
@@ -566,7 +566,7 @@ const LiveSharenotes = () => {
                             pl: { xs: 0.75, sm: 1.05 },
                             py: 0.45,
                             borderRadius: 999,
-                            flex: { xs: '1 1 48%', md: '0 0 auto' },
+                            flex: { xs: '0 0 auto', md: '0 0 auto' },
                             background: isParentSolved ? undefined : parentChainBackground,
                             backgroundImage: isParentSolved ? solvedAuxChainBackground : undefined,
                             backgroundSize: isParentSolved ? '160% 160%' : undefined,
@@ -635,8 +635,9 @@ const LiveSharenotes = () => {
                               sx={{
                                 display: 'flex',
                                 alignItems: 'center',
-                                gap: 0.75,
-                                flexWrap: 'wrap'
+                                gap: 0.65,
+                                flexWrap: 'nowrap',
+                                flexDirection: 'row'
                               }}>
                               <Typography
                                 key={`${chainKey}-height-${parentChainBlock.height ?? 'na'}`}
@@ -733,7 +734,7 @@ const LiveSharenotes = () => {
                           pl: { xs: 0.75, sm: 1.05 },
                           py: 0.45,
                           borderRadius: 999,
-                          flex: { xs: '1 1 48%', md: '0 0 auto' },
+                          flex: { xs: '0 0 auto', md: '0 0 auto' },
                           background: isSolved ? undefined : auxChainBaseBackground,
                           backgroundImage: isSolved ? solvedAuxChainBackground : undefined,
                           backgroundSize: isSolved ? '160% 160%' : undefined,
@@ -800,8 +801,9 @@ const LiveSharenotes = () => {
                             sx={{
                               display: 'flex',
                               alignItems: 'center',
-                              gap: 0.65,
-                              flexWrap: 'wrap'
+                              gap: 0.6,
+                              flexWrap: 'nowrap',
+                              flexDirection: 'row'
                             }}>
                             <Typography
                               variant="caption"

@@ -55,7 +55,7 @@ const PayoutsTable = () => {
             initialState={{
               pagination: { paginationModel: { pageSize: 10 } },
               sorting: {
-                sortModel: [{ field: 'blockHeight', sort: 'desc' }]
+                sortModel: [{ field: 'timestamp', sort: 'desc' }]
               }
             }}
           />

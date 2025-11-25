@@ -372,11 +372,13 @@ export const beautify = (event: any) => {
       }
 
       if (fieldKey === 'shares' || fieldKey === 'totalShares') {
-        const countValue = rest.slice(1).find(
-          (segment) =>
-            (typeof segment === 'string' && segment !== '' && !segment.includes(':')) ||
-            typeof segment === 'number'
-        );
+        const countValue = rest
+          .slice(1)
+          .find(
+            (segment) =>
+              (typeof segment === 'string' && segment !== '' && !segment.includes(':')) ||
+              typeof segment === 'number'
+          );
         const numericCount = Number(countValue);
         if (Number.isFinite(numericCount)) {
           const countKey = fieldKey === 'shares' ? 'sharesCount' : 'totalSharesCount';

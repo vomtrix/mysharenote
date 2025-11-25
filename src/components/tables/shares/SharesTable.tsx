@@ -145,7 +145,7 @@ const SharesTable = () => {
               isLoading={isSharesSyncLoading}
               initialState={{
                 sorting: {
-                  sortModel: [{ field: 'blockHeight', sort: 'desc' }]
+                  sortModel: [{ field: 'timestamp', sort: 'desc' }]
                 },
                 pagination: { paginationModel: { pageSize: 10 } }
               }}

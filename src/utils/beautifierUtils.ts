@@ -4,6 +4,14 @@ import { noteFromZBits, parseNoteLabel } from '@soprinter/sharenotejs';
 
 export const beautify = (event: any) => {
   const map = beautifierConfig[event.kind];
+  type AuxBlock = {
+    chain?: string;
+    height?: number;
+    hash?: string;
+    solved?: boolean;
+    blockSharenote?: string;
+    blockSharenoteZBits?: number;
+  };
 
   if (!map) {
     return event;
@@ -28,20 +36,8 @@ export const beautify = (event: any) => {
     }
   > = {};
 
-  const auxBlocks: {
-    chain?: string;
-    height?: number;
-    hash?: string;
-    solved?: boolean;
-  }[] = [];
-  let parentBlock:
-    | {
-        chain?: string;
-        height?: number;
-        hash?: string;
-        solved?: boolean;
-      }
-    | undefined;
+  const auxBlocks: AuxBlock[] = [];
+  let parentBlock: AuxBlock | undefined;
   let hasProcessedParentChain = false;
   const mapChainIdentifierToName = (chain?: string) => {
     if (!chain) return undefined;
@@ -75,6 +71,17 @@ export const beautify = (event: any) => {
       /* ignore conversion errors */
     }
     return numericValue;
+  };
+  const applyBlockSharenote = (block: AuxBlock, rawValue: unknown) => {
+    if (rawValue === undefined || rawValue === null) return;
+    const normalized =
+      typeof rawValue === 'string' ? rawValue.trim() : (rawValue as string | number);
+    if (normalized === '') return;
+    block.blockSharenote = String(normalized);
+    const zBitsValue = toZBits(normalized);
+    if (zBitsValue !== undefined) {
+      block.blockSharenoteZBits = zBitsValue;
+    }
   };
   const applyMeanSharenote = (
     detail: {
@@ -125,15 +132,10 @@ export const beautify = (event: any) => {
     if (!Array.isArray(tagEntry) || tagEntry.length === 0) return;
     const [tagKey, ...rest] = tagEntry;
 
-    if (event.kind === 35510 && tagKey === 'h') {
+    if (event.kind === 35510 && (tagKey === 'w' || tagKey === 'h')) {
       if (rest.length >= 2) {
-        const [hashRaw, chainOrHeightRaw, heightOrChainRaw, solvedRaw] = rest;
-        const auxBlock: {
-          chain?: string;
-          height?: number;
-          hash?: string;
-          solved?: boolean;
-        } = {};
+        const [hashRaw, chainOrHeightRaw, heightOrChainRaw, solvedRaw, blockSharenoteRaw] = rest;
+        const auxBlock: AuxBlock = {};
 
         if (typeof hashRaw === 'string' && hashRaw.trim().length > 0) {
           auxBlock.hash = hashRaw.trim();
@@ -166,6 +168,8 @@ export const beautify = (event: any) => {
           }
         }
 
+        applyBlockSharenote(auxBlock, blockSharenoteRaw);
+
         if (
           auxBlock.chain ||
           auxBlock.height !== undefined ||
@@ -197,12 +201,7 @@ export const beautify = (event: any) => {
         const primaryValue = rest.find(
           (segment) => typeof segment === 'string' && segment !== '' && !segment.includes(':')
         );
-        const auxBlock: {
-          chain?: string;
-          height?: number;
-          hash?: string;
-          solved?: boolean;
-        } = {};
+        const auxBlock: AuxBlock = {};
         if (primaryValue !== undefined) {
           const numericPrimary = Number(primaryValue);
           if (!Number.isNaN(numericPrimary)) {

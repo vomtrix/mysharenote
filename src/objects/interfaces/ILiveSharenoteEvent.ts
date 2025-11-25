@@ -3,6 +3,11 @@ export interface IAuxiliaryBlock {
   height?: number;
   hash?: string;
   solved?: boolean;
+  /**
+   * Target sharenote label miners need to beat for this block.
+   */
+  blockSharenote?: string;
+  blockSharenoteZBits?: number;
 }
 
 export interface ILiveSharenoteEvent {

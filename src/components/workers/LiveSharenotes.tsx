@@ -547,6 +547,14 @@ const LiveSharenotes = () => {
                       }
                       const chainLabel = formatChainDisplayName(chainName);
                       const heightLabel = formatAuxChainHeight(parentChainBlock.height);
+                      const blockTargetLabel = formatSharenoteLabel(
+                        parentChainBlock.blockSharenote ?? parentChainBlock.blockSharenoteZBits
+                      );
+                      const blockTargetValue = blockTargetLabel
+                        ? parentChainBlock.blockSharenote ??
+                          parentChainBlock.blockSharenoteZBits ??
+                          blockTargetLabel
+                        : undefined;
                       return (
                         <Box
                           key={`${chainKey}-${parentChainBlock.height ?? 'na'}-${isParentSolved ? 'solved' : 'live'}`}
@@ -648,6 +656,44 @@ const LiveSharenotes = () => {
                                 color="text.secondary">
                                 {heightLabel}
                               </Typography>
+                              {blockTargetValue && (
+                                <Box
+                                  sx={{
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: 0.35,
+                                    px: 0.65,
+                                    py: 0.22,
+                                    borderRadius: 12,
+                                    background: `linear-gradient(135deg, ${alpha(
+                                      theme.palette.primary.light,
+                                      0.22
+                                    )}, ${alpha(theme.palette.background.paper, 0.08)})`,
+                                    border: `1px solid ${alpha(theme.palette.primary.main, 0.35)}`,
+                                    boxShadow: `0 6px 14px ${alpha(
+                                      theme.palette.primary.dark,
+                                      0.14
+                                    )}`,
+                                    fontSize: '0.68rem',
+                                    lineHeight: 1.15,
+                                    color: theme.palette.text.primary
+                                  }}>
+                                  <Box
+                                    component="span"
+                                    sx={{
+                                      width: 6,
+                                      height: 6,
+                                      borderRadius: '50%',
+                                      backgroundColor: alpha(theme.palette.primary.main, 0.95),
+                                      boxShadow: `0 0 0 5px ${alpha(
+                                        theme.palette.primary.main,
+                                        0.12
+                                      )}`
+                                    }}
+                                  />
+                                  <ShareNoteLabel value={blockTargetValue} placeholder="--" />
+                                </Box>
+                              )}
                             </Box>
                           </Box>
                         </Box>
@@ -659,6 +705,12 @@ const LiveSharenotes = () => {
                     const abbreviatedChain = chainName.slice(0, 3).toUpperCase();
                     const chainLabel = formatChainDisplayName(chainName);
                     const heightLabel = formatAuxChainHeight(block.height);
+                    const blockTargetLabel = formatSharenoteLabel(
+                      block.blockSharenote ?? block.blockSharenoteZBits
+                    );
+                    const blockTargetValue = blockTargetLabel
+                      ? block.blockSharenote ?? block.blockSharenoteZBits ?? blockTargetLabel
+                      : undefined;
                     const iconSrc = getChainIconPath(chainName);
                     const chainKey = chainName.toLowerCase();
                     const isSolved = block.solved === true;
@@ -744,24 +796,76 @@ const LiveSharenotes = () => {
                             sx={{ fontWeight: 600, lineHeight: 1.1, fontSize: '0.88rem' }}>
                             {chainLabel}
                           </Typography>
-                          <Typography
-                            variant="caption"
-                            key={`${chainKey}-height-${block.height ?? 'na'}`}
+                          <Box
                             sx={{
-                              fontSize: { xs: '0.58rem', lg: '0.7rem' },
-                              borderRadius: 8,
-                              px: 0.4,
-                              ...blockNumberSolvedFlashKeyframes,
-                              ...blockNumberUpdateFlashKeyframes,
-                              animation: isRecentlyUpdated
-                                ? isSolved
-                                  ? 'liveBlockNumberSolved 0.9s ease-out'
-                                  : 'liveBlockNumberUpdate 0.9s ease-out'
-                                : undefined
-                            }}
-                            color="text.secondary">
-                            {heightLabel}
-                          </Typography>
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 0.65,
+                              flexWrap: 'wrap'
+                            }}>
+                            <Typography
+                              variant="caption"
+                              key={`${chainKey}-height-${block.height ?? 'na'}`}
+                              sx={{
+                                fontSize: { xs: '0.58rem', lg: '0.7rem' },
+                                borderRadius: 8,
+                                px: 0.4,
+                                ...blockNumberSolvedFlashKeyframes,
+                                ...blockNumberUpdateFlashKeyframes,
+                                animation: isRecentlyUpdated
+                                  ? isSolved
+                                    ? 'liveBlockNumberSolved 0.9s ease-out'
+                                    : 'liveBlockNumberUpdate 0.9s ease-out'
+                                  : undefined
+                              }}
+                              color="text.secondary">
+                              {heightLabel}
+                            </Typography>
+                            {blockTargetValue && (
+                              <Box
+                                sx={{
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: 0.35,
+                                  px: 0.6,
+                                  py: 0.2,
+                                  borderRadius: 12,
+                                  background: `linear-gradient(135deg, ${alpha(
+                                    isSolved ? theme.palette.success.light : theme.palette.primary.light,
+                                    0.24
+                                  )}, ${alpha(theme.palette.background.paper, 0.08)})`,
+                                  border: `1px solid ${alpha(
+                                    isSolved ? theme.palette.success.main : theme.palette.primary.main,
+                                    0.35
+                                  )}`,
+                                  boxShadow: `0 6px 14px ${alpha(
+                                    isSolved ? theme.palette.success.dark : theme.palette.primary.dark,
+                                    0.14
+                                  )}`,
+                                  fontSize: '0.66rem',
+                                  lineHeight: 1.1,
+                                  color: theme.palette.text.primary
+                                }}>
+                                <Box
+                                  component="span"
+                                  sx={{
+                                      width: 6,
+                                      height: 6,
+                                      borderRadius: '50%',
+                                      backgroundColor: alpha(
+                                      isSolved ? theme.palette.success.main : theme.palette.primary.main,
+                                      0.95
+                                    ),
+                                    boxShadow: `0 0 0 5px ${alpha(
+                                      isSolved ? theme.palette.success.main : theme.palette.primary.main,
+                                      0.12
+                                    )}`
+                                  }}
+                                />
+                                <ShareNoteLabel value={blockTargetValue} placeholder="--" />
+                              </Box>
+                            )}
+                          </Box>
                         </Box>
                       </Box>
                     );

@@ -73,7 +73,7 @@
     "pendingShares": "Workers with valid sharenotes from blocks still awaiting maturity or payment, queued for future payouts once confirmations complete.",
     "workersProfit": "Unpaid, immature rewards by worker over time — amounts may change once blocks confirm.",
     "hashrateChart": "Hashrate over time for all or selected workers, with live and averaged view options.",
-    "liveSharenotes": "Flokicoin burn chart fed by every sharenote plus live aux-chain heights showing which merge-mined block your work belongs to."
+    "liveSharenotes": "A live chart showing how many sharenotes workers print for each block on the parent chain."
   },
   "pageNotFound": "This page could not be found",
   "loading": "Loading...",

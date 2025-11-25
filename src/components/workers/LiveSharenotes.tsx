@@ -198,7 +198,7 @@ const LiveSharenotes = () => {
     }
 
     const workerIds = Array.from(
-      baseBlockMap.values().reduce<Set<string>>((acc, map) => {
+      Array.from(baseBlockMap.values()).reduce<Set<string>>((acc, map) => {
         map.forEach((_value, worker) => acc.add(worker));
         return acc;
       }, new Set<string>())
@@ -451,7 +451,7 @@ const LiveSharenotes = () => {
   return (
     <StyledCard
       sx={{
-        maxHeight: '555px',
+        maxHeight: '565px',
         mb: { xs: 3, lg: 0 }
       }}>
       <Box
@@ -820,9 +820,7 @@ const LiveSharenotes = () => {
                           formattedTotal
                         }: {
                           formattedTotal: string | number;
-                        }) => (
-                          <ShareNoteLabel value={formattedTotal} placeholder="--" />
-                        )
+                        }) => <ShareNoteLabel value={formattedTotal} placeholder="--" />
                       } as any
                     }}
                   />

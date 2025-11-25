@@ -23,8 +23,8 @@ const METRIC_STORAGE_KEY = 'hashrateMetricPreference';
 const WORKER_STORAGE_KEY = 'hashrateSelectedWorker';
 
 type HashrateMetric = 'live' | 'emaShort' | 'emaLong';
-const SHORT_EMA_PERIOD = 5;
-const LONG_EMA_PERIOD = 15;
+const SHORT_EMA_PERIOD = 10;
+const LONG_EMA_PERIOD = 30;
 
 const HashrateChart = () => {
   const { t } = useTranslation();
@@ -261,12 +261,22 @@ const HashrateChart = () => {
   const highlightLeft = `${(selectedMetricIndex / metricOptions.length) * 100}%`;
 
   return (
-    <StyledCard>
+    <StyledCard
+      sx={{
+        boxShadow: '0 15px 45px -35px rgba(40, 40, 125, 0.45)',
+        height: { xs: 'auto', lg: 'auto' },
+        display: 'flex',
+        flexDirection: 'column'
+      }}>
       <Box
         component="section"
         sx={{
-          p: 2,
-          justifyContent: 'center'
+          pt: 2,
+          px: 2,
+          pb: { xs: 2, lg: 0 },
+          display: 'flex',
+          flexDirection: 'column',
+          height: '100%'
         }}>
         <SectionHeader
           sx={{
@@ -527,11 +537,12 @@ const HashrateChart = () => {
             <Box
               sx={{
                 width: '100%',
-                minHeight: '45px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: '0.9rem'
+                minHeight: '45px',
+                fontSize: '0.9rem',
+                flexGrow: 1
               }}>
               No data
             </Box>

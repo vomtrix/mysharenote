@@ -1,5 +1,6 @@
 import { beautifierConfig } from '@constants/beautifierConfig';
 import { CHAIN_ID_TO_NAME } from '@constants/chainIcons';
+import { noteFromZBits, parseNoteLabel } from '@soprinter/sharenotejs';
 
 export const beautify = (event: any) => {
   const map = beautifierConfig[event.kind];
@@ -18,7 +19,9 @@ export const beautify = (event: any) => {
     {
       hashrate?: number;
       sharenote?: string | number;
+      sharenoteZBits?: number;
       meanSharenote?: string | number;
+      meanSharenoteZBits?: number;
       meanTime?: number;
       lastShareTimestamp?: number;
       userAgent?: string;
@@ -48,6 +51,74 @@ export const beautify = (event: any) => {
     const mappedChain =
       CHAIN_ID_TO_NAME[normalized] ?? CHAIN_ID_TO_NAME[hexNormalized] ?? normalized;
     return mappedChain;
+  };
+  const toZBits = (value: unknown): number | undefined => {
+    if (value === undefined || value === null) return undefined;
+    const normalized = typeof value === 'string' ? value.trim() : value;
+    if (normalized === '') return undefined;
+
+    if (typeof normalized === 'string') {
+      try {
+        const note = parseNoteLabel(normalized);
+        if (note && Number.isFinite(note.zBits)) return note.zBits;
+      } catch {
+        /* ignore parse errors */
+      }
+    }
+
+    const numericValue = Number(normalized as any);
+    if (!Number.isFinite(numericValue)) return undefined;
+    try {
+      const note = noteFromZBits(numericValue);
+      if (note && Number.isFinite(note.zBits)) return note.zBits;
+    } catch {
+      /* ignore conversion errors */
+    }
+    return numericValue;
+  };
+  const applyMeanSharenote = (
+    detail: {
+      hashrate?: number;
+      sharenote?: string | number;
+      meanSharenote?: string | number;
+      meanSharenoteZBits?: number;
+      meanTime?: number;
+      lastShareTimestamp?: number;
+      userAgent?: string;
+    },
+    rawValue: unknown
+  ) => {
+    if (rawValue === undefined || rawValue === null) return;
+    const normalized =
+      typeof rawValue === 'string' ? rawValue.trim() : (rawValue as string | number);
+    if (normalized === '') return;
+    detail.meanSharenote = normalized as string | number;
+    const numeric = Number(normalized);
+    if (Number.isFinite(numeric)) {
+      detail.meanSharenoteZBits = numeric;
+    }
+  };
+  const applySharenoteZBits = (
+    detail: {
+      hashrate?: number;
+      sharenote?: string | number;
+      sharenoteZBits?: number;
+      meanSharenote?: string | number;
+      meanSharenoteZBits?: number;
+      meanTime?: number;
+      lastShareTimestamp?: number;
+      userAgent?: string;
+    },
+    rawValue: unknown
+  ) => {
+    if (rawValue === undefined || rawValue === null) return;
+    const normalized =
+      typeof rawValue === 'string' ? rawValue.trim() : (rawValue as string | number);
+    if (normalized === '') return;
+    const zBitsValue = toZBits(normalized);
+    if (zBitsValue !== undefined) {
+      detail.sharenoteZBits = zBitsValue;
+    }
   };
 
   event.tags.forEach((tagEntry: any) => {
@@ -219,13 +290,13 @@ export const beautify = (event: any) => {
               if (valueRaw !== '') {
                 const numericSharenote = Number(valueRaw);
                 detail.sharenote = Number.isNaN(numericSharenote) ? valueRaw : numericSharenote;
+                applySharenoteZBits(detail, valueRaw);
               }
               break;
             }
             case 'msn': {
               if (valueRaw !== '') {
-                const trimmedValue = valueRaw.trim();
-                detail.meanSharenote = trimmedValue === '' ? undefined : trimmedValue;
+                applyMeanSharenote(detail, valueRaw);
               }
               break;
             }
@@ -272,11 +343,10 @@ export const beautify = (event: any) => {
       if (sharenoteRaw !== undefined && sharenoteRaw !== null && sharenoteRaw !== '') {
         const numericSharenote = Number(sharenoteRaw);
         detail.sharenote = Number.isNaN(numericSharenote) ? String(sharenoteRaw) : numericSharenote;
+        applySharenoteZBits(detail, sharenoteRaw);
       }
       if (meanSharenoteRaw !== undefined && meanSharenoteRaw !== null && meanSharenoteRaw !== '') {
-        const trimmedMeanSn =
-          typeof meanSharenoteRaw === 'string' ? meanSharenoteRaw.trim() : String(meanSharenoteRaw);
-        detail.meanSharenote = trimmedMeanSn === '' ? undefined : trimmedMeanSn;
+        applyMeanSharenote(detail, meanSharenoteRaw);
       }
       if (!Number.isNaN(meanTimeValue)) {
         detail.meanTime = meanTimeValue;
@@ -372,7 +442,9 @@ export const beautify = (event: any) => {
         if (
           detail.hashrate !== undefined ||
           detail.sharenote !== undefined ||
+          detail.sharenoteZBits !== undefined ||
           detail.meanSharenote !== undefined ||
+          detail.meanSharenoteZBits !== undefined ||
           detail.meanTime !== undefined ||
           detail.lastShareTimestamp !== undefined ||
           detail.userAgent !== undefined
@@ -386,7 +458,9 @@ export const beautify = (event: any) => {
         {
           hashrate?: number;
           sharenote?: string | number;
+          sharenoteZBits?: number;
           meanSharenote?: string | number;
+          meanSharenoteZBits?: number;
           meanTime?: number;
           lastShareTimestamp?: number;
           userAgent?: string;

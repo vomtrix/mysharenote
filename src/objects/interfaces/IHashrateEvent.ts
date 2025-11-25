@@ -13,7 +13,9 @@ export interface IHashrateEvent {
     {
       hashrate?: number;
       sharenote?: string | number;
+      sharenoteZBits?: number;
       meanSharenote?: string | number;
+      meanSharenoteZBits?: number;
       meanTime?: number;
       lastShareTimestamp?: number;
       userAgent?: string;

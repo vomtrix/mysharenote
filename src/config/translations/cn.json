@@ -73,7 +73,7 @@
     "pendingShares": "包含尚未成熟或支付的区块中有效 sharenotes 的工人，显示确认后将支付的奖励。",
     "workersProfit": "各工人未支付、未成熟的奖励随时间变化 — 区块确认后金额可能调整。",
     "hashrateChart": "所有或选定工人的算力随时间变化，可切换实时和平均视图。",
-    "liveSharenotes": "实时展示由每个 sharenote 驱动的 Flokicoin 销毁图表，并列出当前合并挖掘所连接的辅助链高度。"
+    "liveSharenotes": "实时图表显示每个父链区块中，工作节点打印的 sharenotes 数量。"
   },
   "pageNotFound": "页面未找到",
   "loading": "加载中...",

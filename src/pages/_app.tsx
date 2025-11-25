@@ -1,5 +1,4 @@
 import Head from 'next/head';
-import Script from 'next/script';
 import { PropsWithChildren, useMemo } from 'react';
 import { Provider } from 'react-redux';
 import { Bounce, ToastContainer } from 'react-toastify';
@@ -93,18 +92,6 @@ const App = (props: any) => {
           <meta name="apple-mobile-web-app-title" content="mySharenote"></meta>
           <link rel="manifest" href="/assets/site.webmanifest"></link>
         </Head>
-        <Script
-          src="https://www.googletagmanager.com/gtag/js?id=G-57MPTSDC1R"
-          strategy="afterInteractive"
-        />
-        <Script id="ga-gtag-init" strategy="afterInteractive">
-          {`
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);} 
-            gtag('js', new Date());
-            gtag('config', 'G-57MPTSDC1R');
-          `}
-        </Script>
         <ModeThemeProvider>
           {!hideChrome && <Header />}
           <Container

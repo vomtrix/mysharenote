@@ -40,17 +40,25 @@ const AddressPage = () => {
   const relayIsReady = useSelector(getRelayReady);
   const { showError } = useNotification();
   const hasConnectedRelayRef = useRef(false);
-  const rightColumnStyles = {
-    flex: { xs: 'auto', lg: 4 },
-    maxWidth: { lg: 'calc((4 / 11) * 100%)' },
+  const rowHeights = {
+    xs: 220,
+    lgTall: 320,
+    lgMedium: 280,
+    lgShort: 220
+  };
+  const cardGridStyles = {
+    width: '100%',
+    display: 'grid',
+    gridTemplateColumns: { xs: '1fr', lg: '7fr 4fr' },
+    gridAutoRows: 'auto',
+    gap: { xs: 3, lg: 3 },
+    alignItems: 'stretch',
+    mb: { xs: 0, lg: 3 },
+    '& > *': { minWidth: 0 }
+  };
+  const fullHeightWrapper = {
     display: 'flex',
-    flexShrink: 1,
-    height: { xs: 'auto', lg: 320 },
-    '& > *': {
-      flexGrow: 1,
-      height: '100%',
-      marginBottom: 0
-    }
+    '& > *': { flexGrow: 1, width: '100%', height: '100%' }
   };
 
   useEffect(() => {
@@ -97,152 +105,140 @@ const AddressPage = () => {
         flexDirection: 'column',
         alignItems: 'center',
         width: '100%',
-        marginBottom: '50px',
+        marginBottom: '10px',
         justifyContent: 'center'
       }}>
       {enableSkeleton ? (
-        <>
+        <Box sx={cardGridStyles}>
           <Skeleton
             variant="rounded"
             animation="wave"
-            sx={{ height: 50, width: '100%', marginBottom: 1 }}
+            sx={{
+              gridColumn: { xs: '1', lg: '1' },
+              gridRow: { xs: 'auto', lg: '1' },
+              height: { xs: rowHeights.xs, lg: rowHeights.lgTall }
+            }}
           />
           <Skeleton
             variant="rounded"
             animation="wave"
-            sx={{ height: 200, width: '100%', marginBottom: 3 }}
+            sx={{
+              gridColumn: { xs: '1', lg: '2' },
+              gridRow: { xs: 'auto', lg: '1 / span 2' },
+              height: {
+                xs: rowHeights.xs,
+                lg: `calc(${rowHeights.lgTall * 2}px + 24px)`
+              }
+            }}
           />
-        </>
+          <Skeleton
+            variant="rounded"
+            animation="wave"
+            sx={{
+              gridColumn: { xs: '1', lg: '1' },
+              gridRow: { xs: 'auto', lg: '2' },
+              height: { xs: rowHeights.xs, lg: rowHeights.lgTall }
+            }}
+          />
+          <Skeleton
+            variant="rounded"
+            animation="wave"
+            sx={{
+              gridColumn: { xs: '1', lg: '1' },
+              gridRow: { xs: 'auto', lg: '3' },
+              height: { xs: rowHeights.xs, lg: rowHeights.lgMedium }
+            }}
+          />
+          <Skeleton
+            variant="rounded"
+            animation="wave"
+            sx={{
+              gridColumn: { xs: '1', lg: '2' },
+              gridRow: { xs: 'auto', lg: '3' },
+              height: { xs: rowHeights.xs, lg: rowHeights.lgMedium }
+            }}
+          />
+          <Skeleton
+            variant="rounded"
+            animation="wave"
+            sx={{
+              gridColumn: { xs: '1', lg: '1' },
+              gridRow: { xs: 'auto', lg: '4' },
+              height: { xs: rowHeights.xs - 20, lg: rowHeights.lgShort }
+            }}
+          />
+          <Skeleton
+            variant="rounded"
+            animation="wave"
+            sx={{
+              gridColumn: { xs: '1', lg: '2' },
+              gridRow: { xs: 'auto', lg: '4' },
+              height: { xs: rowHeights.xs - 20, lg: rowHeights.lgShort }
+            }}
+          />
+        </Box>
       ) : (
-        <HashrateChart />
-      )}
-
-      {enableSkeleton ? (
-        <>
-          <Skeleton variant="rounded" animation="wave" sx={{ height: 50, width: '100%', mb: 1 }} />
-          <Skeleton variant="rounded" animation="wave" sx={{ height: 200, width: '100%', mb: 3 }} />
-        </>
-      ) : (
-        <Box
-          sx={{
-            width: '100%',
-            display: 'flex',
-            flexDirection: { xs: 'column', lg: 'row' },
-            gap: { xs: 0, lg: 3 },
-            alignItems: 'stretch',
-            mb: { xs: 0, lg: 3 }
-          }}>
+        <Box sx={cardGridStyles}>
           <Box
             sx={{
-              flex: { xs: 'auto', lg: 7 },
-              minWidth: 0,
-              flexShrink: 1,
-              display: 'flex',
-              height: { xs: 'auto', lg: 320 },
-              '& > *': { flexGrow: 1, height: '100%', mb: 0 }
+              gridColumn: { xs: '1', lg: '1' },
+              gridRow: { xs: 'auto', lg: '1' },
+              minHeight: { lg: 320 },
+              ...fullHeightWrapper
+            }}>
+            <HashrateChart />
+          </Box>
+          <Box
+            sx={{
+              gridColumn: { xs: '1', lg: '2' },
+              gridRow: { xs: 'auto', lg: '1 / span 2' },
+              ...fullHeightWrapper
+            }}>
+            <WorkersInsights />
+          </Box>
+          <Box
+            sx={{
+              gridColumn: { xs: '1', lg: '1' },
+              gridRow: { xs: 'auto', lg: '2' },
+              minHeight: { lg: 320 },
+              ...fullHeightWrapper
             }}>
             <WorkersProfit />
           </Box>
-          <Box sx={rightColumnStyles}>
-            <WorkersInsights />
-          </Box>
-        </Box>
-      )}
-
-      {enableSkeleton ? (
-        <Box
-          sx={{
-            width: '100%',
-            display: 'flex',
-            flexDirection: { xs: 'column', lg: 'row' },
-            gap: { xs: 1, lg: 3 },
-            alignItems: 'stretch',
-            mb: { xs: 3, lg: 3 }
-          }}>
-          <Skeleton
-            variant="rounded"
-            animation="wave"
-            sx={{
-              flex: { xs: 'auto', lg: 7 },
-              height: { xs: 220, lg: 280 },
-              width: '100%'
-            }}
-          />
-          <Skeleton
-            variant="rounded"
-            animation="wave"
-            sx={{
-              ...rightColumnStyles,
-              height: { xs: 220, lg: 280 },
-              width: '100%'
-            }}
-          />
-        </Box>
-      ) : (
-        <Box
-          sx={{
-            width: '100%',
-            display: 'flex',
-            flexDirection: { xs: 'column', lg: 'row' },
-            gap: { xs: 0, lg: 3 },
-            alignItems: 'stretch',
-            mb: { xs: 0, lg: 3 }
-          }}>
           <Box
             sx={{
-              flex: { xs: 'auto', lg: 7 },
-              minWidth: 0,
-              flexShrink: 1,
-              display: 'flex',
-              flexDirection: 'column',
-              mb: { xs: 3, lg: 0 },
-              '& > *': { flexGrow: 1, height: 'auto', mb: 0 }
+              gridColumn: { xs: '1', lg: '1' },
+              gridRow: { xs: 'auto', lg: '3' },
+              ...fullHeightWrapper
             }}>
             <SharesTable />
           </Box>
-
           <Box
             sx={{
-              ...rightColumnStyles,
-              height: 'auto'
+              gridColumn: { xs: '1', lg: '2' },
+              gridRow: { xs: 'auto', lg: '3' },
+              minHeight: { lg: 280 },
+              ...fullHeightWrapper
             }}>
             <LiveSharenotes />
           </Box>
+          <Box
+            sx={{
+              gridColumn: { xs: '1', lg: '1' },
+              gridRow: { xs: 'auto', lg: '4' },
+              ...fullHeightWrapper
+            }}>
+            <PayoutsTable />
+          </Box>
+          <Box
+            sx={{
+              gridColumn: { xs: '1', lg: '2' },
+              gridRow: { xs: 'auto', lg: '4' },
+              ...fullHeightWrapper
+            }}>
+            <PayoutsChart />
+          </Box>
         </Box>
-      )}
-
-      {enableSkeleton ? (
-        <>
-          <Skeleton
-            variant="rounded"
-            animation="wave"
-            sx={{ height: 50, width: '100%', marginBottom: 1 }}
-          />
-          <Skeleton
-            variant="rounded"
-            animation="wave"
-            sx={{ height: 200, width: '100%', marginBottom: 3 }}
-          />
-        </>
-      ) : (
-        <PayoutsChart />
-      )}
-
-      {enableSkeleton ? (
-        <>
-          <Skeleton
-            variant="rounded"
-            animation="wave"
-            sx={{ height: 50, width: '100%', marginBottom: 1 }}
-          />
-          <Skeleton
-            variant="rounded"
-            animation="wave"
-            sx={{ height: 200, width: '100%', marginBottom: 1 }}
-          />
-        </>
-      ) : (
-        <PayoutsTable />
       )}
     </Box>
   );

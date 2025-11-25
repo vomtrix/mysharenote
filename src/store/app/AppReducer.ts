@@ -1,6 +1,15 @@
 /* Core */
+import {
+  DARK_MODE_DEFAULT,
+  DARK_MODE_FORCE,
+  EXPLORER_URL,
+  PAYER_PUBLIC_KEY,
+  RELAY_URL,
+  WORK_PROVIDER_PUBLIC_KEY
+} from 'src/config/config';
 import { ICustomError } from '@interfaces/ICustomError';
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
+import { noteFromZBits, parseNoteLabel } from '@soprinter/sharenotejs';
 import { NetworkTypeType } from '@objects/Enums';
 import { IHashrateEvent } from '@objects/interfaces/IHashrateEvent';
 import type { ILiveSharenoteEvent } from '@objects/interfaces/ILiveSharenoteEvent';
@@ -21,14 +30,6 @@ import {
   syncBlock
 } from '@store/app/AppThunks';
 import { makeIdsSignature } from '@utils/helpers';
-import {
-  DARK_MODE_DEFAULT,
-  DARK_MODE_FORCE,
-  EXPLORER_URL,
-  PAYER_PUBLIC_KEY,
-  RELAY_URL,
-  WORK_PROVIDER_PUBLIC_KEY
-} from 'src/config/config';
 
 /* Instruments */
 
@@ -106,9 +107,90 @@ const applyShareEvent = (state: AppState, event: IShareEvent) => {
   state.shares.push(event);
 };
 
+const normalizeWorkerNotes = (event: IHashrateEvent) => {
+  if (!event.workerDetails) return;
+  const toMs = (value?: number) => {
+    if (typeof value !== 'number' || !Number.isFinite(value)) return undefined;
+    return value > 1e12 ? value : value * 1000;
+  };
+  const toZBits = (value: unknown): number | undefined => {
+    if (value === undefined || value === null) return undefined;
+    const normalized = typeof value === 'string' ? value.trim() : value;
+    if (normalized === '') return undefined;
+
+    if (typeof normalized === 'string') {
+      try {
+        const note = parseNoteLabel(normalized);
+        if (note && Number.isFinite(note.zBits)) return note.zBits;
+      } catch {
+        /* ignore parse errors */
+      }
+    }
+
+    const numericValue = Number(normalized as any);
+    if (!Number.isFinite(numericValue)) return undefined;
+    try {
+      const note = noteFromZBits(numericValue);
+      if (note && Number.isFinite(note.zBits)) return note.zBits;
+    } catch {
+      /* ignore conversion errors */
+    }
+    return numericValue;
+  };
+
+  const entries = Object.entries(event.workerDetails).map(([workerId, detail], index) => {
+    if (detail.sharenoteZBits === undefined) {
+      const rawSharenote =
+        typeof detail.sharenote === 'string' ? detail.sharenote.trim() : detail.sharenote;
+      const zBitsValue = toZBits(rawSharenote);
+      if (zBitsValue !== undefined) {
+        detail.sharenoteZBits = zBitsValue;
+      }
+    }
+
+    if (detail.meanSharenoteZBits === undefined) {
+      const rawMean =
+        typeof detail.meanSharenote === 'string'
+          ? detail.meanSharenote.trim()
+          : detail.meanSharenote;
+      if (rawMean !== undefined && rawMean !== null && rawMean !== '') {
+        const numericValue = Number(rawMean);
+        if (Number.isFinite(numericValue)) {
+          detail.meanSharenoteZBits = numericValue;
+        }
+      }
+    }
+
+    return {
+      workerId,
+      detail,
+      sharenoteZBitsSort: Number.isFinite(detail.sharenoteZBits)
+        ? (detail.sharenoteZBits as number)
+        : -Infinity,
+      lastShareMsSort: toMs(detail.lastShareTimestamp),
+      originalIndex: index
+    };
+  });
+
+  entries.sort((a, b) => {
+    if (a.sharenoteZBitsSort !== b.sharenoteZBitsSort) {
+      return b.sharenoteZBitsSort - a.sharenoteZBitsSort;
+    }
+    const lastA = a.lastShareMsSort ?? -Infinity;
+    const lastB = b.lastShareMsSort ?? -Infinity;
+    if (lastA !== lastB) return lastB - lastA;
+    return a.originalIndex - b.originalIndex;
+  });
+
+  event.workerDetails = Object.fromEntries(
+    entries.map(({ workerId, detail }) => [workerId, detail])
+  );
+};
+
 const applyHashrateEvent = (state: AppState, event: IHashrateEvent) => {
   const lastHashrate = state.hashrates.at(-1)?.timestamp;
   if (event.timestamp !== lastHashrate) {
+    normalizeWorkerNotes(event);
     state.hashrates.push(event);
   }
 };

@@ -122,7 +122,7 @@ const WorkersInsights = () => {
     const now = Date.now();
 
     const mapped = Object.entries(latestHashrateEvent.workerDetails)
-      .map(([worker, detail], index) => {
+      .map(([worker, detail]) => {
         if (!worker) return null;
 
         const meanTimeNumeric = parseMeanTime(detail?.meanTime);
@@ -174,7 +174,6 @@ const WorkersInsights = () => {
           meanSharenoteDisplayRaw !== sharenoteDisplayRaw
             ? meanSharenoteDisplayRaw
             : undefined;
-
         const sharenoteLabelForCalc = hasSharenoteValue
           ? String(
               typeof sharenoteRaw === 'string' ? sharenoteRaw.trim() : (sharenoteRaw ?? '')
@@ -223,7 +222,6 @@ const WorkersInsights = () => {
           lastShareTimestamp: detail?.lastShareTimestamp,
           lastShareMs: lastShareDate?.getTime(),
           timestamp: latestHashrateEvent.timestamp,
-          originalIndex: index,
           userAgent:
             typeof detail?.userAgent === 'string' && detail.userAgent.trim().length > 0
               ? detail.userAgent
@@ -250,12 +248,7 @@ const WorkersInsights = () => {
       };
     });
 
-    return withShare.sort((a, b) => {
-      const lastA = a.lastShareMs ?? -Infinity;
-      const lastB = b.lastShareMs ?? -Infinity;
-      if (lastA === lastB) return (a.originalIndex ?? 0) - (b.originalIndex ?? 0);
-      return lastB - lastA;
-    });
+    return withShare;
   }, [latestHashrateEvent, reevaluateTick]);
 
   const workerColorMap = useMemo(() => {
@@ -284,7 +277,7 @@ const WorkersInsights = () => {
       sx={{
         border: `1px solid ${shellBorder}`,
         boxShadow: '0 15px 45px -35px rgba(40, 40, 125, 0.45)',
-        height: { xs: 'auto', lg: 320 },
+        height: { xs: 'auto', lg: 'auto' },
         display: 'flex',
         flexDirection: 'column'
       }}>

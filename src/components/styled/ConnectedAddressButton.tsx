@@ -14,7 +14,7 @@ export const ConnectedAddressButton = styled('div')(({ theme }) => ({
   minWidth: 0,
   overflow: 'hidden',
   [theme.breakpoints.up('sm')]: {
-    marginLeft: theme.spacing(1)
+    // marginLeft: theme.spacing(1)
   }
 }));
 

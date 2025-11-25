@@ -86,8 +86,19 @@ const PayoutsChart = () => {
   const hasData = x.length > 0 && amount.length > 0;
 
   return (
-    <StyledCard>
-      <Box component="section" sx={{ p: 2, minHeight: '150px', justifyContent: 'center' }}>
+    <StyledCard
+      sx={{
+        maxHeight: '565px',
+        mb: { xs: 3, lg: 0 }
+      }}>
+      <Box
+        component="section"
+        sx={{
+          p: 2,
+          display: 'flex',
+          flexDirection: 'column',
+          height: '100%'
+        }}>
         <SectionHeader>
           <InfoHeader title={t('payoutsSummary')} tooltip={t('info.payoutsSummary')} />
         </SectionHeader>
@@ -125,7 +136,8 @@ const PayoutsChart = () => {
                 alignItems: 'center',
                 justifyContent: 'center',
                 minHeight: '45px',
-                fontSize: '0.9rem'
+                fontSize: '0.9rem',
+                flexGrow: 1
               }}>
               No data
             </Box>

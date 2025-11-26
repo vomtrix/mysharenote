@@ -11,7 +11,6 @@ import {
   changeRelay,
   connectRelay,
   getHashrates,
-  getLastBlockHeight,
   getLiveSharenotes,
   getPayouts,
   getShares,
@@ -43,7 +42,6 @@ export interface AppState {
   unconfirmedBalance: number;
   settings: ISettings;
   colorMode: 'light' | 'dark';
-  lastBlockHeight: number;
   isHashrateLoading: boolean;
   isSharesLoading: boolean;
   isPayoutsLoading: boolean;
@@ -72,7 +70,6 @@ export const initialState: AppState = {
     explorer: EXPLORER_URL,
     explorers: { ...DEFAULT_CHAIN_EXPLORERS }
   },
-  lastBlockHeight: 0,
   isHashrateLoading: false,
   isSharesLoading: false,
   isPayoutsLoading: false,
@@ -96,9 +93,6 @@ const applyPayoutEvent = (state: AppState, event: IPayoutEvent) => {
 };
 
 const applyShareEvent = (state: AppState, event: IShareEvent) => {
-  if (!state.lastBlockHeight || event.blockHeight > state.lastBlockHeight) {
-    state.lastBlockHeight = event.blockHeight;
-  }
   state.pendingBalance += event.amount;
   state.shares.push(event);
 };
@@ -384,12 +378,6 @@ export const slice = createSlice({
         state.isSharesLoading = false;
         state.skeleton = true;
         state.relayReady = false;
-      })
-      .addCase(getLastBlockHeight.fulfilled, (state, action) => {
-        const blockHeight = action.payload;
-        if (!state.lastBlockHeight || blockHeight > state.lastBlockHeight) {
-          state.lastBlockHeight = blockHeight;
-        }
       });
   }
 });

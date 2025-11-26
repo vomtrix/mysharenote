@@ -32,7 +32,6 @@ Set environment variables (or `.env.local`) as provided by your pool:
 - `NEXT_PUBLIC_RELAY_URL`
 - `NEXT_PUBLIC_PAYER_PUBLIC_KEY`
 - `NEXT_PUBLIC_WORK_PROVIDER_PUBLIC_KEY`
-- `NEXT_PUBLIC_EXPLORER_URL`
 
 They seed `src/config/config.ts` and can be overridden via in-app settings. Do not commit secrets.
 

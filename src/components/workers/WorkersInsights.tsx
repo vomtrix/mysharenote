@@ -279,7 +279,8 @@ const WorkersInsights = () => {
         boxShadow: '0 15px 45px -35px rgba(40, 40, 125, 0.45)',
         height: { xs: 'auto', lg: 'auto' },
         display: 'flex',
-        flexDirection: 'column'
+        flexDirection: 'column',
+        maxHeight: '780px'
       }}>
       <Box
         component="section"

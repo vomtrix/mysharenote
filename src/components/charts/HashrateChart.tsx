@@ -419,10 +419,17 @@ const HashrateChart = () => {
           <Box
             sx={{
               display: 'flex',
-              flexWrap: 'wrap',
+              flexWrap: 'nowrap',
               columnGap: 2,
               rowGap: 1.5,
-              pb: chartDataPoints.length > 0 ? 2 : 0.5
+              pb: chartDataPoints.length > 0 ? 2 : 0.5,
+              overflowX: 'auto',
+              width: '100%',
+              pr: 1,
+              scrollSnapType: 'x mandatory',
+              '& > *': {
+                scrollSnapAlign: 'start'
+              }
             }}>
             {availableWorkers.map((worker) => {
               const color = workerColors[worker] || theme.palette.primary.main;
@@ -467,6 +474,7 @@ const HashrateChart = () => {
                     color: theme.palette.text.primary,
                     textAlign: 'left',
                     whiteSpace: 'nowrap',
+                    flexShrink: 0,
                     display: 'flex',
                     alignItems: 'center',
                     gap: 1,

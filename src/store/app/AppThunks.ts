@@ -4,7 +4,6 @@ import type { ILiveSharenoteEvent } from '@objects/interfaces/ILiveSharenoteEven
 import { IPayoutEvent } from '@objects/interfaces/IPayoutEvent';
 import { ISettings } from '@objects/interfaces/ISettings';
 import { IShareEvent } from '@objects/interfaces/IShareEvent';
-import { ElectrumService } from '@services/api/ElectrumService';
 import { RelayService } from '@services/api/RelayService';
 import { createAppAsyncThunk } from '@store/createAppAsyncThunk';
 import { beautify } from '@utils/beautifierUtils';
@@ -370,22 +369,6 @@ export const changeRelay = createAppAsyncThunk(
       return settings;
     } catch (err: any) {
       dispatch(setSkeleton(true));
-      return rejectWithValue({
-        message: err?.message || err,
-        code: err.code,
-        status: err.status
-      });
-    }
-  }
-);
-
-export const getLastBlockHeight = createAppAsyncThunk(
-  'electrum/getLastBlockHeight',
-  async (_, { rejectWithValue }) => {
-    try {
-      const electrumService: any = Container.get(ElectrumService);
-      return await electrumService.getLastBlockHeight();
-    } catch (err: any) {
       return rejectWithValue({
         message: err?.message || err,
         code: err.code,

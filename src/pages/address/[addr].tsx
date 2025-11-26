@@ -16,7 +16,6 @@ import { getAddress, getRelayReady, getSettings, getSkeleton } from '@store/app/
 import {
   connectRelay,
   getHashrates,
-  getLastBlockHeight,
   getLiveSharenotes,
   getPayouts,
   getShares,
@@ -79,7 +78,6 @@ const AddressPage = () => {
 
   useEffect(() => {
     if (currentAddress && hasConfig && hasConnectedRelayRef.current && relayIsReady) {
-      dispatch(getLastBlockHeight());
       dispatch(stopHashrates());
       dispatch(stopShares());
       dispatch(stopLiveSharenotes());

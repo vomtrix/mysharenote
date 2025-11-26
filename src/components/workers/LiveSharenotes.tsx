@@ -469,7 +469,7 @@ const LiveSharenotes = () => {
       overflowX: 'auto',
       overflowY: 'hidden',
       width: '100%',
-      justifyContent: 'flex-start',
+      justifyContent: 'center',
       gap: 2,
       scrollbarWidth: 'none',
       msOverflowStyle: 'none',

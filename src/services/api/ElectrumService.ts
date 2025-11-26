@@ -1,7 +1,7 @@
-import { ELECTRUM_API_URL } from 'src/config/config';
 import { Service } from 'typedi';
 import { RequestSecurityType, RequestVerbType } from '@objects/Enums';
 import { AbstractHttpRequest } from '@services/AbstractHttpRequest';
+import { ELECTRUM_API_URL } from 'src/config/config';
 
 @Service()
 export class ElectrumService extends AbstractHttpRequest {

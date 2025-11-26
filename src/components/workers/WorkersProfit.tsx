@@ -1,18 +1,18 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import Box from '@mui/material/Box';
-import { useTheme } from '@mui/material/styles';
-import { BarChart } from '@mui/x-charts/BarChart';
+import { getChainIconPath, getChainMetadata, getChainName } from '@constants/chainIcons';
 import Avatar from '@mui/material/Avatar';
+import Box from '@mui/material/Box';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
+import { useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
+import { BarChart } from '@mui/x-charts/BarChart';
 import StackedTotalTooltip from '@components/charts/StackedTotalTooltip';
 import InfoHeader from '@components/common/InfoHeader';
 import ProgressLoader from '@components/common/ProgressLoader';
 import { SectionHeader } from '@components/styled/SectionHeader';
 import { StyledCard } from '@components/styled/StyledCard';
-import { getChainIconPath, getChainMetadata, getChainName } from '@constants/chainIcons';
 import type { IShareEvent } from '@objects/interfaces/IShareEvent';
 import { getAddress, getIsSharesLoading, getShares } from '@store/app/AppSelectors';
 import { useSelector } from '@store/store';
@@ -131,7 +131,9 @@ const WorkersProfit = ({ intervalMinutes = 60 }: Props) => {
     return currencySymbol ? `${formatted} ${currencySymbol}` : formatted;
   };
   const formatShareValueNumber = (value: number) =>
-    currencySymbol ? `${(value / divisor).toFixed(precision)} ${currencySymbol}` : (value / divisor).toFixed(precision);
+    currencySymbol
+      ? `${(value / divisor).toFixed(precision)} ${currencySymbol}`
+      : (value / divisor).toFixed(precision);
 
   return (
     <StyledCard sx={{ height: { xs: 'auto', lg: 320 } }}>
@@ -148,10 +150,10 @@ const WorkersProfit = ({ intervalMinutes = 60 }: Props) => {
           sx={{
             display: 'flex',
             alignItems: { xs: 'center', sm: 'center' },
-          justifyContent: 'space-between',
-          gap: 1,
-          flexWrap: 'wrap'
-        }}>
+            justifyContent: 'space-between',
+            gap: 1,
+            flexWrap: 'wrap'
+          }}>
           <InfoHeader title={t('workersProfit')} tooltip={t('info.workersProfit')} />
           {chainOptions.length > 0 ? (
             <Box
@@ -173,13 +175,13 @@ const WorkersProfit = ({ intervalMinutes = 60 }: Props) => {
                     sx: { maxHeight: 320 }
                   }
                 }}
-              sx={{
+                sx={{
                   ml: { xs: 0, md: 'auto' },
                   bgcolor: 'background.paper',
                   borderRadius: 1,
                   width: '100%',
-                  boxShadow: (theme) =>
-                    theme.palette.mode === 'dark'
+                  boxShadow: (muiTheme) =>
+                    muiTheme.palette.mode === 'dark'
                       ? '0 6px 18px rgba(0,0,0,0.35)'
                       : '0 6px 18px rgba(0,0,0,0.08)',
                   '.MuiSelect-select': {
@@ -210,11 +212,7 @@ const WorkersProfit = ({ intervalMinutes = 60 }: Props) => {
                           sx={{ width: 22, height: 22 }}
                         />
                       ) : null}
-                      <Typography
-                        variant="body2"
-                        fontWeight={700}
-                        noWrap
-                        sx={{ maxWidth: '100%' }}>
+                      <Typography variant="body2" fontWeight={700} noWrap sx={{ maxWidth: '100%' }}>
                         {option.label}
                       </Typography>
                     </Box>

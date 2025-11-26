@@ -4,8 +4,8 @@ import { getChainIconPath, getChainName } from '@constants/chainIcons';
 import Avatar from '@mui/material/Avatar';
 import Badge from '@mui/material/Badge';
 import Box from '@mui/material/Box';
-import Collapse from '@mui/material/Collapse';
 import ClickAwayListener from '@mui/material/ClickAwayListener';
+import Collapse from '@mui/material/Collapse';
 import Typography from '@mui/material/Typography';
 import CustomTable from '@components/common/CustomTable';
 import CustomTooltip from '@components/common/CustomTooltip';
@@ -270,7 +270,8 @@ const SharesTable = () => {
                                   borderRadius: 10,
                                   backgroundColor: 'rgba(0,0,0,0.03)',
                                   boxShadow: '0 6px 14px rgba(0,0,0,0.12)',
-                                  transition: 'transform 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease',
+                                  transition:
+                                    'transform 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease',
                                   '&:hover': {
                                     transform: 'translateY(-1px)',
                                     boxShadow: '0 12px 26px rgba(0,0,0,0.18)',

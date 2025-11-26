@@ -1,18 +1,7 @@
 /* Core */
-import {
-  DARK_MODE_DEFAULT,
-  DARK_MODE_FORCE,
-  EXPLORER_URL,
-  DEFAULT_CHAIN_EXPLORERS,
-  DEFAULT_NETWORK,
-  PAYER_PUBLIC_KEY,
-  RELAY_URL,
-  WORK_PROVIDER_PUBLIC_KEY
-} from 'src/config/config';
 import { ICustomError } from '@interfaces/ICustomError';
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import { noteFromZBits, parseNoteLabel } from '@soprinter/sharenotejs';
-import { NetworkTypeType } from '@objects/Enums';
 import { IHashrateEvent } from '@objects/interfaces/IHashrateEvent';
 import type { ILiveSharenoteEvent } from '@objects/interfaces/ILiveSharenoteEvent';
 import { IPayoutEvent } from '@objects/interfaces/IPayoutEvent';
@@ -30,6 +19,16 @@ import {
   stopLiveSharenotes,
   stopShares
 } from '@store/app/AppThunks';
+import {
+  DARK_MODE_DEFAULT,
+  DARK_MODE_FORCE,
+  DEFAULT_CHAIN_EXPLORERS,
+  DEFAULT_NETWORK,
+  EXPLORER_URL,
+  PAYER_PUBLIC_KEY,
+  RELAY_URL,
+  WORK_PROVIDER_PUBLIC_KEY
+} from 'src/config/config';
 
 /* Instruments */
 

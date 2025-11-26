@@ -29,7 +29,6 @@ import {
   FormControl,
   FormControlLabel,
   FormLabel,
-  Grid,
   Paper,
   Radio,
   RadioGroup,
@@ -257,8 +256,8 @@ const SettingsModal = () => {
                 startAdornment={<SettingsInputAntennaOutlinedIcon fontSize="small" />}
               />
               <Divider flexItem />
-              <Grid container spacing={1.5} sx={{ width: '100%' }}>
-                <Grid item xs={12} sx={{ width: '100%' }}>
+              <Stack spacing={1.5} sx={{ width: '100%' }}>
+                <Box>
                   <FormLabel
                     component="legend"
                     sx={{ paddingBottom: 0.5, color: 'text.secondary' }}>
@@ -272,8 +271,8 @@ const SettingsModal = () => {
                     required
                     startAdornment={<PaymentsIcon fontSize="small" />}
                   />
-                </Grid>
-                <Grid item xs={12} sx={{ width: '100%' }}>
+                </Box>
+                <Box>
                   <FormLabel
                     component="legend"
                     sx={{ paddingBottom: 0.5, color: 'text.secondary' }}>
@@ -287,8 +286,8 @@ const SettingsModal = () => {
                     required
                     startAdornment={<GavelIcon fontSize="small" />}
                   />
-                </Grid>
-              </Grid>
+                </Box>
+              </Stack>
             </Stack>
           </Paper>
 
@@ -307,13 +306,13 @@ const SettingsModal = () => {
                   {t('settings.explorer')}
                 </Typography>
               </Box>
-              <Grid container spacing={1.25}>
+              <Stack spacing={1.25}>
                 {chainEntries.map(([key, meta]) => {
                   const chainName = getChainName(key) ?? key;
                   const chainLabel = chainName.charAt(0).toUpperCase() + chainName.slice(1);
                   const chainIcon = getChainIconPath(key);
                   return (
-                    <Grid item xs={12} key={key} sx={{ width: '100%' }}>
+                    <Box key={key} sx={{ width: '100%' }}>
                       <FormLabel
                         component="legend"
                         sx={{ paddingBottom: 0.5, color: 'text.secondary' }}>
@@ -334,10 +333,10 @@ const SettingsModal = () => {
                           </Avatar>
                         }
                       />
-                    </Grid>
+                    </Box>
                   );
                 })}
-              </Grid>
+              </Stack>
             </Stack>
           </Paper>
 

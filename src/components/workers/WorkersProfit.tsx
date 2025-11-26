@@ -134,6 +134,29 @@ const WorkersProfit = ({ intervalMinutes = 60 }: Props) => {
     currencySymbol
       ? `${(value / divisor).toFixed(precision)} ${currencySymbol}`
       : (value / divisor).toFixed(precision);
+  const inlineLegendSlotProps = {
+    direction: 'row',
+    position: { vertical: 'top', horizontal: 'left' } as const,
+    padding: { top: 4, bottom: 4 },
+    itemGap: 2,
+    labelStyle: { whiteSpace: 'nowrap' }
+  };
+  const inlineLegendSx = {
+    '& .MuiChartsLegend-root': {
+      flexWrap: 'nowrap',
+      overflowX: 'auto',
+      overflowY: 'hidden',
+      width: '100%',
+      justifyContent: 'flex-start',
+      gap: 2,
+      scrollbarWidth: 'none',
+      msOverflowStyle: 'none',
+      '&::-webkit-scrollbar': { display: 'none' }
+    },
+    '& .MuiChartsLegend-series': {
+      whiteSpace: 'nowrap'
+    }
+  };
 
   return (
     <StyledCard sx={{ height: { xs: 'auto', lg: 320 } }}>
@@ -256,7 +279,8 @@ const WorkersProfit = ({ intervalMinutes = 60 }: Props) => {
                 minHeight: 0,
                 display: 'flex',
                 maxHeight: 250,
-                height: 250
+                height: 250,
+                ...inlineLegendSx
               }}>
               <BarChart
                 series={series.map((s) => ({
@@ -275,6 +299,7 @@ const WorkersProfit = ({ intervalMinutes = 60 }: Props) => {
                 margin={{ bottom: 0, left: 10, right: 10, top: 20 }}
                 slots={{ tooltip: StackedTotalTooltip as any }}
                 slotProps={{
+                  legend: inlineLegendSlotProps,
                   tooltip: { trigger: 'axis', valueFormatter: formatShareValueNumber } as any
                 }}
               />

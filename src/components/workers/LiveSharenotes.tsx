@@ -436,6 +436,29 @@ const LiveSharenotes = () => {
     ...series,
     valueFormatter: formatChartValue
   }));
+  const inlineLegendSlotProps = {
+    direction: 'row',
+    position: { vertical: 'top', horizontal: 'left' } as const,
+    padding: { top: 4, bottom: 4 },
+    itemGap: 10,
+    labelStyle: { whiteSpace: 'nowrap' }
+  };
+  const inlineLegendSx = {
+    '& .MuiChartsLegend-root': {
+      flexWrap: 'nowrap',
+      overflowX: 'auto',
+      overflowY: 'hidden',
+      width: '100%',
+      justifyContent: 'flex-start',
+      gap: 2,
+      scrollbarWidth: 'none',
+      msOverflowStyle: 'none',
+      '&::-webkit-scrollbar': { display: 'none' }
+    },
+    '& .MuiChartsLegend-series': {
+      whiteSpace: 'nowrap'
+    }
+  };
 
   return (
     <StyledCard
@@ -880,7 +903,8 @@ const LiveSharenotes = () => {
                     flexGrow: 1,
                     minHeight: 0,
                     maxHeight: { xs: 300, lg: 'unset' },
-                    height: { xs: 300, lg: 'unset' }
+                    height: { xs: 300, lg: 'unset' },
+                    ...inlineLegendSx
                   }}>
                   <BarChart
                     series={chartSeries}
@@ -895,6 +919,7 @@ const LiveSharenotes = () => {
                     margin={{ bottom: 0, left: 10, right: 10, top: 16 }}
                     slots={{ tooltip: StackedTotalTooltip as any }}
                     slotProps={{
+                      legend: inlineLegendSlotProps,
                       tooltip: {
                         trigger: 'axis',
                         valueFormatter: formatChartValue,

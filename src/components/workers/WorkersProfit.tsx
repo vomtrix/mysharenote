@@ -18,6 +18,7 @@ import { getAddress, getIsSharesLoading, getShares } from '@store/app/AppSelecto
 import { useSelector } from '@store/store';
 import { aggregateSharesByInterval } from '@utils/aggregators';
 import { getWorkerColor } from '@utils/colors';
+import { normalizeWorkerId } from '@utils/workers';
 
 type Props = {
   intervalMinutes?: number; // default 60 min
@@ -104,23 +105,31 @@ const WorkersProfit = ({ intervalMinutes = 60 }: Props) => {
     if (!activeChain) return positiveShares;
     return positiveShares.filter((share) => normalizeChainKey(share.chainId) === activeChain);
   }, [shares, activeChain, normalizeChainKey]);
+  const normalizedShares = useMemo(
+    () =>
+      filteredShares.map((share) => ({
+        ...share,
+        workerId: normalizeWorkerId(share.workerId)
+      })),
+    [filteredShares]
+  );
   const workerTotals = useMemo(() => {
     const totals = new Map<string, number>();
-    filteredShares.forEach((share) => {
+    normalizedShares.forEach((share) => {
       const key = String(share.workerId ?? '');
       const amt = Number(share.amount ?? 0);
       if (!Number.isFinite(amt) || amt <= 0) return;
       totals.set(key, (totals.get(key) ?? 0) + amt);
     });
     return totals;
-  }, [filteredShares]);
+  }, [normalizedShares]);
 
   const { xLabels, workers, dataByWorker } = useMemo(
     () =>
-      aggregateSharesByInterval(filteredShares || [], intervalSec, windowSec, undefined, {
+      aggregateSharesByInterval(normalizedShares || [], intervalSec, windowSec, undefined, {
         fallbackToLatest: true
       }),
-    [filteredShares, intervalSec]
+    [normalizedShares, intervalSec]
   );
   const series = useMemo(() => {
     const mapped = workers.reduce<

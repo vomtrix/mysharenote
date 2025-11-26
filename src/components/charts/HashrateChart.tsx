@@ -104,33 +104,6 @@ const HashrateChart = () => {
     }
   };
 
-  useEffect(() => {
-    if (!availableWorkers.includes(selectedWorker)) {
-      const fallbackWorker = availableWorkers.includes('all') ? 'all' : availableWorkers[0];
-      setSelectedWorker(fallbackWorker);
-      if (typeof window !== 'undefined') {
-        window.localStorage.setItem(WORKER_STORAGE_KEY, fallbackWorker);
-      }
-    }
-  }, [availableWorkers, selectedWorker]);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const storedWorker = window.localStorage.getItem(WORKER_STORAGE_KEY);
-    if (!storedWorker) {
-      window.localStorage.setItem(WORKER_STORAGE_KEY, selectedWorker);
-    }
-  }, [selectedWorker]);
-
-  const workerColors = useMemo(() => {
-    const colorMap: Record<string, string> = {};
-    availableWorkers.forEach((worker) => {
-      colorMap[worker] =
-        worker === 'all' ? theme.palette.primary.main : getWorkerColor(theme, worker);
-    });
-    return colorMap;
-  }, [availableWorkers, theme]);
-
   const workerMetricSummaries = useMemo(() => {
     if (!hashrates?.length) {
       return new Map<string, { live?: number; emaShort?: number; emaLong?: number }>();
@@ -200,6 +173,42 @@ const HashrateChart = () => {
 
     return metricsMap;
   }, [hashrates]);
+
+  const visibleWorkers = useMemo(() => {
+    return availableWorkers.filter((worker) => {
+      if (worker === 'all') return true;
+      const liveValue = workerMetricSummaries.get(worker)?.live;
+      return typeof liveValue === 'number' && liveValue > 0;
+    });
+  }, [availableWorkers, workerMetricSummaries]);
+
+  useEffect(() => {
+    if (!visibleWorkers.includes(selectedWorker)) {
+      const fallbackWorker = visibleWorkers.includes('all') ? 'all' : visibleWorkers[0];
+      if (!fallbackWorker) return;
+      setSelectedWorker(fallbackWorker);
+      if (typeof window !== 'undefined') {
+        window.localStorage.setItem(WORKER_STORAGE_KEY, fallbackWorker);
+      }
+    }
+  }, [selectedWorker, visibleWorkers]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const storedWorker = window.localStorage.getItem(WORKER_STORAGE_KEY);
+    if (!storedWorker) {
+      window.localStorage.setItem(WORKER_STORAGE_KEY, selectedWorker);
+    }
+  }, [selectedWorker]);
+
+  const workerColors = useMemo(() => {
+    const colorMap: Record<string, string> = {};
+    visibleWorkers.forEach((worker) => {
+      colorMap[worker] =
+        worker === 'all' ? theme.palette.primary.main : getWorkerColor(theme, worker);
+    });
+    return colorMap;
+  }, [theme, visibleWorkers]);
 
   type WorkerDataPoint = LineData<UTCTimestamp>;
 
@@ -431,7 +440,7 @@ const HashrateChart = () => {
                 scrollSnapAlign: 'start'
               }
             }}>
-            {availableWorkers.map((worker) => {
+            {visibleWorkers.map((worker) => {
               const color = workerColors[worker] || theme.palette.primary.main;
               const isSelected = worker === selectedWorker;
               const metrics = workerMetricSummaries.get(worker);

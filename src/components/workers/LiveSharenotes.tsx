@@ -23,6 +23,7 @@ import { useSelector } from '@store/store';
 import { getWorkerColor } from '@utils/colors';
 import { formatSharenoteLabel } from '@utils/helpers';
 import { formatRelativeFromTimestamp } from '@utils/time';
+import { normalizeWorkerId } from '@utils/workers';
 
 const toSharenote = (event: ILiveSharenoteEvent): Sharenote | undefined => {
   if (typeof event.zBits === 'string' && event.zBits.trim()) {
@@ -175,7 +176,7 @@ const LiveSharenotes = () => {
 
     sharenotesWithValue.forEach((event) => {
       if (typeof event.blockHeight !== 'number' || !Number.isFinite(event.blockHeight)) return;
-      const workerId = event.worker ?? event.workerId ?? 'unknown';
+      const workerId = normalizeWorkerId(event.worker ?? event.workerId);
       const deltaNote = toSharenote(event);
       if (!deltaNote) return;
       if (!Number.isFinite(deltaNote.zBits) || deltaNote.zBits === 0) return;

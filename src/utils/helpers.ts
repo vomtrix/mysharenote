@@ -2,7 +2,6 @@ import { address, networks } from 'flokicoinjs-lib';
 import { noteFromCentZBits, noteFromZBits } from '@soprinter/sharenotejs';
 import { NetworkTypeType } from '@objects/Enums';
 import { IDataPoint } from '@objects/interfaces/IDatapoint';
-import { BlockStatusEnum } from '@objects/interfaces/IShareEvent';
 
 const LOKI_PER_FLC = 100000000;
 const MUST_CENTZ = 25600;
@@ -153,28 +152,6 @@ export const formatK = (v: number | null | undefined): string => {
     return `${str}k`;
   }
   return `${v}`;
-};
-
-export const shareChipColor = (status: BlockStatusEnum) => {
-  switch (status) {
-    case BlockStatusEnum.Orphan:
-      return 'error';
-    case BlockStatusEnum.New:
-    case BlockStatusEnum.Valid:
-      return;
-    default:
-      return 'warning';
-  }
-};
-
-export const shareChipVariant = (status: BlockStatusEnum) => {
-  switch (status) {
-    case BlockStatusEnum.New:
-    case BlockStatusEnum.Valid:
-      return;
-    default:
-      return 'outlined';
-  }
 };
 
 export const makeIdsSignature = (ids: any[]): string => {

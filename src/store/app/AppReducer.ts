@@ -3,6 +3,8 @@ import {
   DARK_MODE_DEFAULT,
   DARK_MODE_FORCE,
   EXPLORER_URL,
+  DEFAULT_CHAIN_EXPLORERS,
+  DEFAULT_NETWORK,
   PAYER_PUBLIC_KEY,
   RELAY_URL,
   WORK_PROVIDER_PUBLIC_KEY
@@ -15,7 +17,7 @@ import { IHashrateEvent } from '@objects/interfaces/IHashrateEvent';
 import type { ILiveSharenoteEvent } from '@objects/interfaces/ILiveSharenoteEvent';
 import { IPayoutEvent } from '@objects/interfaces/IPayoutEvent';
 import { ISettings } from '@objects/interfaces/ISettings';
-import { BlockStatusEnum, IShareEvent } from '@objects/interfaces/IShareEvent';
+import { IShareEvent } from '@objects/interfaces/IShareEvent';
 import {
   changeRelay,
   connectRelay,
@@ -26,10 +28,8 @@ import {
   getShares,
   stopHashrates,
   stopLiveSharenotes,
-  stopShares,
-  syncBlock
+  stopShares
 } from '@store/app/AppThunks';
-import { makeIdsSignature } from '@utils/helpers';
 
 /* Instruments */
 
@@ -40,7 +40,6 @@ export interface AppState {
   shares: IShareEvent[];
   payouts: IPayoutEvent[];
   liveSharenotes: ILiveSharenoteEvent[];
-  visibleSharesSig?: string | null;
   pendingBalance: number;
   unconfirmedBalance: number;
   settings: ISettings;
@@ -48,7 +47,6 @@ export interface AppState {
   lastBlockHeight: number;
   isHashrateLoading: boolean;
   isSharesLoading: boolean;
-  isSharesSyncLoading: boolean;
   isPayoutsLoading: boolean;
   skeleton: boolean;
   relayReady?: boolean;
@@ -64,20 +62,19 @@ export const initialState: AppState = {
   shares: [],
   payouts: [],
   liveSharenotes: [],
-  visibleSharesSig: null,
   unconfirmedBalance: 0,
   pendingBalance: 0,
   colorMode: initialColorMode,
   settings: {
     relay: RELAY_URL,
-    network: NetworkTypeType.Mainnet,
+    network: DEFAULT_NETWORK,
     payerPublicKey: PAYER_PUBLIC_KEY,
     workProviderPublicKey: WORK_PROVIDER_PUBLIC_KEY,
-    explorer: EXPLORER_URL
+    explorer: EXPLORER_URL,
+    explorers: { ...DEFAULT_CHAIN_EXPLORERS }
   },
   lastBlockHeight: 0,
   isHashrateLoading: false,
-  isSharesSyncLoading: false,
   isSharesLoading: false,
   isPayoutsLoading: false,
   skeleton: false,
@@ -215,10 +212,11 @@ export const slice = createSlice({
     clearSettings: (state: AppState) => {
       state.settings = {
         relay: RELAY_URL,
-        network: NetworkTypeType.Mainnet,
+        network: DEFAULT_NETWORK,
         payerPublicKey: PAYER_PUBLIC_KEY,
         workProviderPublicKey: WORK_PROVIDER_PUBLIC_KEY,
-        explorer: EXPLORER_URL
+        explorer: EXPLORER_URL,
+        explorers: { ...DEFAULT_CHAIN_EXPLORERS }
       };
     },
     clearHashrates: (state: AppState) => {
@@ -251,9 +249,6 @@ export const slice = createSlice({
     setSkeleton: (state: AppState, action: PayloadAction<boolean>) => {
       state.skeleton = action.payload;
     },
-    setVisibleSharesSig: (state: AppState, action: PayloadAction<string | null>) => {
-      state.visibleSharesSig = action.payload;
-    },
     setLiveSharenotesLoader: (state: AppState, action: PayloadAction<boolean>) => {
       state.isLiveSharenotesLoading = action.payload;
     },
@@ -268,19 +263,6 @@ export const slice = createSlice({
     },
     addSharesBatch: (state: AppState, action: PayloadAction<IShareEvent[]>) => {
       action.payload.forEach((event) => applyShareEvent(state, event));
-    },
-    updateShare: (
-      state: AppState,
-      action: PayloadAction<Partial<IShareEvent> & { id: string }>
-    ) => {
-      const payload = action.payload;
-      const index = state.shares.findIndex((share) => share.id === payload.id);
-      if (index !== -1) {
-        state.shares[index] = { ...state.shares[index], ...payload };
-        if (state.shares[index].status === BlockStatusEnum.Orphan) {
-          state.pendingBalance -= state.shares[index].amount;
-        }
-      }
     },
     addHashrate: (state: AppState, action: PayloadAction<IHashrateEvent>) => {
       applyHashrateEvent(state, action.payload);
@@ -369,7 +351,12 @@ export const slice = createSlice({
         state.hashrates = [];
       })
       .addCase(changeRelay.fulfilled, (state, action) => {
-        state.settings = action.payload;
+        const payload = action.payload;
+        state.settings = {
+          ...state.settings,
+          ...payload,
+          explorers: { ...DEFAULT_CHAIN_EXPLORERS, ...(payload?.explorers ?? {}) }
+        };
         state.error = undefined;
         state.skeleton = false;
         state.relayReady = true;
@@ -399,23 +386,6 @@ export const slice = createSlice({
         state.skeleton = true;
         state.relayReady = false;
       })
-      .addCase(syncBlock.pending, (state, action) => {
-        try {
-          const idsArg: any[] = action?.meta?.arg ?? [];
-          const sig = makeIdsSignature(idsArg);
-          if (sig !== state.visibleSharesSig) {
-            state.isSharesSyncLoading = true;
-          }
-        } catch {
-          state.isSharesSyncLoading = true;
-        }
-      })
-      .addCase(syncBlock.fulfilled, (state) => {
-        state.isSharesSyncLoading = false;
-      })
-      .addCase(syncBlock.rejected, (state, action) => {
-        state.error = action.payload;
-      })
       .addCase(getLastBlockHeight.fulfilled, (state, action) => {
         const blockHeight = action.payload;
         if (!state.lastBlockHeight || blockHeight > state.lastBlockHeight) {
@@ -436,7 +406,6 @@ export const {
   addSharesBatch,
   addLiveSharenote,
   addLiveSharenotesBatch,
-  updateShare,
   addAddress,
   clearSettings,
   clearAddress,
@@ -450,8 +419,7 @@ export const {
   setLiveSharenotesLoader,
   setSettings,
   setColorMode,
-  setSkeleton,
-  setVisibleSharesSig
+  setSkeleton
 } = slice.actions;
 
 export default appReducer;

@@ -1,13 +1,17 @@
 import numeral from 'numeral';
 import { useTranslation } from 'react-i18next';
-import { EXPLORER_URL } from 'src/config/config';
+import { getExplorerBaseUrl } from '@constants/chainIcons';
 import { Box, Chip, Tooltip } from '@mui/material';
 import ShareNoteLabel from '@components/common/ShareNoteLabel';
+import { getSettings } from '@store/app/AppSelectors';
+import { useSelector } from '@store/store';
 import { lokiToFlc } from '@utils/helpers';
 import { fromEpoch } from '@utils/time';
 
 const payoutsColumns = () => {
   const { t } = useTranslation();
+  const settings = useSelector(getSettings);
+  const explorerBase = getExplorerBaseUrl(undefined, settings.explorers);
   const renderSharenoteCell = (value: any, count?: number) => {
     const parsedCount = Number(count);
     const hasCount = Number.isFinite(parsedCount);
@@ -75,7 +79,7 @@ const payoutsColumns = () => {
           size="small"
           component="a"
           target="_blank"
-          href={`${EXPLORER_URL}/block/${params.row.blockHash}`}
+          href={`${explorerBase}/${params.row.blockHash}`}
           clickable
         />
       )
@@ -126,7 +130,7 @@ const payoutsColumns = () => {
           size="small"
           component="a"
           target="_blank"
-          href={`${EXPLORER_URL}/tx/${params.row.txId}`}
+          href={`${explorerBase}/tx/${params.row.txId}`}
           clickable
         />
       )

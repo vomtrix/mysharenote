@@ -123,6 +123,8 @@ const LiveSharenotes = () => {
   }, [activePrimaryChain, sortedSharenotes]);
 
   const normalizedPrimaryChain = activePrimaryChain?.toLowerCase();
+  const latestVisibleEvent = visibleSharenotes[0];
+  const latestEventExplicitUnsolved = latestVisibleEvent?.solved === false;
 
   const lastLiveSharenoteTimestamp = useMemo(() => {
     for (const event of visibleSharenotes) {
@@ -290,41 +292,28 @@ const LiveSharenotes = () => {
   }, [activePrimaryChain, visibleSharenotes]);
 
   const auxChainHighlights = useMemo<IAuxiliaryBlock[]>(() => {
-    const chainMap = new Map<
-      string,
-      {
-        block: IAuxiliaryBlock;
-        timestamp: number;
-      }
-    >();
+    const latestAuxBlocks = latestVisibleEvent?.auxBlocks ?? [];
+    if (!latestAuxBlocks.length) return [];
 
-    visibleSharenotes.forEach((event) => {
-      const ts = event.timestamp ?? 0;
-      event.auxBlocks?.forEach((block) => {
-        const resolvedChainName = getChainName(block.chain) ?? block.chain ?? 'unknown';
-        const chainKey = resolvedChainName.toLowerCase();
-        const normalizedBlock: IAuxiliaryBlock = { ...block, chain: resolvedChainName };
-        const existing = chainMap.get(chainKey);
-        if (!existing || ts > existing.timestamp) {
-          chainMap.set(chainKey, { block: normalizedBlock, timestamp: ts });
-        }
-      });
-    });
-
-    return Array.from(chainMap.entries())
+    return latestAuxBlocks
+      .map((block, index) => {
+        const resolvedChainName =
+          getChainName(block.chain) ?? block.chain ?? activePrimaryChain ?? 'unknown';
+        return { block: { ...block, chain: resolvedChainName }, order: index };
+      })
       .sort((a, b) => {
-        const [, aValue] = a;
-        const [, bValue] = b;
-        const aPrimary = (aValue.block.chain ?? '').toLowerCase() === normalizedPrimaryChain;
-        const bPrimary = (bValue.block.chain ?? '').toLowerCase() === normalizedPrimaryChain;
+        const aPrimary = (a.block.chain ?? '').toLowerCase() === normalizedPrimaryChain;
+        const bPrimary = (b.block.chain ?? '').toLowerCase() === normalizedPrimaryChain;
         if (aPrimary && !bPrimary) return -1;
         if (!aPrimary && bPrimary) return 1;
-        const aLabel = aValue.block.chain ?? '';
-        const bLabel = bValue.block.chain ?? '';
-        return aLabel.localeCompare(bLabel);
+        const aLabel = a.block.chain ?? '';
+        const bLabel = b.block.chain ?? '';
+        const labelComparison = aLabel.localeCompare(bLabel);
+        if (labelComparison !== 0) return labelComparison;
+        return a.order - b.order;
       })
-      .map(([, value]) => value.block);
-  }, [normalizedPrimaryChain, visibleSharenotes]);
+      .map(({ block }) => block);
+  }, [activePrimaryChain, latestVisibleEvent, normalizedPrimaryChain]);
 
   const hasVisibleEvents = shareCount > 0;
 
@@ -511,21 +500,21 @@ const LiveSharenotes = () => {
                   flexDirection: 'column',
                   gap: 2
                 }}>
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      flexWrap: 'nowrap',
-                      alignItems: 'center',
-                      justifyContent: { md: 'center', xs: 'flex-start', lg: 'flex-start' },
-                      gap: { xs: 0.85, md: 1.1 },
-                      minHeight: 32,
-                      overflowX: 'auto',
-                      padding: { xs: '0 4px 12px 4px', md: '10px 10px 20px 10px' },
-                      scrollbarWidth: 'none',
-                      '&::-webkit-scrollbar': {
-                        display: 'none'
-                      }
-                    }}>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    flexWrap: 'nowrap',
+                    alignItems: 'center',
+                    justifyContent: { md: 'center', xs: 'flex-start', lg: 'flex-start' },
+                    gap: { xs: 0.85, md: 1.1 },
+                    minHeight: 32,
+                    overflowX: 'auto',
+                    padding: { xs: '0 4px 12px 4px', md: '10px 10px 20px 10px' },
+                    scrollbarWidth: 'none',
+                    '&::-webkit-scrollbar': {
+                      display: 'none'
+                    }
+                  }}>
                   {parentChainBlock &&
                     (() => {
                       const chainName =
@@ -536,7 +525,8 @@ const LiveSharenotes = () => {
                       const chainKey = chainName.toLowerCase();
                       const abbreviatedChain = chainName.slice(0, 3).toUpperCase();
                       const iconSrc = getChainIconPath(chainName);
-                      const isParentSolved = parentChainBlock.solved === true;
+                      const isParentSolved =
+                        parentChainBlock.solved === true && !latestEventExplicitUnsolved;
                       const isRecentlyUpdated = recentlyUpdatedChains[chainKey] !== undefined;
                       const animations = [];
                       if (isRecentlyUpdated) {
@@ -545,15 +535,16 @@ const LiveSharenotes = () => {
                       if (isParentSolved) {
                         animations.push('liveAuxSolvedPulse 1.1s ease-out');
                       }
+                      const animationValue = animations.length ? animations.join(', ') : 'none';
                       const chainLabel = formatChainDisplayName(chainName);
                       const heightLabel = formatAuxChainHeight(parentChainBlock.height);
                       const blockTargetLabel = formatSharenoteLabel(
                         parentChainBlock.blockSharenote ?? parentChainBlock.blockSharenoteZBits
                       );
                       const blockTargetValue = blockTargetLabel
-                        ? parentChainBlock.blockSharenote ??
+                        ? (parentChainBlock.blockSharenote ??
                           parentChainBlock.blockSharenoteZBits ??
-                          blockTargetLabel
+                          blockTargetLabel)
                         : undefined;
                       return (
                         <Box
@@ -574,7 +565,7 @@ const LiveSharenotes = () => {
                             boxShadow: isParentSolved
                               ? `0 6px 14px ${alpha(theme.palette.success.dark, 0.18)}`
                               : `0 6px 14px ${alpha(theme.palette.primary.main, 0.16)}`,
-                            animation: animations.join(', ') || undefined,
+                            animation: animationValue,
                             ...blockUpdateHighlightKeyframes,
                             ...(isParentSolved
                               ? {
@@ -710,11 +701,11 @@ const LiveSharenotes = () => {
                       block.blockSharenote ?? block.blockSharenoteZBits
                     );
                     const blockTargetValue = blockTargetLabel
-                      ? block.blockSharenote ?? block.blockSharenoteZBits ?? blockTargetLabel
+                      ? (block.blockSharenote ?? block.blockSharenoteZBits ?? blockTargetLabel)
                       : undefined;
                     const iconSrc = getChainIconPath(chainName);
                     const chainKey = chainName.toLowerCase();
-                    const isSolved = block.solved === true;
+                    const isSolved = block.solved === true && !latestEventExplicitUnsolved;
                     const isRecentlyUpdated = recentlyUpdatedChains[chainKey] !== undefined;
                     const animations = [];
                     if (isRecentlyUpdated) {
@@ -723,6 +714,7 @@ const LiveSharenotes = () => {
                     if (isSolved) {
                       animations.push('liveAuxSolvedPulse 1.1s ease-out');
                     }
+                    const animationValue = animations.length ? animations.join(', ') : 'none';
                     return (
                       <Box
                         key={`${chainKey}-${block.height ?? 'na'}-${isSolved ? 'solved' : 'live'}-${index}`}
@@ -745,12 +737,12 @@ const LiveSharenotes = () => {
                           ...blockUpdateHighlightKeyframes,
                           ...(isSolved
                             ? {
-                                animation: animations.join(', ') || undefined,
+                                animation: animationValue,
                                 ...solvedHighlightPulseKeyframes,
                                 ...solvedHighlightGlowKeyframes
                               }
                             : {
-                                animation: animations.join(', ') || undefined,
+                                animation: animationValue,
                                 ...blockUpdateHighlightKeyframes
                               })
                         }}>
@@ -833,15 +825,21 @@ const LiveSharenotes = () => {
                                   py: 0.2,
                                   borderRadius: 12,
                                   background: `linear-gradient(135deg, ${alpha(
-                                    isSolved ? theme.palette.success.light : theme.palette.primary.light,
+                                    isSolved
+                                      ? theme.palette.success.light
+                                      : theme.palette.primary.light,
                                     0.24
                                   )}, ${alpha(theme.palette.background.paper, 0.08)})`,
                                   border: `1px solid ${alpha(
-                                    isSolved ? theme.palette.success.main : theme.palette.primary.main,
+                                    isSolved
+                                      ? theme.palette.success.main
+                                      : theme.palette.primary.main,
                                     0.35
                                   )}`,
                                   boxShadow: `0 6px 14px ${alpha(
-                                    isSolved ? theme.palette.success.dark : theme.palette.primary.dark,
+                                    isSolved
+                                      ? theme.palette.success.dark
+                                      : theme.palette.primary.dark,
                                     0.14
                                   )}`,
                                   fontSize: '0.66rem',
@@ -851,15 +849,19 @@ const LiveSharenotes = () => {
                                 <Box
                                   component="span"
                                   sx={{
-                                      width: 6,
-                                      height: 6,
-                                      borderRadius: '50%',
-                                      backgroundColor: alpha(
-                                      isSolved ? theme.palette.success.main : theme.palette.primary.main,
+                                    width: 6,
+                                    height: 6,
+                                    borderRadius: '50%',
+                                    backgroundColor: alpha(
+                                      isSolved
+                                        ? theme.palette.success.main
+                                        : theme.palette.primary.main,
                                       0.95
                                     ),
                                     boxShadow: `0 0 0 5px ${alpha(
-                                      isSolved ? theme.palette.success.main : theme.palette.primary.main,
+                                      isSolved
+                                        ? theme.palette.success.main
+                                        : theme.palette.primary.main,
                                       0.12
                                     )}`
                                   }}

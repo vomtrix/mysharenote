@@ -1,14 +1,20 @@
 import { useTranslation } from 'react-i18next';
-import { EXPLORER_URL } from 'src/config/config';
-import { getChainIconPath, getChainMetadata, getChainName } from '@constants/chainIcons';
+import {
+  getChainIconPath,
+  getChainMetadata,
+  getChainName,
+  getExplorerBaseUrl
+} from '@constants/chainIcons';
 import { Avatar, Box, Chip, Tooltip } from '@mui/material';
 import ShareNoteLabel from '@components/common/ShareNoteLabel';
-import { BlockStatusEnum } from '@objects/interfaces/IShareEvent';
-import { shareChipColor, shareChipVariant } from '@utils/helpers';
+import { getSettings } from '@store/app/AppSelectors';
+import { useSelector } from '@store/store';
 import { fromEpoch } from '@utils/time';
 
 const sharesColumns = () => {
   const { t } = useTranslation();
+  const settings = useSelector(getSettings);
+  const explorerBase = (chainId?: string) => getExplorerBaseUrl(chainId, settings.explorers);
   const formatProfitAmount = (amount: number, chainId?: string) => {
     const meta = getChainMetadata(chainId);
     const decimals = meta?.decimals ?? 8;
@@ -109,25 +115,16 @@ const sharesColumns = () => {
             size="small"
             component="a"
             target="_blank"
-            href={`${EXPLORER_URL}/block/${params.row.blockHash}`}
+            href={`${explorerBase(params.row.chainId)}/${params.row.blockHash}`}
             clickable
-            color={shareChipColor(params.row?.status)}
-            variant={shareChipVariant(params.row?.status)}
+            // color="primary"
+            // variant="outlined"
           />
         );
 
         const tooltipLines: string[] = [];
         if (params.row?.paymentHeight != null) {
           tooltipLines.push(`${t('paymentHeight')}: ${params.row.paymentHeight}`);
-        }
-        const statusTooltip =
-          params.row?.status === BlockStatusEnum.Orphan
-            ? t('orphanBlock')
-            : params.row?.status === BlockStatusEnum.Checked
-              ? t('orphanCheck')
-              : undefined;
-        if (statusTooltip) {
-          tooltipLines.push(statusTooltip);
         }
 
         const tooltipTitle =
@@ -181,29 +178,13 @@ const sharesColumns = () => {
           <Chip
             label={formatProfitAmount(params.value, params.row?.chainId)}
             sx={{
-              fontWeight: 'bold',
-              '& .MuiChip-label':
-                params.row?.status === BlockStatusEnum.Orphan
-                  ? { textDecoration: 'line-through' }
-                  : undefined
+              fontWeight: 'bold'
             }}
-            color={shareChipColor(params.row?.status)}
-            variant={shareChipVariant(params.row?.status)}
             size="small"
           />
         );
 
-        return [BlockStatusEnum.Orphan, BlockStatusEnum.Checked].includes(params.row?.status) ? (
-          <Tooltip
-            title={
-              params.row?.status == BlockStatusEnum.Orphan ? t('orphanBlock') : t('orphanCheck')
-            }
-            placement="top">
-            {chip}
-          </Tooltip>
-        ) : (
-          chip
-        );
+        return chip;
       }
     }
   ];

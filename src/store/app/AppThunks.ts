@@ -1,15 +1,13 @@
 import { Container } from 'typedi';
-import { ORHAN_BLOCK_MATURITY } from '@config/config';
 import { IHashrateEvent } from '@objects/interfaces/IHashrateEvent';
 import type { ILiveSharenoteEvent } from '@objects/interfaces/ILiveSharenoteEvent';
 import { IPayoutEvent } from '@objects/interfaces/IPayoutEvent';
 import { ISettings } from '@objects/interfaces/ISettings';
-import { BlockStatusEnum, IShareEvent } from '@objects/interfaces/IShareEvent';
+import { IShareEvent } from '@objects/interfaces/IShareEvent';
 import { ElectrumService } from '@services/api/ElectrumService';
 import { RelayService } from '@services/api/RelayService';
 import { createAppAsyncThunk } from '@store/createAppAsyncThunk';
 import { beautify } from '@utils/beautifierUtils';
-import { makeIdsSignature } from '@utils/helpers';
 import { toHexPublicKey } from '@utils/nostr';
 import {
   addHashratesBatch,
@@ -20,9 +18,7 @@ import {
   setLiveSharenotesLoader,
   setPayoutLoader,
   setShareLoader,
-  setSkeleton,
-  setVisibleSharesSig,
-  updateShare
+  setSkeleton
 } from './AppReducer';
 
 const BATCH_FLUSH_DEBOUNCE_MS = 750;
@@ -88,51 +84,6 @@ export const getPayouts = createAppAsyncThunk(
   }
 );
 
-export const syncBlock = createAppAsyncThunk(
-  'electrum/syncBlock',
-  async (ids: any[], { rejectWithValue, dispatch, getState }) => {
-    try {
-      const { shares, visibleSharesSig, lastBlockHeight } = getState();
-      const sig = makeIdsSignature(ids ?? []);
-      if (sig === visibleSharesSig) return;
-
-      dispatch(setVisibleSharesSig(sig));
-      const idSet = new Set(ids ?? []);
-      const orphanBlockHeightMaturity = lastBlockHeight - ORHAN_BLOCK_MATURITY;
-      const sharesToSync = shares.filter(
-        (share: any) =>
-          idSet.has(share.id) &&
-          share.blockHeight <= orphanBlockHeightMaturity &&
-          [BlockStatusEnum.New, BlockStatusEnum.Checked].includes(share.status)
-      );
-
-      const electrumService: any = Container.get(ElectrumService);
-      const results = await Promise.allSettled(
-        sharesToSync.map((share) => electrumService.getBlock(share.blockHash))
-      );
-
-      results.forEach(({ status, value, reason }: any, index: number) => {
-        const targetShare = sharesToSync[index];
-        if (!targetShare) return;
-
-        if (status === 'rejected' && reason?.message === 'Failed to get block') {
-          dispatch(updateShare({ id: targetShare.id, status: BlockStatusEnum.Orphan }));
-        } else if (status === 'fulfilled' && value?.id) {
-          dispatch(updateShare({ id: targetShare.id, status: BlockStatusEnum.Valid }));
-        } else {
-          dispatch(updateShare({ id: targetShare.id, status: BlockStatusEnum.Checked }));
-        }
-      });
-    } catch (err: any) {
-      return rejectWithValue({
-        message: err?.message || err,
-        code: err.code,
-        status: err.status
-      });
-    }
-  }
-);
-
 export const getShares = createAppAsyncThunk(
   'relay/getShares',
   async (address: string, { rejectWithValue, dispatch, getState }) => {
@@ -172,7 +123,7 @@ export const getShares = createAppAsyncThunk(
       relayService.subscribeShares(address, workProviderPublicKeyHex, {
         onevent: (event: any) => {
           const shareEvent = beautify(event) as IShareEvent;
-          shareBuffer.push({ ...shareEvent, status: BlockStatusEnum.New });
+          shareBuffer.push(shareEvent);
           scheduleFlush();
           resetTimeout();
         },

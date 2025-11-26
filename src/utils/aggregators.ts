@@ -1,6 +1,5 @@
 import type { IAggregatedShares } from '@objects/interfaces/IAggregatedShares';
 import type { IShareEvent } from '@objects/interfaces/IShareEvent';
-import { BlockStatusEnum } from '@objects/interfaces/IShareEvent';
 import { fromEpoch, toSeconds } from '@utils/time';
 
 export const aggregateSharesByInterval = (
@@ -19,7 +18,6 @@ export const aggregateSharesByInterval = (
 
   for (let i = 0; i < shares.length; i++) {
     const s = shares[i];
-    if (s.status === BlockStatusEnum.Orphan) continue;
     const sec = toSeconds(s.timestamp);
     if (sec === null || sec < start || sec > now) continue;
     const idxRaw = Math.floor((sec - start) / intervalSec);
@@ -42,7 +40,6 @@ export const aggregateSharesByInterval = (
       let latest = -Infinity;
       for (let i = 0; i < shares.length; i++) {
         const s = shares[i];
-        if (s.status === BlockStatusEnum.Orphan) continue;
         const sec = toSeconds(s.timestamp);
         if (sec !== null && sec > latest) latest = sec;
       }

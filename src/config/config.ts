@@ -1,11 +1,31 @@
+import { NetworkTypeType } from '@objects/Enums';
+
 export const RELAY_URL: string = process.env.NEXT_PUBLIC_RELAY_URL!;
-export const EXPLORER_URL: string = process.env.NEXT_PUBLIC_EXPLORER_URL!;
+
+const fallbackExplorer =
+  process.env.NEXT_PUBLIC_EXPLORER_URL ||
+  process.env.NEXT_PUBLIC_FLOKICOIN_EXPLORER_URL ||
+  'https://flokichain.info';
+export const EXPLORER_URL: string = fallbackExplorer;
 export const PAYER_PUBLIC_KEY: string = process.env.NEXT_PUBLIC_PAYER_PUBLIC_KEY!;
 export const WORK_PROVIDER_PUBLIC_KEY: string = process.env.NEXT_PUBLIC_WORK_PROVIDER_PUBLIC_KEY!;
 export const ELECTRUM_API_URL: string = `${EXPLORER_URL}/api`;
 export const ORHAN_BLOCK_MATURITY: number = process.env.ORHAN_BLOCK_MATURITY
   ? parseInt(process.env.ORHAN_BLOCK_MATURITY, 10) || 5
   : 5;
+export const DEFAULT_NETWORK_ENV: string | undefined = process.env.NEXT_PUBLIC_NETWORK;
+export const DEFAULT_NETWORK: NetworkTypeType = (() => {
+  const normalized = DEFAULT_NETWORK_ENV?.trim().toUpperCase();
+  switch (normalized) {
+    case NetworkTypeType.Testnet:
+      return NetworkTypeType.Testnet;
+    case NetworkTypeType.Regtest:
+      return NetworkTypeType.Regtest;
+    case NetworkTypeType.Mainnet:
+    default:
+      return NetworkTypeType.Mainnet;
+  }
+})();
 
 export type ChainKey = 'bellscoin' | 'dogecoin' | 'flokicoin' | 'pepecoin';
 
@@ -13,30 +33,48 @@ export type ChainMetadata = {
   chainIds: string[];
   currencySymbol: string;
   decimals: number;
+  explorerUrl: string;
 };
+
+const explorerFromEnv = (envValue: string | undefined, fallback?: string) =>
+  envValue?.trim() || fallback || EXPLORER_URL;
 
 export const CHAIN_METADATA: Record<ChainKey, ChainMetadata> = {
   flokicoin: {
     chainIds: ['21', '0x21'],
     currencySymbol: 'FLC',
-    decimals: 8
+    decimals: 8,
+    explorerUrl: explorerFromEnv(process.env.NEXT_PUBLIC_FLOKICOIN_EXPLORER_URL)
   },
   pepecoin: {
     chainIds: ['3f', '0x3f'],
     currencySymbol: 'PEP',
-    decimals: 8
+    decimals: 8,
+    explorerUrl: explorerFromEnv(process.env.NEXT_PUBLIC_PEPECOIN_EXPLORER_URL)
   },
   bellscoin: {
     chainIds: ['10', '0x10'],
     currencySymbol: 'BEL',
-    decimals: 8
+    decimals: 8,
+    explorerUrl: explorerFromEnv(process.env.NEXT_PUBLIC_BELLSCOIN_EXPLORER_URL)
   },
   dogecoin: {
     chainIds: ['62', '0x62'],
     currencySymbol: 'DOGE',
-    decimals: 8
+    decimals: 8,
+    explorerUrl: explorerFromEnv(process.env.NEXT_PUBLIC_DOGECOIN_EXPLORER_URL)
   }
 };
+
+export const DEFAULT_CHAIN_EXPLORERS: Record<ChainKey, string> = Object.entries(
+  CHAIN_METADATA
+).reduce(
+  (acc, [name, meta]) => {
+    acc[name as ChainKey] = meta.explorerUrl;
+    return acc;
+  },
+  {} as Record<ChainKey, string>
+);
 
 export const SOCIAL_URLS: Record<string, string> = {
   github: 'https://github.com/vomtrix/mysharenote'

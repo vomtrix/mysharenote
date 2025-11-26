@@ -1,4 +1,4 @@
-import { CHAIN_METADATA, ChainKey } from '@config/config';
+import { CHAIN_METADATA, ChainKey, DEFAULT_CHAIN_EXPLORERS, EXPLORER_URL } from '@config/config';
 
 export const CHAIN_ICONS: Record<string, string> = {
   bellscoin: '/assets/coins/bellscoin.png',
@@ -45,4 +45,20 @@ export const getChainIconPath = (chain?: string) => {
   const normalized = getNormalizedChainName(chain);
   if (!normalized) return undefined;
   return CHAIN_ICONS[normalized];
+};
+
+export const getExplorerBaseUrl = (
+  chain?: string,
+  overrides?: Partial<Record<ChainKey, string>>
+) => {
+  const normalized = getNormalizedChainName(chain);
+  if (normalized && overrides?.[normalized as ChainKey]) {
+    return overrides[normalized as ChainKey] as string;
+  }
+
+  if (normalized && DEFAULT_CHAIN_EXPLORERS[normalized as ChainKey]) {
+    return DEFAULT_CHAIN_EXPLORERS[normalized as ChainKey];
+  }
+
+  return overrides?.flokicoin || DEFAULT_CHAIN_EXPLORERS.flokicoin || EXPLORER_URL;
 };

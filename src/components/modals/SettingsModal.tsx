@@ -2,16 +2,6 @@ import { useRouter } from 'next/router';
 import { useMemo } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
-import {
-  CHAIN_METADATA,
-  ChainKey,
-  DEFAULT_CHAIN_EXPLORERS,
-  DEFAULT_NETWORK,
-  HOME_PAGE_ENABLED,
-  PAYER_PUBLIC_KEY,
-  RELAY_URL,
-  WORK_PROVIDER_PUBLIC_KEY
-} from 'src/config/config';
 import * as Yup from 'yup';
 import { getChainIconPath, getChainName } from '@constants/chainIcons';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -47,6 +37,16 @@ import {
   normalizePublicKeyInput,
   publicKeyInputToDisplayValue
 } from '@utils/nostr';
+import {
+  CHAIN_METADATA,
+  ChainKey,
+  DEFAULT_CHAIN_EXPLORERS,
+  DEFAULT_NETWORK,
+  HOME_PAGE_ENABLED,
+  PAYER_PUBLIC_KEY,
+  RELAY_URL,
+  WORK_PROVIDER_PUBLIC_KEY
+} from 'src/config/config';
 
 type SettingsFormValues = {
   relay: string;

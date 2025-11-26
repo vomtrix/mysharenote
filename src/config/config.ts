@@ -2,7 +2,8 @@ import { NetworkTypeType } from '@objects/Enums';
 
 export const RELAY_URL: string = process.env.NEXT_PUBLIC_RELAY_URL!;
 
-const fallbackExplorer = process.env.NEXT_PUBLIC_FLOKICOIN_EXPLORER_URL || 'https://flokichain.info';
+const fallbackExplorer =
+  process.env.NEXT_PUBLIC_FLOKICOIN_EXPLORER_URL || 'https://flokichain.info';
 export const EXPLORER_URL: string = fallbackExplorer;
 export const PAYER_PUBLIC_KEY: string = process.env.NEXT_PUBLIC_PAYER_PUBLIC_KEY!;
 export const WORK_PROVIDER_PUBLIC_KEY: string = process.env.NEXT_PUBLIC_WORK_PROVIDER_PUBLIC_KEY!;

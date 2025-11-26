@@ -122,19 +122,28 @@ const LiveSharenotes = () => {
     return filtered;
   }, [activePrimaryChain, sortedSharenotes]);
 
+  const sharenotesWithValue = useMemo(
+    () =>
+      visibleSharenotes.filter((event) => {
+        const note = toSharenote(event);
+        return note && Number.isFinite(note.zBits) && note.zBits > 0;
+      }),
+    [visibleSharenotes]
+  );
+
   const normalizedPrimaryChain = activePrimaryChain?.toLowerCase();
   const latestVisibleEvent = visibleSharenotes[0];
   const latestEventExplicitUnsolved = latestVisibleEvent?.solved === false;
 
   const lastLiveSharenoteTimestamp = useMemo(() => {
-    for (const event of visibleSharenotes) {
+    for (const event of sharenotesWithValue) {
       const timestamp = event.timestamp;
       if (typeof timestamp === 'number' && Number.isFinite(timestamp)) {
         return timestamp;
       }
     }
     return undefined;
-  }, [visibleSharenotes]);
+  }, [sharenotesWithValue]);
 
   const [lastEventAge, setLastEventAge] = useState(() =>
     formatLastEventAge(lastLiveSharenoteTimestamp)
@@ -156,7 +165,7 @@ const LiveSharenotes = () => {
     return () => clearInterval(interval);
   }, [lastLiveSharenoteTimestamp]);
 
-  const shareCount = visibleSharenotes.length;
+  const shareCount = sharenotesWithValue.length;
 
   const liveChartData = useMemo<LiveChartData>(() => {
     const baseBlockMap = new Map<number, Map<string, Sharenote>>();
@@ -164,7 +173,7 @@ const LiveSharenotes = () => {
     const blockWorkerCounts = new Map<number, Map<string, number>>();
     const solvedBlockTotals = new Map<number, Sharenote>();
 
-    visibleSharenotes.forEach((event) => {
+    sharenotesWithValue.forEach((event) => {
       if (typeof event.blockHeight !== 'number' || !Number.isFinite(event.blockHeight)) return;
       const workerId = event.worker ?? event.workerId ?? 'unknown';
       const deltaNote = toSharenote(event);
@@ -261,7 +270,7 @@ const LiveSharenotes = () => {
       blockSeriesCounts: blockSeriesCountRecords,
       workerTotals
     };
-  }, [visibleSharenotes, t, theme]);
+  }, [sharenotesWithValue, t, theme]);
 
   const parentChainBlock = useMemo<IAuxiliaryBlock | undefined>(() => {
     let latestParent:
@@ -432,13 +441,23 @@ const LiveSharenotes = () => {
     return () => clearTimeout(timeout);
   }, [recentlyUpdatedChains]);
 
-  const chartSeries = liveChartData.series.map((series) => ({
-    ...series,
-    valueFormatter: formatChartValue
-  }));
+  const chartSeries = useMemo(
+    () =>
+      liveChartData.series
+        .filter((series) =>
+          series.data.some(
+            (value: number | null | undefined) => typeof value === 'number' && value > 0
+          )
+        )
+        .map((series) => ({
+          ...series,
+          valueFormatter: formatChartValue
+        })),
+    [liveChartData.series, formatChartValue]
+  );
   const inlineLegendSlotProps = {
-    direction: 'row',
-    position: { vertical: 'top', horizontal: 'left' } as const,
+    direction: 'horizontal' as const,
+    position: { vertical: 'top' as const, horizontal: 'start' as const },
     padding: { top: 4, bottom: 4 },
     itemGap: 10,
     labelStyle: { whiteSpace: 'nowrap' }

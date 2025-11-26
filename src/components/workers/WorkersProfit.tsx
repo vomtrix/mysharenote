@@ -100,9 +100,20 @@ const WorkersProfit = ({ intervalMinutes = 60 }: Props) => {
   const divisor = 10 ** decimals;
 
   const filteredShares = useMemo(() => {
-    if (!activeChain) return shares || [];
-    return (shares || []).filter((share) => normalizeChainKey(share.chainId) === activeChain);
+    const positiveShares = (shares || []).filter((share) => (share.amount ?? 0) > 0);
+    if (!activeChain) return positiveShares;
+    return positiveShares.filter((share) => normalizeChainKey(share.chainId) === activeChain);
   }, [shares, activeChain, normalizeChainKey]);
+  const workerTotals = useMemo(() => {
+    const totals = new Map<string, number>();
+    filteredShares.forEach((share) => {
+      const key = String(share.workerId ?? '');
+      const amt = Number(share.amount ?? 0);
+      if (!Number.isFinite(amt) || amt <= 0) return;
+      totals.set(key, (totals.get(key) ?? 0) + amt);
+    });
+    return totals;
+  }, [filteredShares]);
 
   const { xLabels, workers, dataByWorker } = useMemo(
     () =>
@@ -111,17 +122,27 @@ const WorkersProfit = ({ intervalMinutes = 60 }: Props) => {
       }),
     [filteredShares, intervalSec]
   );
-  const series = useMemo(
-    () =>
-      workers.map((w, i) => ({
+  const series = useMemo(() => {
+    const mapped = workers.reduce<
+      Array<{ id: string; label: string; data: number[]; color: string; stack: string }>
+    >((acc, w, i) => {
+      if ((workerTotals.get(w) ?? 0) <= 0) return acc;
+      const workerData = dataByWorker[i] ?? [];
+      const hasProfit = workerData.some(
+        (value) => typeof value === 'number' && !Number.isNaN(value) && value > 0
+      );
+      if (!hasProfit) return acc;
+      acc.push({
         id: w,
         label: w,
-        data: dataByWorker[i],
+        data: workerData,
         color: getWorkerColor(theme, w),
         stack: 'shares'
-      })),
-    [workers, dataByWorker, theme]
-  );
+      });
+      return acc;
+    }, [] as any[]);
+    return mapped;
+  }, [workers, dataByWorker, theme, workerTotals]);
 
   const hasData = xLabels.length > 0 && series.length > 0;
 
@@ -135,8 +156,8 @@ const WorkersProfit = ({ intervalMinutes = 60 }: Props) => {
       ? `${(value / divisor).toFixed(precision)} ${currencySymbol}`
       : (value / divisor).toFixed(precision);
   const inlineLegendSlotProps = {
-    direction: 'row',
-    position: { vertical: 'top', horizontal: 'left' } as const,
+    direction: 'horizontal' as const,
+    position: { vertical: 'top' as const, horizontal: 'start' as const },
     padding: { top: 4, bottom: 4 },
     itemGap: 2,
     labelStyle: { whiteSpace: 'nowrap' }

@@ -40,7 +40,10 @@ const StackedTotalTooltip: React.FC<Props> = ({
   return (
     <ChartsTooltipContainer trigger="axis">
       {tooltipData.map(({ axisId, axisFormattedValue, seriesItems }) => {
-        const total = seriesItems.reduce((sum, it) => sum + (Number(it.value) || 0), 0);
+        const visibleSeries = seriesItems.filter(
+          (it) => typeof it.value === 'number' && Number(it.value) > 0
+        );
+        const total = visibleSeries.reduce((sum, it) => sum + (Number(it.value) || 0), 0);
         const formattedTotal = (totalFormatter ?? valueFormatter)(total);
         const eventCount =
           axisFormattedValue && axisEventCounts ? axisEventCounts[axisFormattedValue] : undefined;
@@ -79,7 +82,7 @@ const StackedTotalTooltip: React.FC<Props> = ({
             </Box>
             <Box component="table" sx={{ borderSpacing: 0, width: '100%' }}>
               <tbody>
-                {seriesItems.map(({ seriesId, color, formattedValue, formattedLabel, value }) => {
+                {visibleSeries.map(({ seriesId, color, formattedValue, formattedLabel, value }) => {
                   if (formattedValue == null) return null;
                   const seriesCount =
                     seriesCountMap && seriesCountMap[String(seriesId)] !== undefined

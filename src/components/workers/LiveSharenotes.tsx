@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { WheelEvent } from 'react';
+import type { PointerEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getChainIconPath, getChainName } from '@constants/chainIcons';
 import Box from '@mui/material/Box';
@@ -481,13 +481,41 @@ const LiveSharenotes = () => {
     }
   };
 
-  const handleAuxChainWheel = useCallback((event: WheelEvent<HTMLDivElement>) => {
-    if (event.deltaY === 0) return;
-    const target = event.currentTarget;
-    if (target.scrollWidth <= target.clientWidth) return;
-    event.preventDefault();
-    target.scrollLeft += event.deltaY;
+  const auxChainScrollRef = useRef<HTMLDivElement | null>(null);
+  const auxChainDragState = useRef({ startX: 0, scrollLeft: 0 });
+  const [isDraggingAuxChains, setIsDraggingAuxChains] = useState(false);
+
+  const handleAuxChainPointerDown = useCallback((event: PointerEvent<HTMLDivElement>) => {
+    const target = auxChainScrollRef.current;
+    if (!target) return;
+    setIsDraggingAuxChains(true);
+    auxChainDragState.current = { startX: event.clientX, scrollLeft: target.scrollLeft };
+    target.setPointerCapture?.(event.pointerId);
   }, []);
+
+  const handleAuxChainPointerMove = useCallback(
+    (event: PointerEvent<HTMLDivElement>) => {
+      if (!isDraggingAuxChains) return;
+      const target = auxChainScrollRef.current;
+      if (!target) return;
+      event.preventDefault();
+      const deltaX = event.clientX - auxChainDragState.current.startX;
+      target.scrollLeft = auxChainDragState.current.scrollLeft - deltaX;
+    },
+    [isDraggingAuxChains]
+  );
+
+  const handleAuxChainPointerUp = useCallback(
+    (event: PointerEvent<HTMLDivElement>) => {
+      if (!isDraggingAuxChains) return;
+      const target = auxChainScrollRef.current;
+      if (target?.hasPointerCapture?.(event.pointerId)) {
+        target.releasePointerCapture(event.pointerId);
+      }
+      setIsDraggingAuxChains(false);
+    },
+    [isDraggingAuxChains]
+  );
 
   return (
     <StyledCard
@@ -563,11 +591,19 @@ const LiveSharenotes = () => {
                     overflowX: 'auto',
                     padding: { xs: '0 4px 12px 4px', md: '10px 10px 20px 10px' },
                     scrollbarWidth: 'none',
+                    cursor: isDraggingAuxChains ? 'grabbing' : 'grab',
+                    userSelect: 'none',
+                    touchAction: 'pan-y',
                     '&::-webkit-scrollbar': {
                       display: 'none'
                     }
                   }}
-                  onWheel={handleAuxChainWheel}>
+                  ref={auxChainScrollRef}
+                  onPointerDown={handleAuxChainPointerDown}
+                  onPointerMove={handleAuxChainPointerMove}
+                  onPointerUp={handleAuxChainPointerUp}
+                  onPointerCancel={handleAuxChainPointerUp}
+                  onPointerLeave={handleAuxChainPointerUp}>
                   {parentChainBlock &&
                     (() => {
                       const chainName =

@@ -211,10 +211,10 @@ const WorkersProfit = ({ intervalMinutes = 60 }: Props) => {
           {chainOptions.length > 0 ? (
             <Box
               sx={{
-                width: { xs: 'auto', sm: 'auto' },
-                minWidth: { xs: 130, sm: 170 },
+                width: 'auto',
+                minWidth: 'fit-content',
                 maxWidth: { xs: 220, sm: 240 },
-                flexShrink: 1,
+                flexShrink: 0,
                 flexGrow: 0
               }}>
               <Select
@@ -222,7 +222,6 @@ const WorkersProfit = ({ intervalMinutes = 60 }: Props) => {
                 onChange={(event) => setSelectedChain(String(event.target.value))}
                 size="small"
                 displayEmpty
-                fullWidth
                 MenuProps={{
                   PaperProps: {
                     sx: { maxHeight: 320 }
@@ -230,10 +229,11 @@ const WorkersProfit = ({ intervalMinutes = 60 }: Props) => {
                 }}
                 variant="outlined"
                 sx={{
+                  width: 'fit-content',
+                  maxWidth: { xs: 220, sm: 240 },
                   ml: { xs: 0, md: 'auto' },
                   bgcolor: 'transparent',
                   borderRadius: 1,
-                  width: '100%',
                   boxShadow: 'none',
                   '.MuiSelect-select': {
                     display: 'flex',

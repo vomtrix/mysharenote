@@ -228,15 +228,13 @@ const WorkersProfit = ({ intervalMinutes = 60 }: Props) => {
                     sx: { maxHeight: 320 }
                   }
                 }}
+                variant="outlined"
                 sx={{
                   ml: { xs: 0, md: 'auto' },
-                  bgcolor: 'background.paper',
+                  bgcolor: 'transparent',
                   borderRadius: 1,
                   width: '100%',
-                  boxShadow: (muiTheme) =>
-                    muiTheme.palette.mode === 'dark'
-                      ? '0 6px 18px rgba(0,0,0,0.35)'
-                      : '0 6px 18px rgba(0,0,0,0.08)',
+                  boxShadow: 'none',
                   '.MuiSelect-select': {
                     display: 'flex',
                     alignItems: 'center',
@@ -244,7 +242,17 @@ const WorkersProfit = ({ intervalMinutes = 60 }: Props) => {
                     py: { xs: 0.55, sm: 0.7 },
                     px: { xs: 0.95, sm: 1.2 },
                     fontWeight: 700,
-                    minHeight: 36
+                    minHeight: 36,
+                    backgroundColor: 'transparent'
+                  },
+                  '& .MuiOutlinedInput-notchedOutline': {
+                    border: 'none'
+                  },
+                  '&:hover .MuiOutlinedInput-notchedOutline': {
+                    border: 'none'
+                  },
+                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                    border: 'none'
                   }
                 }}
                 renderValue={(value) => {

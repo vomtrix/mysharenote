@@ -13,6 +13,7 @@ import {
   addLiveSharenotesBatch,
   addPayoutsBatch,
   addSharesBatch,
+  markLiveSharenotesEose,
   setHashratesLoader,
   setLiveSharenotesLoader,
   setPayoutLoader,
@@ -197,6 +198,7 @@ export const getLiveSharenotes = createAppAsyncThunk(
         },
         oneose: () => {
           flushLive();
+          dispatch(markLiveSharenotesEose());
           if (timeoutId) clearTimeout(timeoutId);
           if (!hasLoaded) {
             hasLoaded = true;

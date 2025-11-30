@@ -8,7 +8,7 @@ import Divider from '@mui/material/Divider';
 import { lighten, alpha as muiAlpha, useTheme } from '@mui/material/styles';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
-import { ReliabilityId, requiredHashrate } from '@soprinter/sharenotejs';
+import { hashrateRangeForNote, ReliabilityId } from '@soprinter/sharenotejs';
 import InfoHeader from '@components/common/InfoHeader';
 import ProgressLoader from '@components/common/ProgressLoader';
 import ShareNoteLabel from '@components/common/ShareNoteLabel';
@@ -16,10 +16,17 @@ import WorkerCircuitIcon from '@components/icons/WorkerCircuitIcon';
 import { SectionHeader } from '@components/styled/SectionHeader';
 import { StyledCard } from '@components/styled/StyledCard';
 import type { IHashrateEvent } from '@objects/interfaces/IHashrateEvent';
-import { getHashrates, getIsHashratesLoading } from '@store/app/AppSelectors';
+import {
+  getHashrates,
+  getIsHashratesLoading,
+  getLiveSharenotes,
+  getLiveSharenotesEoseIndex,
+  getShares
+} from '@store/app/AppSelectors';
 import { useSelector } from '@store/store';
 import { getWorkerColor } from '@utils/colors';
 import { beautifyWorkerUserAgent, formatHashrate } from '@utils/helpers';
+import { getHashrateRangeAverage, normalizeWorkerKey, resolveNoteFromRaw } from '@utils/sharenote';
 import { formatRelativeTime, toDateFromMaybeSeconds } from '@utils/time';
 
 const HASHRATE_BASE_INTERVAL_MS = 5000;
@@ -52,6 +59,9 @@ const WorkersInsights = () => {
   const { t } = useTranslation();
   const theme = useTheme();
   const hashrates = useSelector(getHashrates) as IHashrateEvent[];
+  const liveSharenotes = useSelector(getLiveSharenotes);
+  const liveSharenotesEoseIndex = useSelector(getLiveSharenotesEoseIndex);
+  const shares = useSelector(getShares);
   const isHashrateLoading = useSelector(getIsHashratesLoading);
   const [reevaluateTick, setReevaluateTick] = useState(0);
   const [refreshEta, setRefreshEta] = useState<number | null>(null);
@@ -98,6 +108,36 @@ const WorkersInsights = () => {
     updateProgress();
     return () => clearInterval(timer);
   }, [refreshEta]);
+
+  const sharenotesAfterEose = useMemo(() => {
+    if (!liveSharenotes?.length) return [];
+    if (liveSharenotesEoseIndex === null || liveSharenotesEoseIndex === undefined) return [];
+    return liveSharenotes.slice(liveSharenotesEoseIndex);
+  }, [liveSharenotes, liveSharenotesEoseIndex]);
+
+  const sharenoteCountByWorker = useMemo(() => {
+    const increment = (acc: Record<string, number>, workerId?: string | null) => {
+      const key = normalizeWorkerKey(workerId);
+      acc[key] = (acc[key] ?? 0) + 1;
+      return acc;
+    };
+
+    if (sharenotesAfterEose.length) {
+      return sharenotesAfterEose.reduce<Record<string, number>>((acc, event) => {
+        increment(acc, event.worker ?? event.workerId);
+        return acc;
+      }, {});
+    }
+
+    if (!liveSharenotes?.length && shares?.length) {
+      return shares.reduce<Record<string, number>>((acc, event) => {
+        increment(acc, event.workerId);
+        return acc;
+      }, {});
+    }
+
+    return {};
+  }, [liveSharenotes, shares, sharenotesAfterEose]);
 
   const latestHashrateEvent = useMemo(() => {
     if (!hashrates?.length) return undefined;
@@ -192,24 +232,29 @@ const WorkersInsights = () => {
 
         const actualHashrate = detailHashrate ?? fallbackHashrate;
         let derivedHashrate: number | undefined;
-        if (sharenoteLabelForCalc && sharenoteLabelForCalc.length > 0) {
+        let hashrateFromNoteDisplay: string | undefined;
+        const noteCandidate = resolveNoteFromRaw(
+          hasSharenoteValue ? sharenoteRaw : sharenoteLabelForCalc
+        );
+
+        if (noteCandidate) {
           try {
-            const computedMeasurement = requiredHashrate(
-              sharenoteLabelForCalc,
-              HASHRATE_BASE_INTERVAL_MS / 1000,
-              {
-                reliability: ReliabilityId.Mean
-              }
-            );
-            const computed = computedMeasurement.floatValue();
-            derivedHashrate = Number.isFinite(computed) && computed > 0 ? computed : undefined;
+            const range = hashrateRangeForNote(noteCandidate, HASHRATE_BASE_INTERVAL_MS / 1000, {
+              reliability: ReliabilityId.Mean
+            });
+            const { value: avgValue, display } = getHashrateRangeAverage(range);
+            derivedHashrate = avgValue;
+            hashrateFromNoteDisplay =
+              display ?? (avgValue !== undefined ? formatHashrate(avgValue) : undefined);
           } catch {
             derivedHashrate = undefined;
+            hashrateFromNoteDisplay = undefined;
           }
         }
 
-        const hashrateFromNoteDisplay =
-          derivedHashrate !== undefined ? formatHashrate(derivedHashrate) : undefined;
+        if (!hashrateFromNoteDisplay && derivedHashrate !== undefined) {
+          hashrateFromNoteDisplay = formatHashrate(derivedHashrate);
+        }
 
         return {
           worker,
@@ -486,6 +531,17 @@ const WorkersInsights = () => {
                       };
                     })()
                   : undefined;
+              const shareCount = sharenoteCountByWorker[normalizeWorkerKey(workerData.worker)];
+              const shareCountDisplay =
+                typeof shareCount === 'number' && shareCount > 0
+                  ? shareCount.toLocaleString()
+                  : undefined;
+              const showShareCount = !!shareCountDisplay;
+              const lastShareLabel = (() => {
+                const date = toDateFromMaybeSeconds(workerData.lastShareTimestamp);
+                if (!date) return '--';
+                return formatRelativeTime(date);
+              })();
 
               return (
                 <Box
@@ -903,11 +959,58 @@ const WorkersInsights = () => {
                         )}
                       </Typography>
                       <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-                        {(() => {
-                          const date = toDateFromMaybeSeconds(workerData.lastShareTimestamp);
-                          if (!date) return '--';
-                          return formatRelativeTime(date);
-                        })()}
+                        <Box
+                          component="span"
+                          sx={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: 0.5,
+                            flexWrap: 'wrap'
+                          }}>
+                          <Box component="span">{lastShareLabel}</Box>
+                          {showShareCount && (
+                            <Tooltip
+                              arrow
+                              placement="top"
+                              title={t('workersInsights.info.sharenoteCount', {
+                                defaultValue: 'Sharenotes printed by this worker in this session.'
+                              })}>
+                              <Box
+                                component="span"
+                                sx={{
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: 0.35,
+                                  px: 0.65,
+                                  borderRadius: 999,
+                                  background: `linear-gradient(120deg, ${muiAlpha(
+                                    accentColor,
+                                    theme.palette.mode === 'dark' ? 0.26 : 0.16
+                                  )}, ${muiAlpha(accentColor, theme.palette.mode === 'dark' ? 0.16 : 0.1)})`,
+                                  color:
+                                    theme.palette.mode === 'dark'
+                                      ? muiAlpha('#ffffff', 0.9)
+                                      : muiAlpha(accentColor, 0.95),
+                                  fontWeight: 700,
+                                  letterSpacing: '0.04em',
+                                  boxShadow:
+                                    theme.palette.mode === 'dark'
+                                      ? `0 10px 24px -18px ${muiAlpha(accentColor, 0.65)}`
+                                      : `0 12px 26px -18px ${muiAlpha(accentColor, 0.55)}`
+                                }}>
+                                <Typography
+                                  component="span"
+                                  variant="caption"
+                                  sx={{
+                                    fontWeight: 600,
+                                    letterSpacing: '0.05em'
+                                  }}>
+                                  x{shareCountDisplay}
+                                </Typography>
+                              </Box>
+                            </Tooltip>
+                          )}
+                        </Box>
                       </Typography>
                     </Box>
                   </Box>

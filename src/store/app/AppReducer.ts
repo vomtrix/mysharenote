@@ -38,6 +38,7 @@ export interface AppState {
   shares: IShareEvent[];
   payouts: IPayoutEvent[];
   liveSharenotes: ILiveSharenoteEvent[];
+  liveSharenotesEoseIndex: number | null;
   pendingBalance: number;
   unconfirmedBalance: number;
   settings: ISettings;
@@ -59,6 +60,7 @@ export const initialState: AppState = {
   shares: [],
   payouts: [],
   liveSharenotes: [],
+  liveSharenotesEoseIndex: null,
   unconfirmedBalance: 0,
   pendingBalance: 0,
   colorMode: initialColorMode,
@@ -223,6 +225,7 @@ export const slice = createSlice({
     },
     clearLiveSharenotes: (state: AppState) => {
       state.liveSharenotes = [];
+      state.liveSharenotesEoseIndex = null;
     },
     setHashratesLoader: (state: AppState, action: PayloadAction<boolean>) => {
       state.isHashrateLoading = action.payload;
@@ -244,6 +247,9 @@ export const slice = createSlice({
     },
     setLiveSharenotesLoader: (state: AppState, action: PayloadAction<boolean>) => {
       state.isLiveSharenotesLoading = action.payload;
+    },
+    markLiveSharenotesEose: (state: AppState) => {
+      state.liveSharenotesEoseIndex = state.liveSharenotes.length;
     },
     addPayout: (state: AppState, action: PayloadAction<IPayoutEvent>) => {
       applyPayoutEvent(state, action.payload);
@@ -300,6 +306,7 @@ export const slice = createSlice({
       })
       .addCase(getLiveSharenotes.pending, (state) => {
         state.liveSharenotes = [];
+        state.liveSharenotesEoseIndex = null;
         state.isLiveSharenotesLoading = true;
       })
       .addCase(getLiveSharenotes.rejected, (state, action) => {
@@ -311,11 +318,13 @@ export const slice = createSlice({
       })
       .addCase(stopLiveSharenotes.fulfilled, (state) => {
         state.liveSharenotes = [];
+        state.liveSharenotesEoseIndex = null;
         state.isLiveSharenotesLoading = false;
       })
       .addCase(stopLiveSharenotes.rejected, (state, action) => {
         state.error = action.payload;
         state.isLiveSharenotesLoading = false;
+        state.liveSharenotesEoseIndex = null;
       })
       .addCase(getHashrates.pending, (state) => {
         state.hashrates = [];
@@ -400,6 +409,7 @@ export const {
   clearShares,
   clearLiveSharenotes,
   clearHashrates,
+  markLiveSharenotesEose,
   setHashratesLoader,
   setPayoutLoader,
   setShareLoader,

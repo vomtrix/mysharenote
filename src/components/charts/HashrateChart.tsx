@@ -47,22 +47,41 @@ const HashrateChart = () => {
     return 'live';
   });
 
-  const availableWorkers = useMemo(() => {
-    const workers = new Set<string>();
-    let hasAggregate = false;
+  const latestHashrateEvent = useMemo(() => {
+    if (!hashrates?.length) return undefined;
+    return hashrates.reduce<IHashrateEvent | undefined>((latest, event) => {
+      if (!event || typeof event.timestamp !== 'number' || Number.isNaN(event.timestamp)) {
+        return latest;
+      }
+      if (!latest || Number.isNaN(latest.timestamp) || event.timestamp > latest.timestamp) {
+        return event;
+      }
+      return latest;
+    }, undefined);
+  }, [hashrates]);
 
-    (hashrates || []).forEach((event) => {
-      if (typeof event?.hashrate === 'number' && !Number.isNaN(event.hashrate)) {
-        hasAggregate = true;
+  const currentWorkers = useMemo(() => {
+    const workerIds = new Set<string>();
+    if (!latestHashrateEvent) return workerIds;
+
+    const addWorker = (worker?: string) => {
+      if (worker) {
+        workerIds.add(worker);
       }
-      if (event?.workers) {
-        Object.keys(event.workers).forEach((key) => {
-          if (key) workers.add(key);
-        });
-      } else if (event?.worker) {
-        workers.add(event.worker);
-      }
-    });
+    };
+
+    Object.keys(latestHashrateEvent.workerDetails || {}).forEach(addWorker);
+    Object.keys(latestHashrateEvent.workers || {}).forEach(addWorker);
+    addWorker(latestHashrateEvent.worker);
+
+    return workerIds;
+  }, [latestHashrateEvent]);
+
+  const availableWorkers = useMemo(() => {
+    const workers = new Set<string>(currentWorkers);
+    const hasAggregate =
+      typeof latestHashrateEvent?.hashrate === 'number' &&
+      Number.isFinite(latestHashrateEvent.hashrate);
 
     const sortedWorkers = Array.from(workers).sort((a, b) => a.localeCompare(b));
     if (hasAggregate && !sortedWorkers.includes('all')) {
@@ -70,7 +89,7 @@ const HashrateChart = () => {
     }
 
     return sortedWorkers.length ? sortedWorkers : ['all'];
-  }, [hashrates]);
+  }, [currentWorkers, latestHashrateEvent]);
 
   const metricOptions = useMemo(
     () => [

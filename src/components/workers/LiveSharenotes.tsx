@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type { WheelEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getChainIconPath, getChainName } from '@constants/chainIcons';
 import Box from '@mui/material/Box';
@@ -480,6 +481,14 @@ const LiveSharenotes = () => {
     }
   };
 
+  const handleAuxChainWheel = useCallback((event: WheelEvent<HTMLDivElement>) => {
+    if (event.deltaY === 0) return;
+    const target = event.currentTarget;
+    if (target.scrollWidth <= target.clientWidth) return;
+    event.preventDefault();
+    target.scrollLeft += event.deltaY;
+  }, []);
+
   return (
     <StyledCard
       sx={{
@@ -557,7 +566,8 @@ const LiveSharenotes = () => {
                     '&::-webkit-scrollbar': {
                       display: 'none'
                     }
-                  }}>
+                  }}
+                  onWheel={handleAuxChainWheel}>
                   {parentChainBlock &&
                     (() => {
                       const chainName =

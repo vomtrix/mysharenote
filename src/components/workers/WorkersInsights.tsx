@@ -16,13 +16,7 @@ import WorkerCircuitIcon from '@components/icons/WorkerCircuitIcon';
 import { SectionHeader } from '@components/styled/SectionHeader';
 import { StyledCard } from '@components/styled/StyledCard';
 import type { IHashrateEvent } from '@objects/interfaces/IHashrateEvent';
-import {
-  getHashrates,
-  getIsHashratesLoading,
-  getLiveSharenotes,
-  getLiveSharenotesEoseIndex,
-  getShares
-} from '@store/app/AppSelectors';
+import { getHashrates, getIsHashratesLoading } from '@store/app/AppSelectors';
 import { useSelector } from '@store/store';
 import { getWorkerColor } from '@utils/colors';
 import { beautifyWorkerUserAgent, formatHashrate } from '@utils/helpers';
@@ -59,9 +53,6 @@ const WorkersInsights = () => {
   const { t } = useTranslation();
   const theme = useTheme();
   const hashrates = useSelector(getHashrates) as IHashrateEvent[];
-  const liveSharenotes = useSelector(getLiveSharenotes);
-  const liveSharenotesEoseIndex = useSelector(getLiveSharenotesEoseIndex);
-  const shares = useSelector(getShares);
   const isHashrateLoading = useSelector(getIsHashratesLoading);
   const [reevaluateTick, setReevaluateTick] = useState(0);
   const [refreshEta, setRefreshEta] = useState<number | null>(null);
@@ -109,36 +100,6 @@ const WorkersInsights = () => {
     return () => clearInterval(timer);
   }, [refreshEta]);
 
-  const sharenotesAfterEose = useMemo(() => {
-    if (!liveSharenotes?.length) return [];
-    if (liveSharenotesEoseIndex === null || liveSharenotesEoseIndex === undefined) return [];
-    return liveSharenotes.slice(liveSharenotesEoseIndex);
-  }, [liveSharenotes, liveSharenotesEoseIndex]);
-
-  const sharenoteCountByWorker = useMemo(() => {
-    const increment = (acc: Record<string, number>, workerId?: string | null) => {
-      const key = normalizeWorkerKey(workerId);
-      acc[key] = (acc[key] ?? 0) + 1;
-      return acc;
-    };
-
-    if (sharenotesAfterEose.length) {
-      return sharenotesAfterEose.reduce<Record<string, number>>((acc, event) => {
-        increment(acc, event.worker ?? event.workerId);
-        return acc;
-      }, {});
-    }
-
-    if (!liveSharenotes?.length && shares?.length) {
-      return shares.reduce<Record<string, number>>((acc, event) => {
-        increment(acc, event.workerId);
-        return acc;
-      }, {});
-    }
-
-    return {};
-  }, [liveSharenotes, shares, sharenotesAfterEose]);
-
   const latestHashrateEvent = useMemo(() => {
     if (!hashrates?.length) return undefined;
     return hashrates.reduce<IHashrateEvent | undefined>((latest, event) => {
@@ -155,6 +116,20 @@ const WorkersInsights = () => {
       return eventTimestamp >= latestTimestamp ? event : latest;
     }, undefined);
   }, [hashrates]);
+
+  const sharenoteCountByWorker = useMemo(() => {
+    if (!latestHashrateEvent?.workerDetails) return {};
+    return Object.entries(latestHashrateEvent.workerDetails).reduce<Record<string, number>>(
+      (acc, [workerId, detail]) => {
+        const shareCount = detail?.shareCount;
+        if (typeof shareCount === 'number' && Number.isFinite(shareCount)) {
+          acc[normalizeWorkerKey(workerId)] = shareCount;
+        }
+        return acc;
+      },
+      {}
+    );
+  }, [latestHashrateEvent]);
 
   const workers = useMemo(() => {
     if (!latestHashrateEvent?.workerDetails) return [];
@@ -256,6 +231,11 @@ const WorkersInsights = () => {
           hashrateFromNoteDisplay = formatHashrate(derivedHashrate);
         }
 
+        const shareCount =
+          typeof detail?.shareCount === 'number' && Number.isFinite(detail.shareCount)
+            ? detail.shareCount
+            : undefined;
+
         return {
           worker,
           sharenote: primarySharenoteDisplay,
@@ -266,6 +246,7 @@ const WorkersInsights = () => {
           hashrateFromNoteDisplay,
           lastShareTimestamp: detail?.lastShareTimestamp,
           lastShareMs: lastShareDate?.getTime(),
+          shareCount,
           timestamp: latestHashrateEvent.timestamp,
           userAgent:
             typeof detail?.userAgent === 'string' && detail.userAgent.trim().length > 0
@@ -531,10 +512,15 @@ const WorkersInsights = () => {
                       };
                     })()
                   : undefined;
-              const shareCount = sharenoteCountByWorker[normalizeWorkerKey(workerData.worker)];
+              const shareCountDirect =
+                typeof workerData.shareCount === 'number' ? workerData.shareCount : undefined;
+              const shareCountFallback =
+                sharenoteCountByWorker[normalizeWorkerKey(workerData.worker)];
+              const resolvedShareCount =
+                shareCountDirect !== undefined ? shareCountDirect : shareCountFallback;
               const shareCountDisplay =
-                typeof shareCount === 'number' && shareCount > 0
-                  ? shareCount.toLocaleString()
+                typeof resolvedShareCount === 'number' && resolvedShareCount > 0
+                  ? resolvedShareCount.toLocaleString()
                   : undefined;
               const showShareCount = !!shareCountDisplay;
               const lastShareLabel = (() => {

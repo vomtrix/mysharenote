@@ -23,8 +23,16 @@ const METRIC_STORAGE_KEY = 'hashrateMetricPreference';
 const WORKER_STORAGE_KEY = 'hashrateSelectedWorker';
 
 type HashrateMetric = 'live' | 'emaShort' | 'emaLong';
-const SHORT_EMA_PERIOD = 10;
-const LONG_EMA_PERIOD = 30;
+const SHORT_EMA_MINUTES = 5;
+const LONG_EMA_MINUTES = 15;
+
+const getAlphaForDelta = (deltaSeconds: number, periodMinutes: number) => {
+  const periodSeconds = Math.max(1, periodMinutes * 60);
+  const clampedDelta = Math.max(0, deltaSeconds);
+  // Continuous decay keeps smoothing consistent even with uneven sample spacing
+  const alpha = 1 - Math.exp(-clampedDelta / periodSeconds);
+  return Math.min(1, alpha);
+};
 
 const HashrateChart = () => {
   const { t } = useTranslation();
@@ -132,27 +140,47 @@ const HashrateChart = () => {
       .filter((event): event is IHashrateEvent => !!event && typeof event.timestamp === 'number')
       .sort((a, b) => (a.timestamp ?? 0) - (b.timestamp ?? 0));
 
-    const alphaShort = 2 / (SHORT_EMA_PERIOD + 1);
-    const alphaLong = 2 / (LONG_EMA_PERIOD + 1);
-    const metricsMap = new Map<string, { live?: number; emaShort?: number; emaLong?: number }>();
+    type WorkerMetrics = {
+      live?: number;
+      emaShort?: number;
+      emaLong?: number;
+      lastTimestamp?: number;
+    };
+    const metricsMap = new Map<string, WorkerMetrics>();
 
-    const updateWorker = (workerId: string, rawValue: number | undefined) => {
+    const updateWorker = (workerId: string, rawValue: number | undefined, timestamp: number) => {
       if (typeof rawValue !== 'number' || Number.isNaN(rawValue)) return;
       const previous = metricsMap.get(workerId);
-      const emaShort =
-        previous?.emaShort === undefined
-          ? rawValue
-          : alphaShort * rawValue + (1 - alphaShort) * previous.emaShort;
-      const emaLong =
-        previous?.emaLong === undefined
-          ? rawValue
-          : alphaLong * rawValue + (1 - alphaLong) * previous.emaLong;
-      metricsMap.set(workerId, { live: rawValue, emaShort, emaLong });
+      const deltaSeconds =
+        previous?.lastTimestamp !== undefined
+          ? Math.max(0, timestamp - previous.lastTimestamp)
+          : undefined;
+
+      const live = rawValue;
+      const alphaShort =
+        deltaSeconds === undefined ? 1 : getAlphaForDelta(deltaSeconds, SHORT_EMA_MINUTES);
+      const alphaLong =
+        deltaSeconds === undefined ? 1 : getAlphaForDelta(deltaSeconds, LONG_EMA_MINUTES);
+
+      const nextMetrics: WorkerMetrics = {
+        live,
+        emaShort:
+          previous?.emaShort === undefined || deltaSeconds === undefined
+            ? rawValue
+            : alphaShort * rawValue + (1 - alphaShort) * previous.emaShort,
+        emaLong:
+          previous?.emaLong === undefined || deltaSeconds === undefined
+            ? rawValue
+            : alphaLong * rawValue + (1 - alphaLong) * previous.emaLong,
+        lastTimestamp: timestamp
+      };
+
+      metricsMap.set(workerId, nextMetrics);
     };
 
     sortedEvents.forEach((event) => {
       if (typeof event.hashrate === 'number' && !Number.isNaN(event.hashrate)) {
-        updateWorker('all', event.hashrate);
+        updateWorker('all', event.hashrate, event.timestamp);
       }
 
       const workerIds = new Set<string>();
@@ -186,7 +214,7 @@ const HashrateChart = () => {
           resolvedValue = event.hashrate;
         }
 
-        updateWorker(workerId, resolvedValue);
+        updateWorker(workerId, resolvedValue, event.timestamp);
       });
     });
 
@@ -263,15 +291,25 @@ const HashrateChart = () => {
 
   const chartDataPoints = useMemo<LineData<UTCTimestamp>[]>(() => {
     if (workerDataPoints.length === 0) return [];
-    if (hashrateMetric === 'live') {
-      return workerDataPoints.map(({ time, value }) => ({ time, value }));
-    }
-    const period = hashrateMetric === 'emaShort' ? SHORT_EMA_PERIOD : LONG_EMA_PERIOD;
-    const alpha = 2 / (period + 1);
-    let previous: number | undefined;
+    if (hashrateMetric === 'live') return workerDataPoints;
+
+    const periodMinutes = hashrateMetric === 'emaShort' ? SHORT_EMA_MINUTES : LONG_EMA_MINUTES;
+    let previousValue: number | undefined;
+    let previousTime: number | undefined;
+
     return workerDataPoints.map(({ time, value }) => {
-      const ema = previous === undefined ? value : alpha * value + (1 - alpha) * previous;
-      previous = ema;
+      const deltaSeconds =
+        previousTime === undefined ? undefined : Math.max(0, time - previousTime);
+      const alpha =
+        deltaSeconds === undefined ? 1 : getAlphaForDelta(deltaSeconds, periodMinutes);
+      const ema =
+        previousValue === undefined || deltaSeconds === undefined
+          ? value
+          : alpha * value + (1 - alpha) * previousValue;
+
+      previousValue = ema;
+      previousTime = time;
+
       return { time, value: ema };
     });
   }, [hashrateMetric, workerDataPoints]);

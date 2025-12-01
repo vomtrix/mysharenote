@@ -57,8 +57,13 @@ export class RelayService {
       {
         kinds: [35503],
         authors: [workProviderPublicKey],
-        limit: 500,
         since: getTimeBeforeDaysInSeconds(2),
+        [`#a`]: [address]
+      },
+      {
+        kinds: [35503],
+        authors: [workProviderPublicKey],
+        limit: 500,
         [`#a`]: [address]
       }
     ];

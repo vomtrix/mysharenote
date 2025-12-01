@@ -95,7 +95,17 @@ const applyPayoutEvent = (state: AppState, event: IPayoutEvent) => {
 };
 
 const applyShareEvent = (state: AppState, event: IShareEvent) => {
-  state.pendingBalance += event.amount;
+  const existingIndex = state.shares.findIndex((share) => share.id === event.id);
+  const newAmount = Number(event.amount) || 0;
+
+  if (existingIndex !== -1) {
+    const previousAmount = Number(state.shares[existingIndex]?.amount) || 0;
+    state.pendingBalance += newAmount - previousAmount;
+    state.shares[existingIndex] = event;
+    return;
+  }
+
+  state.pendingBalance += newAmount;
   state.shares.push(event);
 };
 

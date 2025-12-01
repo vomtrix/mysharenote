@@ -18,6 +18,7 @@ export interface IHashrateEvent {
       meanSharenoteZBits?: number;
       meanTime?: number;
       lastShareTimestamp?: number;
+      shareCount?: number;
       userAgent?: string;
     }
   >;

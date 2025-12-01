@@ -2,6 +2,8 @@ import { beautifierConfig } from '@constants/beautifierConfig';
 import { CHAIN_ID_TO_NAME } from '@constants/chainIcons';
 import { noteFromZBits, parseNoteLabel } from '@soprinter/sharenotejs';
 
+const LAST_SHARE_DELAY_SECONDS = 5;
+
 export const beautify = (event: any) => {
   const map = beautifierConfig[event.kind];
   type AuxBlock = {
@@ -32,6 +34,7 @@ export const beautify = (event: any) => {
       meanSharenoteZBits?: number;
       meanTime?: number;
       lastShareTimestamp?: number;
+      shareCount?: number;
       userAgent?: string;
     }
   > = {};
@@ -91,6 +94,7 @@ export const beautify = (event: any) => {
       meanSharenoteZBits?: number;
       meanTime?: number;
       lastShareTimestamp?: number;
+      shareCount?: number;
       userAgent?: string;
     },
     rawValue: unknown
@@ -114,6 +118,7 @@ export const beautify = (event: any) => {
       meanSharenoteZBits?: number;
       meanTime?: number;
       lastShareTimestamp?: number;
+      shareCount?: number;
       userAgent?: string;
     },
     rawValue: unknown
@@ -126,6 +131,13 @@ export const beautify = (event: any) => {
     if (zBitsValue !== undefined) {
       detail.sharenoteZBits = zBitsValue;
     }
+  };
+  const parseLastShareTimestamp = (rawValue: unknown): number | undefined => {
+    const numericValue = Number(rawValue);
+    if (Number.isNaN(numericValue)) return undefined;
+    const isMillis = numericValue > 1e12;
+    const adjusted = numericValue + LAST_SHARE_DELAY_SECONDS * (isMillis ? 1000 : 1);
+    return Math.max(0, adjusted);
   };
 
   event.tags.forEach((tagEntry: any) => {
@@ -307,9 +319,16 @@ export const beautify = (event: any) => {
               break;
             }
             case 'lsn': {
-              const lastShareTimestamp = Number(valueRaw);
-              if (!Number.isNaN(lastShareTimestamp)) {
+              const lastShareTimestamp = parseLastShareTimestamp(valueRaw);
+              if (lastShareTimestamp !== undefined) {
                 detail.lastShareTimestamp = lastShareTimestamp;
+              }
+              break;
+            }
+            case 'csn': {
+              const shareCount = Number(valueRaw);
+              if (!Number.isNaN(shareCount)) {
+                detail.shareCount = shareCount;
               }
               break;
             }
@@ -331,7 +350,7 @@ export const beautify = (event: any) => {
       const numericValue = Number(tagValue1);
       const sharenoteRaw = tagValue2;
       const meanTimeValue = Number(tagValue3);
-      const lastShareTimestamp = Number(tagValue4);
+      const lastShareTimestamp = parseLastShareTimestamp(tagValue4);
       const userAgentRaw = tagValue5;
       const meanSharenoteRaw = tagValue6;
 
@@ -350,7 +369,7 @@ export const beautify = (event: any) => {
       if (!Number.isNaN(meanTimeValue)) {
         detail.meanTime = meanTimeValue;
       }
-      if (!Number.isNaN(lastShareTimestamp)) {
+      if (lastShareTimestamp !== undefined) {
         detail.lastShareTimestamp = lastShareTimestamp;
       }
       if (typeof userAgentRaw === 'string' && userAgentRaw.trim().length > 0) {
@@ -411,9 +430,16 @@ export const beautify = (event: any) => {
             break;
           }
           case 'lsn': {
+            const numericValue = parseLastShareTimestamp(valueRaw);
+            if (numericValue !== undefined) {
+              result.lastShareTimestamp = numericValue;
+            }
+            break;
+          }
+          case 'csn': {
             const numericValue = Number(valueRaw);
             if (!Number.isNaN(numericValue)) {
-              result.lastShareTimestamp = numericValue;
+              result.shareCount = numericValue;
             }
             break;
           }
@@ -448,6 +474,7 @@ export const beautify = (event: any) => {
           detail.meanSharenoteZBits !== undefined ||
           detail.meanTime !== undefined ||
           detail.lastShareTimestamp !== undefined ||
+          detail.shareCount !== undefined ||
           detail.userAgent !== undefined
         ) {
           acc[workerId] = detail;
@@ -464,6 +491,7 @@ export const beautify = (event: any) => {
           meanSharenoteZBits?: number;
           meanTime?: number;
           lastShareTimestamp?: number;
+          shareCount?: number;
           userAgent?: string;
         }
       >

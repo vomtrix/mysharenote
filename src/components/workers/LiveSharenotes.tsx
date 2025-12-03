@@ -3,6 +3,7 @@ import type { PointerEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getChainIconPath, getChainName } from '@constants/chainIcons';
 import Box from '@mui/material/Box';
+import useMediaQuery from '@mui/material/useMediaQuery';
 import { alpha, useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import { BarChart } from '@mui/x-charts/BarChart';
@@ -21,7 +22,7 @@ import { StyledCard } from '@components/styled/StyledCard';
 import type { IAuxiliaryBlock, ILiveSharenoteEvent } from '@objects/interfaces/ILiveSharenoteEvent';
 import { getIsLiveSharenotesLoading, getLiveSharenotes } from '@store/app/AppSelectors';
 import { useSelector } from '@store/store';
-import { getWorkerColor } from '@utils/colors';
+import { ensureWorkerColors, getWorkerColor } from '@utils/colors';
 import { formatSharenoteLabel } from '@utils/helpers';
 import { formatRelativeFromTimestamp } from '@utils/time';
 import { normalizeWorkerId } from '@utils/workers';
@@ -46,7 +47,8 @@ const toSharenote = (event: ILiveSharenoteEvent): Sharenote | undefined => {
   return undefined;
 };
 
-const MAX_LIVE_BLOCKS = 15;
+const MAX_LIVE_BLOCKS_DESKTOP = 40;
+const MAX_LIVE_BLOCKS_MOBILE = 15;
 const LIVE_SHARENOTE_STALE_THRESHOLD_MS = 5 * 60 * 1000; // 5m
 
 const toLinearValue = (note?: Sharenote) => {
@@ -94,6 +96,8 @@ const resolveEventPrimaryChain = (event: ILiveSharenoteEvent) => {
 const LiveSharenotes = () => {
   const { t } = useTranslation();
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const maxLiveBlocks = isMobile ? MAX_LIVE_BLOCKS_MOBILE : MAX_LIVE_BLOCKS_DESKTOP;
   const liveSharenotes = useSelector(getLiveSharenotes);
   const isLoading = useSelector(getIsLiveSharenotesLoading);
 
@@ -198,7 +202,7 @@ const LiveSharenotes = () => {
     const blockHeights = Array.from(
       new Set<number>([...baseBlockMap.keys(), ...solvedBlockTotals.keys()])
     ).sort((a, b) => a - b);
-    const trackedBlockHeights = blockHeights.slice(-MAX_LIVE_BLOCKS);
+    const trackedBlockHeights = blockHeights.slice(-maxLiveBlocks);
 
     if (!trackedBlockHeights.length) {
       return {
@@ -216,6 +220,7 @@ const LiveSharenotes = () => {
         return acc;
       }, new Set<string>())
     ).sort((a, b) => a.localeCompare(b));
+    ensureWorkerColors(theme, workerIds);
 
     const blockLabels = trackedBlockHeights.map((height) => `#${height}`);
 
@@ -272,7 +277,7 @@ const LiveSharenotes = () => {
       blockSeriesCounts: blockSeriesCountRecords,
       workerTotals
     };
-  }, [sharenotesWithValue, t, theme]);
+  }, [maxLiveBlocks, sharenotesWithValue, t, theme]);
 
   const parentChainBlock = useMemo<IAuxiliaryBlock | undefined>(() => {
     let latestParent:
@@ -483,15 +488,42 @@ const LiveSharenotes = () => {
 
   const auxChainScrollRef = useRef<HTMLDivElement | null>(null);
   const auxChainDragState = useRef({ startX: 0, scrollLeft: 0 });
+  const [shouldCenterAuxChains, setShouldCenterAuxChains] = useState(false);
   const [isDraggingAuxChains, setIsDraggingAuxChains] = useState(false);
 
-  const handleAuxChainPointerDown = useCallback((event: PointerEvent<HTMLDivElement>) => {
+  const updateAuxChainLayout = useCallback(() => {
     const target = auxChainScrollRef.current;
     if (!target) return;
-    setIsDraggingAuxChains(true);
-    auxChainDragState.current = { startX: event.clientX, scrollLeft: target.scrollLeft };
-    target.setPointerCapture?.(event.pointerId);
+    const canFitWithoutScroll = target.scrollWidth <= target.clientWidth + 1;
+    setShouldCenterAuxChains(canFitWithoutScroll);
+    if (canFitWithoutScroll) {
+      target.scrollLeft = 0;
+    }
   }, []);
+
+  useEffect(() => {
+    const handleResize = () => updateAuxChainLayout();
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [updateAuxChainLayout]);
+
+  useEffect(() => {
+    const raf = requestAnimationFrame(updateAuxChainLayout);
+    return () => cancelAnimationFrame(raf);
+  }, [auxChainHighlights, parentChainBlock, updateAuxChainLayout]);
+
+  const handleAuxChainPointerDown = useCallback(
+    (event: PointerEvent<HTMLDivElement>) => {
+      if (shouldCenterAuxChains) return;
+      const target = auxChainScrollRef.current;
+      if (!target) return;
+      setIsDraggingAuxChains(true);
+      auxChainDragState.current = { startX: event.clientX, scrollLeft: target.scrollLeft };
+      target.setPointerCapture?.(event.pointerId);
+    },
+    [shouldCenterAuxChains]
+  );
 
   const handleAuxChainPointerMove = useCallback(
     (event: PointerEvent<HTMLDivElement>) => {
@@ -517,11 +549,14 @@ const LiveSharenotes = () => {
     [isDraggingAuxChains]
   );
 
+  const tooltipTrigger = isMobile ? 'item' : 'axis';
+  const tooltipAnchor = isMobile ? 'node' : 'pointer';
+
   return (
     <StyledCard
       sx={{
+        height: { xs: 'auto', lg: 420 },
         maxHeight: '565px',
-        mb: { xs: 3, lg: 0 }
       }}>
       <Box
         component="section"
@@ -585,13 +620,17 @@ const LiveSharenotes = () => {
                     display: 'flex',
                     flexWrap: 'nowrap',
                     alignItems: 'center',
-                    justifyContent: { md: 'center', xs: 'flex-start', lg: 'flex-start' },
+                    justifyContent: shouldCenterAuxChains ? 'center' : 'flex-start',
                     gap: { xs: 0.85, md: 1.1 },
                     minHeight: 32,
                     overflowX: 'auto',
                     padding: { xs: '0 4px 12px 4px', md: '10px 10px 20px 10px' },
                     scrollbarWidth: 'none',
-                    cursor: isDraggingAuxChains ? 'grabbing' : 'grab',
+                    cursor: shouldCenterAuxChains
+                      ? 'default'
+                      : isDraggingAuxChains
+                      ? 'grabbing'
+                      : 'grab',
                     userSelect: 'none',
                     touchAction: 'pan-y',
                     '&::-webkit-scrollbar': {
@@ -668,6 +707,7 @@ const LiveSharenotes = () => {
                               component="img"
                               src={iconSrc}
                               alt={`${chainName} logo`}
+                              draggable={false}
                               sx={{
                                 width: 34,
                                 height: 34,
@@ -840,6 +880,7 @@ const LiveSharenotes = () => {
                             component="img"
                             src={iconSrc}
                             alt={`${chainLabel} logo`}
+                            draggable={false}
                             sx={{
                               width: 34,
                               height: 34,
@@ -987,7 +1028,9 @@ const LiveSharenotes = () => {
                     slotProps={{
                       legend: inlineLegendSlotProps,
                       tooltip: {
-                        trigger: 'axis',
+                        trigger: tooltipTrigger,
+                        anchor: tooltipAnchor,
+                        placement: isMobile ? 'top' : undefined,
                         valueFormatter: formatChartValue,
                         totalFormatter: formatTotalSharenote,
                         axisEventCounts: liveChartData.blockEventCounts,

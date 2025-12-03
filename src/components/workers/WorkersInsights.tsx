@@ -18,7 +18,7 @@ import { StyledCard } from '@components/styled/StyledCard';
 import type { IHashrateEvent } from '@objects/interfaces/IHashrateEvent';
 import { getHashrates, getIsHashratesLoading } from '@store/app/AppSelectors';
 import { useSelector } from '@store/store';
-import { getWorkerColor } from '@utils/colors';
+import { ensureWorkerColors, getWorkerColor } from '@utils/colors';
 import { beautifyWorkerUserAgent, formatHashrate } from '@utils/helpers';
 import { getHashrateRangeAverage, normalizeWorkerKey, resolveNoteFromRaw } from '@utils/sharenote';
 import { formatRelativeTime, toDateFromMaybeSeconds } from '@utils/time';
@@ -278,6 +278,10 @@ const WorkersInsights = () => {
   }, [latestHashrateEvent, reevaluateTick]);
 
   const workerColorMap = useMemo(() => {
+    ensureWorkerColors(
+      theme,
+      workers.map((entry) => entry.worker)
+    );
     const map: Record<string, string> = {};
     workers.forEach((entry) => {
       map[entry.worker] = getWorkerColor(theme, entry.worker);
@@ -306,7 +310,7 @@ const WorkersInsights = () => {
         height: { xs: 'auto', lg: 'auto' },
         display: 'flex',
         flexDirection: 'column',
-        maxHeight: '780px'
+        maxHeight: '100%'
       }}>
       <Box
         component="section"
@@ -569,7 +573,6 @@ const WorkersInsights = () => {
                           fontWeight: 600,
                           letterSpacing: '0.01em',
                           color: accentColor,
-                          textTransform: 'capitalize',
                           display: 'flex',
                           alignItems: 'center',
                           gap: 0.75

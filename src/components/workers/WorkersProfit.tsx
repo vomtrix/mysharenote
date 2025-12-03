@@ -5,6 +5,7 @@ import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
+import useMediaQuery from '@mui/material/useMediaQuery';
 import { useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import { BarChart } from '@mui/x-charts/BarChart';
@@ -17,7 +18,7 @@ import type { IShareEvent } from '@objects/interfaces/IShareEvent';
 import { getAddress, getIsSharesLoading, getShares } from '@store/app/AppSelectors';
 import { useSelector } from '@store/store';
 import { aggregateSharesByInterval } from '@utils/aggregators';
-import { getWorkerColor } from '@utils/colors';
+import { ensureWorkerColors, getWorkerColor, getWorkerPalette } from '@utils/colors';
 import { normalizeWorkerId } from '@utils/workers';
 
 type Props = {
@@ -30,6 +31,7 @@ const WorkersProfit = ({ intervalMinutes = 60 }: Props) => {
   const isLoading = useSelector(getIsSharesLoading);
   const address = useSelector(getAddress);
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const intervalSec = Math.max(1, Math.floor(intervalMinutes * 60));
   const windowSec = 24 * 60 * 60;
@@ -113,6 +115,21 @@ const WorkersProfit = ({ intervalMinutes = 60 }: Props) => {
       })),
     [filteredShares]
   );
+  const workerSubNameMap = useMemo(() => {
+    const map = new Map<string, string>();
+    filteredShares.forEach((share) => {
+      const baseId = normalizeWorkerId(share.workerId);
+      const rawWorker = String(share.workerId ?? '').trim();
+      const parts = rawWorker.split('#');
+      const subName = parts.length > 1 ? parts.slice(1).join('#').trim() : '';
+      if (!subName) return;
+      const current = map.get(baseId);
+      if (!current || subName.localeCompare(current) < 0) {
+        map.set(baseId, subName);
+      }
+    });
+    return map;
+  }, [filteredShares]);
   const workerTotals = useMemo(() => {
     const totals = new Map<string, number>();
     normalizedShares.forEach((share) => {
@@ -123,6 +140,24 @@ const WorkersProfit = ({ intervalMinutes = 60 }: Props) => {
     });
     return totals;
   }, [normalizedShares]);
+  const workerColorMap = useMemo(() => {
+    const palette = getWorkerPalette(theme);
+    const sortedWorkers = Array.from(workerTotals.entries())
+      .filter(([, total]) => total > 0)
+      .sort((a, b) => {
+        if (b[1] !== a[1]) return b[1] - a[1];
+        const subA = workerSubNameMap.get(a[0]) ?? a[0];
+        const subB = workerSubNameMap.get(b[0]) ?? b[0];
+        return subA.localeCompare(subB);
+      });
+    ensureWorkerColors(theme, sortedWorkers.map(([id]) => id));
+    const map = new Map<string, string>();
+    sortedWorkers.forEach(([id], index) => {
+      const color = getWorkerColor(theme, id) ?? palette[index % palette.length];
+      map.set(id, color ?? theme.palette.primary.main);
+    });
+    return map;
+  }, [theme, workerSubNameMap, workerTotals]);
 
   const { xLabels, workers, dataByWorker } = useMemo(
     () =>
@@ -145,13 +180,13 @@ const WorkersProfit = ({ intervalMinutes = 60 }: Props) => {
         id: w,
         label: w,
         data: workerData,
-        color: getWorkerColor(theme, w),
+        color: workerColorMap.get(w) ?? getWorkerColor(theme, w),
         stack: 'shares'
       });
       return acc;
     }, [] as any[]);
     return mapped;
-  }, [workers, dataByWorker, theme, workerTotals]);
+  }, [workers, dataByWorker, theme, workerTotals, workerColorMap]);
 
   const hasData = xLabels.length > 0 && series.length > 0;
 
@@ -189,12 +224,14 @@ const WorkersProfit = ({ intervalMinutes = 60 }: Props) => {
   };
 
   return (
-    <StyledCard sx={{ height: { xs: 'auto', lg: 320 } }}>
+    <StyledCard sx={{
+        height: { xs: 'auto', lg: 420 },
+        minHeight: '100%',
+      }}>
       <Box
         component="section"
         sx={{
           p: 2,
-          justifyContent: 'flex-start',
           display: 'flex',
           flexDirection: 'column',
           height: '100%'
@@ -314,10 +351,10 @@ const WorkersProfit = ({ intervalMinutes = 60 }: Props) => {
               sx={{
                 width: '100%',
                 flexGrow: 1,
-                minHeight: 0,
                 display: 'flex',
-                maxHeight: 250,
-                height: 250,
+                minHeight: 0,
+                maxHeight: { xs: 300, lg: 'unset' },
+                height: { xs: 300, lg: 'unset' },
                 ...inlineLegendSx
               }}>
               <BarChart
@@ -338,7 +375,12 @@ const WorkersProfit = ({ intervalMinutes = 60 }: Props) => {
                 slots={{ tooltip: StackedTotalTooltip as any }}
                 slotProps={{
                   legend: inlineLegendSlotProps,
-                  tooltip: { trigger: 'axis', valueFormatter: formatShareValueNumber } as any
+                  tooltip: {
+                    trigger: isMobile ? 'item' : 'axis',
+                    anchor: isMobile ? 'node' : 'pointer',
+                    placement: isMobile ? 'top' : undefined,
+                    valueFormatter: formatShareValueNumber
+                  } as any
                 }}
               />
             </Box>

@@ -134,6 +134,7 @@ const SharesTable = () => {
         component="section"
         sx={{
           p: 2,
+          minHeight: '200px',
           justifyContent: 'center'
         }}>
         <SectionHeader>
@@ -294,7 +295,6 @@ const SharesTable = () => {
         {isLoading ? (
           <ProgressLoader value={shares.length} />
         ) : (
-          <Box sx={{ height: shares.length ? 'auto' : 100 }}>
             <CustomTable
               columns={columns}
               rows={shares}
@@ -306,7 +306,6 @@ const SharesTable = () => {
                 pagination: { paginationModel: { pageSize: 10 } }
               }}
             />
-          </Box>
         )}
       </Box>
     </StyledCard>

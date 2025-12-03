@@ -600,7 +600,7 @@ const HashrateChart = () => {
           (hasChartData ? (
             <CustomChart
               dataPoints={chartDataPoints}
-              height={300}
+              height={255}
               lineColor={selectedColor}
               areaTopColor={areaTopColor}
               areaBottomColor={areaBottomColor}

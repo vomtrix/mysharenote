@@ -2,7 +2,7 @@ import React from 'react';
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
 import Typography from '@mui/material/Typography';
-import { ChartsTooltipContainer, useAxesTooltip } from '@mui/x-charts';
+import { ChartsTooltipContainer, useAxesTooltip, useItemTooltip } from '@mui/x-charts';
 
 type Props = {
   valueFormatter: (v: number) => string;
@@ -23,6 +23,22 @@ type Props = {
     color?: string;
     count?: number;
   }) => React.ReactNode;
+  trigger?: 'axis' | 'item';
+  anchor?: 'pointer' | 'node';
+  placement?:
+    | 'bottom-end'
+    | 'bottom-start'
+    | 'bottom'
+    | 'left-end'
+    | 'left-start'
+    | 'left'
+    | 'right-end'
+    | 'right-start'
+    | 'right'
+    | 'top-end'
+    | 'top-start'
+    | 'top';
+  disablePortal?: boolean;
 };
 
 const StackedTotalTooltip: React.FC<Props> = ({
@@ -32,13 +48,47 @@ const StackedTotalTooltip: React.FC<Props> = ({
   axisSeriesCounts,
   eventCountFormatter,
   renderTotalValue,
-  renderSeriesValue
+  renderSeriesValue,
+  trigger = 'axis',
+  anchor = 'pointer',
+  placement,
+  disablePortal
 }) => {
-  const tooltipData = useAxesTooltip();
+  const axisTooltipData = useAxesTooltip();
+  const itemTooltipData = trigger === 'item' ? useItemTooltip() : null;
+
+  const tooltipData =
+    axisTooltipData ??
+    (itemTooltipData
+      ? [
+          {
+            axisId: 'item',
+            axisFormattedValue:
+              itemTooltipData.label ??
+              // fallback to the raw x-value if we have it
+              (itemTooltipData.identifier as any)?.xValue ??
+              (itemTooltipData.identifier as any)?.value ??
+              '--',
+            seriesItems: [
+              {
+                seriesId: (itemTooltipData.identifier as any)?.seriesId ?? 'series',
+                color: itemTooltipData.color,
+                value: itemTooltipData.value ?? null,
+                formattedValue: itemTooltipData.formattedValue,
+                formattedLabel: itemTooltipData.label
+              }
+            ]
+          }
+        ]
+      : null);
   if (!tooltipData) return null;
 
   return (
-    <ChartsTooltipContainer trigger="axis">
+    <ChartsTooltipContainer
+      trigger={trigger}
+      anchor={anchor}
+      placement={placement}
+      disablePortal={disablePortal}>
       {tooltipData.map(({ axisId, axisFormattedValue, seriesItems }) => {
         const visibleSeries = seriesItems.filter(
           (it) => typeof it.value === 'number' && Number(it.value) > 0

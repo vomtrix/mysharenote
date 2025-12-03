@@ -45,6 +45,11 @@ const AddressPage = () => {
     lgMedium: 280,
     lgShort: 220
   };
+  const cardHeights = {
+    tall: { xs: rowHeights.xs, lg: rowHeights.lgTall },
+    medium: { xs: rowHeights.xs, lg: rowHeights.lgMedium },
+    short: { xs: rowHeights.xs - 20, lg: rowHeights.lgShort }
+  };
   const cardGridStyles = {
     width: '100%',
     display: 'grid',
@@ -114,7 +119,7 @@ const AddressPage = () => {
             sx={{
               gridColumn: { xs: '1', lg: '1' },
               gridRow: { xs: 'auto', lg: '1' },
-              height: { xs: rowHeights.xs, lg: rowHeights.lgTall }
+              height: cardHeights.tall
             }}
           />
           <Skeleton
@@ -124,7 +129,7 @@ const AddressPage = () => {
               gridColumn: { xs: '1', lg: '2' },
               gridRow: { xs: 'auto', lg: '1 / span 2' },
               height: {
-                xs: rowHeights.xs,
+                xs: cardHeights.tall.xs,
                 lg: `calc(${rowHeights.lgTall * 2}px + 24px)`
               }
             }}
@@ -135,7 +140,7 @@ const AddressPage = () => {
             sx={{
               gridColumn: { xs: '1', lg: '1' },
               gridRow: { xs: 'auto', lg: '2' },
-              height: { xs: rowHeights.xs, lg: rowHeights.lgTall }
+              height: cardHeights.tall
             }}
           />
           <Skeleton
@@ -144,7 +149,7 @@ const AddressPage = () => {
             sx={{
               gridColumn: { xs: '1', lg: '1' },
               gridRow: { xs: 'auto', lg: '3' },
-              height: { xs: rowHeights.xs, lg: rowHeights.lgMedium }
+              height: cardHeights.medium
             }}
           />
           <Skeleton
@@ -153,7 +158,7 @@ const AddressPage = () => {
             sx={{
               gridColumn: { xs: '1', lg: '2' },
               gridRow: { xs: 'auto', lg: '3' },
-              height: { xs: rowHeights.xs, lg: rowHeights.lgMedium }
+              height: cardHeights.medium
             }}
           />
           <Skeleton
@@ -162,7 +167,7 @@ const AddressPage = () => {
             sx={{
               gridColumn: { xs: '1', lg: '1' },
               gridRow: { xs: 'auto', lg: '4' },
-              height: { xs: rowHeights.xs - 20, lg: rowHeights.lgShort }
+              height: cardHeights.short
             }}
           />
           <Skeleton
@@ -171,7 +176,7 @@ const AddressPage = () => {
             sx={{
               gridColumn: { xs: '1', lg: '2' },
               gridRow: { xs: 'auto', lg: '4' },
-              height: { xs: rowHeights.xs - 20, lg: rowHeights.lgShort }
+              height: cardHeights.short
             }}
           />
         </Box>
@@ -181,7 +186,7 @@ const AddressPage = () => {
             sx={{
               gridColumn: { xs: '1', lg: '1' },
               gridRow: { xs: 'auto', lg: '1' },
-              minHeight: { lg: 320 },
+              minHeight: cardHeights.tall,
               ...fullHeightWrapper
             }}>
             <HashrateChart />
@@ -198,10 +203,10 @@ const AddressPage = () => {
             sx={{
               gridColumn: { xs: '1', lg: '1' },
               gridRow: { xs: 'auto', lg: '2' },
-              minHeight: { lg: 320 },
+              minHeight: cardHeights.medium,
               ...fullHeightWrapper
             }}>
-            <WorkersProfit />
+            <LiveSharenotes />
           </Box>
           <Box
             sx={{
@@ -215,10 +220,10 @@ const AddressPage = () => {
             sx={{
               gridColumn: { xs: '1', lg: '2' },
               gridRow: { xs: 'auto', lg: '3' },
-              minHeight: { lg: 280 },
+              minHeight: cardHeights.tall,
               ...fullHeightWrapper
             }}>
-            <LiveSharenotes />
+            <WorkersProfit />
           </Box>
           <Box
             sx={{

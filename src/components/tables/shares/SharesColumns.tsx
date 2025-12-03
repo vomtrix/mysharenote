@@ -5,10 +5,12 @@ import {
   getChainName,
   getExplorerBaseUrl
 } from '@constants/chainIcons';
-import { Avatar, Box, Chip, Tooltip } from '@mui/material';
+import { Avatar, Box, Chip, IconButton, Tooltip } from '@mui/material';
+import InfoOutlined from '@mui/icons-material/InfoOutlined';
 import ShareNoteLabel from '@components/common/ShareNoteLabel';
 import { getSettings } from '@store/app/AppSelectors';
 import { useSelector } from '@store/store';
+import { formatSharenoteLabel } from '@utils/helpers';
 import { fromEpoch } from '@utils/time';
 
 const sharesColumns = () => {
@@ -28,23 +30,14 @@ const sharesColumns = () => {
   const renderSharenoteCell = (value: any, count?: number) => {
     const parsedCount = Number(count);
     const hasCount = Number.isFinite(parsedCount);
-    const tooltipTitleParts: string[] = [];
-    if (value !== undefined && value !== null && value !== '') {
-      tooltipTitleParts.push(t('liveSharenotes.sum', { label: value }));
-    }
-    if (hasCount) {
-      tooltipTitleParts.push(t('liveSharenotes.count', { count: parsedCount }));
-    }
-    const tooltipTitle = tooltipTitleParts.join(' • ');
+    const formattedLabel = formatSharenoteLabel(value);
 
     const content = (
       <Box display="flex" alignItems="center" gap={0.5}>
-        <ShareNoteLabel value={value} />
-        {hasCount ? (
+        {formattedLabel ? (
           <Box
             component="span"
             sx={{
-              ml: 0.25,
               px: 0.75,
               py: 0.25,
               borderRadius: 1,
@@ -54,26 +47,42 @@ const sharesColumns = () => {
               fontWeight: 700,
               lineHeight: 1.2
             }}>
-            ×{parsedCount}
+            <ShareNoteLabel value={value} />
+          </Box>
+        ) : null}
+        {hasCount ? (
+          <Box component="span" sx={{ fontWeight: 700, fontSize: 13 }}>
+            {parsedCount}
           </Box>
         ) : null}
       </Box>
     );
 
-    return tooltipTitle ? (
-      <Tooltip title={tooltipTitle} placement="top">
-        {content}
-      </Tooltip>
-    ) : (
-      content
-    );
+    return content;
   };
+
+  const renderColumnHeader = (title: string, tooltip: string) => (
+    <Box display="flex" alignItems="center" gap={0.5}>
+      <Tooltip
+        title={tooltip}
+        slotProps={{ tooltip: { sx: { maxWidth: 320 } } }}
+        placement="top"
+        arrow>
+        <IconButton
+          size="small"
+          sx={{ color: (theme) => theme.palette.text.secondary, p: 0.25, ml: -0.5 }}>
+          <InfoOutlined fontSize="small" />
+        </IconButton>
+      </Tooltip>
+      <Box>{title}</Box>
+    </Box>
+  );
   return [
     {
       headerName: t('time'),
       field: 'timestamp',
-      flex: 1,
-      minWidth: 150,
+      flex: 1.2,
+      minWidth: 160,
       headerClassName: 'text-blue text-uppercase',
       cellClassName: 'text-bold',
       valueFormatter: (value: any) => fromEpoch(value).format('L LT')
@@ -82,7 +91,7 @@ const sharesColumns = () => {
       headerName: t('worker'),
       field: 'workerId',
       flex: 1,
-      minWidth: 100,
+      minWidth: 120,
       headerClassName: 'text-blue text-uppercase',
       cellClassName: 'text-bold'
     },
@@ -90,7 +99,7 @@ const sharesColumns = () => {
       headerName: t('block'),
       field: 'blockHeight',
       flex: 1,
-      minWidth: 100,
+      minWidth: 120,
       headerClassName: 'text-blue text-uppercase',
       cellClassName: 'text-blue',
       renderCell: (params: any) => {
@@ -149,28 +158,38 @@ const sharesColumns = () => {
       }
     },
     {
-      headerName: t('shares'),
+      headerName: 'Worker Notes',
+      renderHeader: () =>
+        renderColumnHeader(
+          'Worker Notes',
+          'Sharenotes printed by this worker during and before solving this block.'
+        ),
       field: 'shares',
-      flex: 1,
-      minWidth: 90,
+      flex: 1.1,
+      minWidth: 140,
       headerClassName: 'text-blue text-uppercase',
       cellClassName: 'text-bold',
       renderCell: (params: any) => renderSharenoteCell(params.value, params.row?.sharesCount)
     },
     {
-      headerName: t('totalShares'),
+      headerName: 'Total Notes',
+      renderHeader: () =>
+        renderColumnHeader(
+          'Total Notes',
+          'All sharenotes submitted by every miner during and before solving this block.'
+        ),
       field: 'totalShares',
-      flex: 1,
-      minWidth: 100,
+      flex: 1.1,
+      minWidth: 140,
       headerClassName: 'text-blue text-uppercase',
       cellClassName: 'text-bold',
       renderCell: (params: any) => renderSharenoteCell(params.value, params.row?.totalSharesCount)
     },
     {
-      headerName: t('profit'),
+      headerName: 'Reward',
       field: 'amount',
       flex: 1,
-      minWidth: 120,
+      minWidth: 130,
       headerClassName: 'text-blue text-uppercase',
       cellClassName: 'text-blue text-bold',
       renderCell: (params: any) => {

@@ -376,8 +376,8 @@ const WorkersProfit = ({ intervalMinutes = 60 }: Props) => {
                 slotProps={{
                   legend: inlineLegendSlotProps,
                   tooltip: {
-                    trigger: isMobile ? 'item' : 'axis',
-                    anchor: isMobile ? 'node' : 'pointer',
+                    trigger: 'axis',
+                    anchor: 'pointer',
                     placement: isMobile ? 'top' : undefined,
                     valueFormatter: formatShareValueNumber
                   } as any

@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
+import Popper from '@mui/material/Popper';
 import Typography from '@mui/material/Typography';
-import { ChartsTooltipContainer, useAxesTooltip, useItemTooltip } from '@mui/x-charts';
+import { alpha, useTheme } from '@mui/material/styles';
+import { useAxesTooltip, useSvgRef } from '@mui/x-charts';
 
 type Props = {
   valueFormatter: (v: number) => string;
@@ -23,22 +25,7 @@ type Props = {
     color?: string;
     count?: number;
   }) => React.ReactNode;
-  trigger?: 'axis' | 'item';
-  anchor?: 'pointer' | 'node';
-  placement?:
-    | 'bottom-end'
-    | 'bottom-start'
-    | 'bottom'
-    | 'left-end'
-    | 'left-start'
-    | 'left'
-    | 'right-end'
-    | 'right-start'
-    | 'right'
-    | 'top-end'
-    | 'top-start'
-    | 'top';
-  disablePortal?: boolean;
+  placement?: 'bottom-end' | 'bottom-start' | 'bottom' | 'left-end' | 'left-start' | 'left' | 'right-end' | 'right-start' | 'right' | 'top-end' | 'top-start' | 'top';
 };
 
 const StackedTotalTooltip: React.FC<Props> = ({
@@ -49,46 +36,66 @@ const StackedTotalTooltip: React.FC<Props> = ({
   eventCountFormatter,
   renderTotalValue,
   renderSeriesValue,
-  trigger = 'axis',
-  anchor = 'pointer',
-  placement,
-  disablePortal
+  placement
 }) => {
-  const axisTooltipData = useAxesTooltip();
-  const itemTooltipData = trigger === 'item' ? useItemTooltip() : null;
+  const theme = useTheme();
+  const svgRef = useSvgRef();
+  const positionRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+  const anchorEl = useMemo(
+    () => ({
+      getBoundingClientRect: () => ({
+        x: positionRef.current.x,
+        y: positionRef.current.y,
+        top: positionRef.current.y,
+        left: positionRef.current.x,
+        right: positionRef.current.x,
+        bottom: positionRef.current.y,
+        width: 0,
+        height: 0,
+        toJSON: () => ''
+      })
+    }),
+    []
+  );
 
-  const tooltipData =
-    axisTooltipData ??
-    (itemTooltipData
-      ? [
-          {
-            axisId: 'item',
-            axisFormattedValue:
-              itemTooltipData.label ??
-              // fallback to the raw x-value if we have it
-              (itemTooltipData.identifier as any)?.xValue ??
-              (itemTooltipData.identifier as any)?.value ??
-              '--',
-            seriesItems: [
-              {
-                seriesId: (itemTooltipData.identifier as any)?.seriesId ?? 'series',
-                color: itemTooltipData.color,
-                value: itemTooltipData.value ?? null,
-                formattedValue: itemTooltipData.formattedValue,
-                formattedLabel: itemTooltipData.label
-              }
-            ]
-          }
-        ]
-      : null);
+  useEffect(() => {
+    const svg = svgRef.current;
+    if (!svg) return undefined;
+    const update = (event: PointerEvent) => {
+      positionRef.current = { x: event.clientX, y: event.clientY };
+    };
+    svg.addEventListener('pointermove', update);
+    svg.addEventListener('pointerdown', update);
+    svg.addEventListener('pointerenter', update);
+    return () => {
+      svg.removeEventListener('pointermove', update);
+      svg.removeEventListener('pointerdown', update);
+      svg.removeEventListener('pointerenter', update);
+    };
+  }, [svgRef]);
+
+  const tooltipData = useAxesTooltip();
   if (!tooltipData) return null;
 
   return (
-    <ChartsTooltipContainer
-      trigger={trigger}
-      anchor={anchor}
-      placement={placement}
-      disablePortal={disablePortal}>
+    <Popper
+      open={true}
+      placement={placement ?? 'top'}
+      anchorEl={anchorEl as any}
+      modifiers={[
+        { name: 'offset', options: { offset: [0, 10] } },
+        { name: 'preventOverflow', options: { altAxis: true } }
+      ]}
+      sx={{
+        pointerEvents: 'none',
+        zIndex: theme.zIndex.tooltip,
+        '& .tooltip-surface': {
+          backgroundColor: theme.palette.background.paper,
+          border: `1px solid ${theme.palette.divider}`,
+          borderRadius: 2,
+          boxShadow: `0 6px 24px ${alpha(theme.palette.common.black, 0.18)}`
+        }
+      }}>
       {tooltipData.map(({ axisId, axisFormattedValue, seriesItems }) => {
         const visibleSeries = seriesItems.filter(
           (it) => typeof it.value === 'number' && Number(it.value) > 0
@@ -105,23 +112,23 @@ const StackedTotalTooltip: React.FC<Props> = ({
         return (
           <Box
             key={axisId}
-            sx={(theme) => ({
-              backgroundColor: theme.palette.background.paper,
+            className="tooltip-surface"
+            sx={{
               color: theme.palette.text.primary,
-              border: `1px solid ${theme.palette.divider}`,
-              borderRadius: 1,
-              minWidth: 220
-            })}>
+              minWidth: 220,
+              overflow: 'hidden'
+            }}>
             <Box
               component="div"
-              sx={(theme) => ({
+              sx={{
                 borderBottom: `1px solid ${theme.palette.divider}`,
                 px: 1.5,
                 py: 0.5,
                 display: 'flex',
                 alignItems: 'center',
-                gap: 1
-              })}>
+                gap: 1,
+                backgroundColor: alpha(theme.palette.background.paper, 0.95)
+              }}>
               <Typography variant="caption">{axisFormattedValue}</Typography>
               <Chip size="small" label={renderedTotal ?? formattedTotal} />
               {typeof eventCount === 'number' && (
@@ -182,7 +189,7 @@ const StackedTotalTooltip: React.FC<Props> = ({
           </Box>
         );
       })}
-    </ChartsTooltipContainer>
+    </Popper>
   );
 };
 

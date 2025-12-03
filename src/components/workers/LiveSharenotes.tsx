@@ -7,13 +7,13 @@ import useMediaQuery from '@mui/material/useMediaQuery';
 import { alpha, useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import { BarChart } from '@mui/x-charts/BarChart';
+import StackedTotalTooltip from '@components/charts/StackedTotalTooltip';
 import {
   combineNotesSerial,
   noteFromZBits,
   parseNoteLabel,
   Sharenote
 } from '@soprinter/sharenotejs';
-import StackedTotalTooltip from '@components/charts/StackedTotalTooltip';
 import InfoHeader from '@components/common/InfoHeader';
 import ProgressLoader from '@components/common/ProgressLoader';
 import ShareNoteLabel from '@components/common/ShareNoteLabel';
@@ -549,8 +549,8 @@ const LiveSharenotes = () => {
     [isDraggingAuxChains]
   );
 
-  const tooltipTrigger = isMobile ? 'item' : 'axis';
-  const tooltipAnchor = isMobile ? 'node' : 'pointer';
+  const tooltipTrigger = 'axis';
+  const tooltipAnchor = 'pointer';
 
   return (
     <StyledCard
@@ -1028,8 +1028,6 @@ const LiveSharenotes = () => {
                     slotProps={{
                       legend: inlineLegendSlotProps,
                       tooltip: {
-                        trigger: tooltipTrigger,
-                        anchor: tooltipAnchor,
                         placement: isMobile ? 'top' : undefined,
                         valueFormatter: formatChartValue,
                         totalFormatter: formatTotalSharenote,

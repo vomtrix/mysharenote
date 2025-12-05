@@ -1,5 +1,5 @@
 import { useRouter } from 'next/router';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import * as Yup from 'yup';
@@ -42,6 +42,9 @@ const Connect = ({ hasButton = false }: ConnectProps) => {
   const settings = useSelector(getSettings);
   const [inputVisible, setInputVisible] = useState(false);
   const [inputValue, setInputValue] = useState<string>('');
+  const [displayAddress, setDisplayAddress] = useState<string>(address || '');
+  const buttonRef = useRef<HTMLButtonElement | null>(null);
+  const measureRef = useRef<HTMLSpanElement | null>(null);
 
   const validationSchema = Yup.object().shape({
     address: Yup.string()
@@ -105,6 +108,70 @@ const Connect = ({ hasButton = false }: ConnectProps) => {
     }
   }, [errors]);
 
+  useEffect(() => {
+    const computeDisplayAddress = () => {
+      if (!address || !buttonRef.current || !measureRef.current) return;
+
+      const button = buttonRef.current;
+      const measure = measureRef.current;
+      const computedStyle = getComputedStyle(button);
+      const paddingLeft = parseFloat(computedStyle.paddingLeft) || 0;
+      const paddingRight = parseFloat(computedStyle.paddingRight) || 0;
+      const availableWidth = button.clientWidth - paddingLeft - paddingRight;
+
+      if (availableWidth <= 0) return;
+
+      measure.style.font = computedStyle.font;
+      measure.style.letterSpacing = computedStyle.letterSpacing;
+      const measureText = (text: string) => {
+        measure.textContent = text;
+        return measure.offsetWidth;
+      };
+
+      if (measureText(address) <= availableWidth) {
+        setDisplayAddress(address);
+        return;
+      }
+
+      const minVisibleChars = 2; // at least one on each side
+      let low = minVisibleChars;
+      let high = address.length;
+      let best = truncateAddress(address, 1, 1);
+
+      const build = (visibleChars: number) => {
+        const leading = Math.ceil(visibleChars / 2);
+        const trailing = visibleChars - leading;
+        return truncateAddress(address, leading, trailing);
+      };
+
+      while (low <= high) {
+        const mid = Math.floor((low + high) / 2);
+        const candidate = build(mid);
+        const width = measureText(candidate);
+
+        if (width <= availableWidth) {
+          best = candidate;
+          low = mid + 1;
+        } else {
+          high = mid - 1;
+        }
+      }
+
+      setDisplayAddress(best);
+    };
+
+    const button = buttonRef.current;
+    if (!button) return;
+
+    const resizeObserver = new ResizeObserver(computeDisplayAddress);
+    resizeObserver.observe(button);
+    computeDisplayAddress();
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, [address]);
+
   return (
     <>
       {inputVisible && (
@@ -152,9 +219,25 @@ const Connect = ({ hasButton = false }: ConnectProps) => {
             <ConnectedAddressIconWrapper>
               <AccountBalanceWalletIcon />
             </ConnectedAddressIconWrapper>
-            <StyledAddressButton onClick={handleDisplayInput}>
-              {isMobile ? truncateAddress(address) : address}
+            <StyledAddressButton ref={buttonRef} onClick={handleDisplayInput} title={address}>
+              {displayAddress}
             </StyledAddressButton>
+            <span
+              ref={measureRef}
+              aria-hidden
+              style={{
+                position: 'absolute',
+                visibility: 'hidden',
+                pointerEvents: 'none',
+                whiteSpace: 'nowrap',
+                padding: 0,
+                margin: 0,
+                fontSize: 'inherit',
+                letterSpacing: 'inherit',
+                fontFamily: 'inherit',
+                fontWeight: 'inherit'
+              }}
+            />
           </ConnectedAddressButton>
         </Box>
       )}

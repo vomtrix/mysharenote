@@ -66,8 +66,18 @@ export const validateAddress = (addr: string, network?: string) => {
 export const getTimeBeforeDaysInSeconds = (days: number): number =>
   Math.ceil(Date.now() / 1000) - days * 24 * 60 * 60;
 
-export const truncateAddress = (addr: string) => {
-  return `${addr.slice(0, 10)}...${addr.slice(-10)}`;
+export const truncateAddress = (addr: string, leading = 10, trailing = 10) => {
+  if (!addr) return '';
+
+  const safeLeading = Math.max(0, leading);
+  const safeTrailing = Math.max(0, trailing);
+  const minLengthWithoutTruncation = safeLeading + safeTrailing + 3;
+
+  if (addr.length <= minLengthWithoutTruncation) {
+    return addr;
+  }
+
+  return `${addr.slice(0, safeLeading)}...${addr.slice(-safeTrailing)}`;
 };
 
 export const lokiToFlc = (amount: number) => (amount / LOKI_PER_FLC).toFixed(6);

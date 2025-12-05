@@ -20,7 +20,11 @@ import ShareNoteLabel from '@components/common/ShareNoteLabel';
 import { SectionHeader } from '@components/styled/SectionHeader';
 import { StyledCard } from '@components/styled/StyledCard';
 import type { IAuxiliaryBlock, ILiveSharenoteEvent } from '@objects/interfaces/ILiveSharenoteEvent';
-import { getIsLiveSharenotesLoading, getLiveSharenotes } from '@store/app/AppSelectors';
+import {
+  getIsLiveSharenotesLoading,
+  getLiveSharenotes,
+  getShares
+} from '@store/app/AppSelectors';
 import { useSelector } from '@store/store';
 import { ensureWorkerColors, getWorkerColor } from '@utils/colors';
 import { formatSharenoteLabel } from '@utils/helpers';
@@ -74,6 +78,7 @@ const formatLastEventAge = (timestamp?: number | null) => {
 };
 
 type LiveChartData = {
+  blockHeights: number[];
   blockLabels: string[];
   series: Array<Record<string, any>>;
   blockEventCounts: Record<string, number>;
@@ -100,6 +105,7 @@ const LiveSharenotes = () => {
   const maxLiveBlocks = isMobile ? MAX_LIVE_BLOCKS_MOBILE : MAX_LIVE_BLOCKS_DESKTOP;
   const liveSharenotes = useSelector(getLiveSharenotes);
   const isLoading = useSelector(getIsLiveSharenotesLoading);
+  const shares = useSelector(getShares);
 
   const sortedSharenotes = useMemo(
     () => [...liveSharenotes].sort((a, b) => (b.timestamp ?? 0) - (a.timestamp ?? 0)),
@@ -206,6 +212,7 @@ const LiveSharenotes = () => {
 
     if (!trackedBlockHeights.length) {
       return {
+        blockHeights: [],
         blockLabels: [],
         series: [] as Array<Record<string, any>>,
         blockEventCounts: {},
@@ -271,6 +278,7 @@ const LiveSharenotes = () => {
     }, {});
 
     return {
+      blockHeights: trackedBlockHeights,
       blockLabels,
       series: baseSeries,
       blockEventCounts: blockEventCountRecords,
@@ -448,6 +456,34 @@ const LiveSharenotes = () => {
     return () => clearTimeout(timeout);
   }, [recentlyUpdatedChains]);
 
+  const solvedBlockHeights = useMemo(() => {
+    const solved = new Set<number>();
+    shares.forEach((share) => {
+      const height = Number((share as any)?.blockHeight);
+      if (Number.isFinite(height)) {
+        solved.add(height);
+      }
+    });
+    visibleSharenotes.forEach((event) => {
+      if (event.solved !== true && event.parentBlock?.solved !== true) return;
+      const height = event.blockHeight ?? event.parentBlock?.height;
+      if (typeof height === 'number' && Number.isFinite(height)) {
+        solved.add(height);
+      }
+    });
+    return solved;
+  }, [shares, visibleSharenotes]);
+
+  const solvedBlockIndexes = useMemo(() => {
+    const solved = new Set<number>();
+    liveChartData.blockHeights.forEach((height, index) => {
+      if (solvedBlockHeights.has(height)) {
+        solved.add(index);
+      }
+    });
+    return solved;
+  }, [liveChartData.blockHeights, solvedBlockHeights]);
+
   const chartSeries = useMemo(
     () =>
       liveChartData.series
@@ -490,6 +526,87 @@ const LiveSharenotes = () => {
   const auxChainDragState = useRef({ startX: 0, scrollLeft: 0 });
   const [shouldCenterAuxChains, setShouldCenterAuxChains] = useState(false);
   const [isDraggingAuxChains, setIsDraggingAuxChains] = useState(false);
+
+  const stackTopByIndexRef = useRef<Map<number, number>>(new Map());
+  stackTopByIndexRef.current.clear();
+
+  const SolvedBar = useCallback(
+    (barProps: {
+      id?: string;
+      dataIndex: number;
+      x?: number;
+      y?: number;
+      width?: number;
+      height?: number;
+      layout?: 'vertical' | 'horizontal';
+      color?: string;
+      ownerState?: { isHighlighted?: boolean; isFaded?: boolean };
+    }) => {
+      const {
+        dataIndex,
+        x = 0,
+        y = 0,
+        width = 0,
+        height = 0,
+        layout = 'vertical',
+        color = theme.palette.primary.main,
+        ownerState
+      } = barProps;
+      const stackTopByIndex = stackTopByIndexRef.current;
+      const yTop = Math.min(y, y + height);
+      const prevTop = stackTopByIndex.get(dataIndex);
+      const nextTop = prevTop === undefined ? yTop : Math.min(prevTop, yTop);
+      stackTopByIndex.set(dataIndex, nextTop);
+      const isTopOfStack = Math.abs(nextTop - yTop) < 0.5;
+
+      const isSolved = solvedBlockIndexes.has(dataIndex) && isTopOfStack;
+      const centerX = x + width / 2;
+      const starSize = Math.max(8, Math.min(14, width * 0.75));
+      const starGap = 6;
+      const starTranslateY =
+        layout === 'horizontal' ? y + height / 2 : nextTop - starGap - starSize / 2;
+      const starScale = starSize / 24;
+      const starColor = '#d4af37';
+      const barOpacity = ownerState?.isFaded ? 0.3 : 1;
+      const highlightFilter = ownerState?.isHighlighted ? 'brightness(115%)' : undefined;
+
+      return (
+        <g>
+          <rect
+            x={x}
+            y={y}
+            width={width}
+            height={height}
+            fill={color}
+            stroke="none"
+            style={{ opacity: barOpacity, filter: highlightFilter }}
+          />
+          {isSolved && (
+            <g
+              transform={`translate(${centerX - 12 * starScale}, ${
+                starTranslateY - 12 * starScale
+              }) scale(${starScale})`}
+              style={{
+                pointerEvents: 'none',
+                filter: `drop-shadow(0 2px 4px ${alpha(starColor, 0.35)})`
+              }}>
+              <path
+                d="M12 17.27 18.18 21 16.54 13.97 22 9.24 14.81 8.63 12 2 9.19 8.63 2 9.24 7.46 13.97 5.82 21z"
+                fill={starColor}
+                stroke={alpha(theme.palette.common.black, 0.25)}
+                strokeWidth={1.2}
+              />
+              <path
+                d="M12 4.5 14 9.4 19.4 9.85 15.2 13.22 16.4 18.5 12 15.6 7.6 18.5 8.8 13.22 4.6 9.85 10 9.4z"
+                fill={alpha(theme.palette.common.white, 0.3)}
+              />
+            </g>
+          )}
+        </g>
+      );
+    },
+    [solvedBlockIndexes, theme, stackTopByIndexRef]
+  );
 
   const updateAuxChainLayout = useCallback(() => {
     const target = auxChainScrollRef.current;
@@ -1023,8 +1140,8 @@ const LiveSharenotes = () => {
                       }
                     ]}
                     yAxis={[{ position: 'none' }]}
-                    margin={{ bottom: 0, left: 10, right: 10, top: 16 }}
-                    slots={{ tooltip: StackedTotalTooltip as any }}
+                    margin={{ bottom: 0, left: 10, right: 10, top: 28 }}
+                    slots={{ tooltip: StackedTotalTooltip as any, bar: SolvedBar as any }}
                     slotProps={{
                       legend: inlineLegendSlotProps,
                       tooltip: {

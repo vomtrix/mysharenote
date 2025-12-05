@@ -225,18 +225,23 @@ const SettingsModal = () => {
           flexDirection: 'column',
           overflowY: 'auto',
           maxHeight: { xs: '70vh', md: '72vh' },
-          pr: { xs: 0.5, md: 1 }
+          pr: { xs: 0.5, md: 1 },
+          scrollbarWidth: 'none',
+          msOverflowStyle: 'none',
+          '&::-webkit-scrollbar': { display: 'none' }
         }}>
         <Stack spacing={2.5} sx={{ pb: 1 }}>
           <Paper
-            elevation={3}
+            elevation={0}
             sx={{
               p: 2,
               borderRadius: 3,
               border: '1px solid',
               borderColor: 'divider',
               background: (theme) =>
-                `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${theme.palette.action.hover} 100%)`
+                `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${theme.palette.action.hover} 100%)`,
+              boxShadow:
+                '0px 10px 0px -8px rgba(0,0,0,0.16), 0px -8px 0px -10px rgba(0,0,0,0.1)'
             }}>
             <Stack spacing={1.5}>
               <Box display="flex" alignItems="center" justifyContent="space-between">
@@ -292,13 +297,15 @@ const SettingsModal = () => {
           </Paper>
 
           <Paper
-            elevation={3}
+            elevation={0}
             sx={{
               p: 2,
               borderRadius: 3,
               border: '1px solid',
               borderColor: 'divider',
-              bgcolor: 'background.paper'
+              bgcolor: 'background.paper',
+              boxShadow:
+                '0px 10px 0px -8px rgba(0,0,0,0.16), 0px -8px 0px -10px rgba(0,0,0,0.1)'
             }}>
             <Stack spacing={1.25}>
               <Box display="flex" justifyContent="space-between" alignItems="center">
@@ -341,12 +348,14 @@ const SettingsModal = () => {
           </Paper>
 
           <Paper
-            elevation={3}
+            elevation={0}
             sx={{
               p: 2,
               borderRadius: 3,
               border: '1px solid',
-              borderColor: 'divider'
+              borderColor: 'divider',
+              boxShadow:
+                '0px 10px 0px -8px rgba(0,0,0,0.16), 0px -8px 0px -10px rgba(0,0,0,0.1)'
             }}>
             <FormControl component="fieldset" margin="normal" fullWidth>
               <Box display="flex" alignItems="center" gap={1} mb={1}>
@@ -375,7 +384,24 @@ const SettingsModal = () => {
             </FormControl>
           </Paper>
 
-          <Box mt={1} sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
+          <Box
+            mt={1}
+            sx={{
+              position: 'sticky',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              display: 'flex',
+              justifyContent: 'flex-end',
+              gap: 1,
+              py: 1.25,
+              px: { xs: 0.5, md: 1 },
+              borderTop: '1px solid',
+              borderColor: 'divider',
+              backgroundColor: 'background.paper',
+              boxShadow: '0 -4px 12px rgba(0, 0, 0, 0.08)',
+              zIndex: 2
+            }}>
             <Button onClick={onReset} variant="outlined" color="secondary" size="small">
               {t('settings.reset')}
             </Button>

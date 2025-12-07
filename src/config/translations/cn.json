@@ -11,7 +11,7 @@
   "totalShares": "总 Sharenotes",
   "unconfirmedBalance": "未确认余额",
   "pendingBalance": "待结算余额",
-  "pendingBalanceTooltip": "最近 500 个 sharenotes",
+  "pendingBalanceTooltip": "最近 500 条待处理 sharenote 或最近 2 天",
   "orphanBlock": "孤立区块",
   "orphanCheck": "孤块检查",
   "profit": "收益",

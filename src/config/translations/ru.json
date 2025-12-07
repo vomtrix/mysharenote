@@ -11,7 +11,7 @@
   "totalShares": "Всего sharenotes",
   "unconfirmedBalance": "Неподтверждённый баланс",
   "pendingBalance": "Ожидающий баланс",
-  "pendingBalanceTooltip": "Последние 500 sharenotes",
+  "pendingBalanceTooltip": "Последние 500 ожидающих sharenotes или за последние 2 дня",
   "orphanBlock": "Осиротевший блок",
   "orphanCheck": "Проверка осиротевших блоков",
   "profit": "Доход",

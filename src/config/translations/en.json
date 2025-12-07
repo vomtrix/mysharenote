@@ -11,7 +11,7 @@
   "totalShares": "Block sharenotes",
   "unconfirmedBalance": "Unconfirmed balance",
   "pendingBalance": "Pending profit",
-  "pendingBalanceTooltip": "Last 500 pending sharenotes",
+  "pendingBalanceTooltip": "Last 500 pending sharenotes or last 2 days",
   "orphanBlock": "Orphan block",
   "orphanCheck": "Orphan check",
   "profit": "Profit",

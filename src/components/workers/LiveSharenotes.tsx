@@ -54,6 +54,7 @@ const toSharenote = (event: ILiveSharenoteEvent): Sharenote | undefined => {
 const MAX_LIVE_BLOCKS_DESKTOP = 40;
 const MAX_LIVE_BLOCKS_MOBILE = 15;
 const LIVE_SHARENOTE_STALE_THRESHOLD_MS = 5 * 60 * 1000; // 5m
+const NEW_SHARENOTE_HIGHLIGHT_MS = 2000;
 
 const toLinearValue = (note?: Sharenote) => {
   if (!note || !Number.isFinite(note.zBits)) return 0;
@@ -412,10 +413,30 @@ const LiveSharenotes = () => {
       }
     }
   };
+  const newSharenoteHitKeyframes = {
+    '@keyframes liveSharenoteHit': {
+      '0%': { transform: 'translateY(-8px)' },
+      '18%': { transform: 'translateY(-16px)' },
+      '36%': { transform: 'translateY(-4px)' },
+      '62%': { transform: 'translateY(-11px)' },
+      '100%': { transform: 'translateY(0)' }
+    }
+  };
+  const newSharenoteGlowKeyframes = {
+    '@keyframes liveSharenoteGlow': {
+      '0%': { filter: 'brightness(100%)' },
+      '18%': { filter: 'brightness(118%)' },
+      '55%': { filter: 'brightness(110%)' },
+      '100%': { filter: 'brightness(100%)' }
+    }
+  };
 
   const previousBlockStateRef = useRef<Record<string, number | undefined>>({});
   const hasInitializedBlocksRef = useRef(false);
   const [recentlyUpdatedChains, setRecentlyUpdatedChains] = useState<Record<string, number>>({});
+  const previousBlockEventCountsRef = useRef<Record<number, number>>({});
+  const [recentBlockHighlights, setRecentBlockHighlights] = useState<Record<number, number>>({});
+  const hasInitializedBlockEventsRef = useRef(false);
 
   useEffect(() => {
     const nextState: Record<string, number | undefined> = {};
@@ -455,6 +476,54 @@ const LiveSharenotes = () => {
     const timeout = setTimeout(() => setRecentlyUpdatedChains({}), 1600);
     return () => clearTimeout(timeout);
   }, [recentlyUpdatedChains]);
+
+  useEffect(() => {
+    if (!liveChartData.blockHeights.length) return;
+    const prevCounts = previousBlockEventCountsRef.current;
+    const nextCounts: Record<number, number> = {};
+    const updates: Record<number, number> = {};
+    const now = Date.now();
+
+    liveChartData.blockHeights.forEach((height) => {
+      const count = liveChartData.blockEventCounts[`#${height}`] ?? 0;
+      nextCounts[height] = count;
+      const prevCount = prevCounts[height];
+      const baseline = hasInitializedBlockEventsRef.current ? prevCount ?? 0 : prevCount;
+      if (baseline !== undefined && count > baseline) {
+        updates[height] = now;
+      }
+    });
+
+    hasInitializedBlockEventsRef.current = true;
+    previousBlockEventCountsRef.current = nextCounts;
+    if (Object.keys(updates).length) {
+      setRecentBlockHighlights((prev) => ({ ...prev, ...updates }));
+    }
+  }, [liveChartData.blockEventCounts, liveChartData.blockHeights]);
+
+  useEffect(() => {
+    if (!Object.keys(recentBlockHighlights).length) return;
+    const timeouts = Object.entries(recentBlockHighlights).map(([height, timestamp]) =>
+      setTimeout(() => {
+        setRecentBlockHighlights((prev) => {
+          if (prev[Number(height)] !== timestamp) return prev;
+          const { [Number(height)]: _removed, ...rest } = prev;
+          return rest;
+        });
+      }, NEW_SHARENOTE_HIGHLIGHT_MS)
+    );
+    return () => timeouts.forEach(clearTimeout);
+  }, [recentBlockHighlights]);
+
+  const highlightedBlockIndexes = useMemo(() => {
+    const highlighted = new Set<number>();
+    liveChartData.blockHeights.forEach((height, index) => {
+      if (recentBlockHighlights[height] !== undefined) {
+        highlighted.add(index);
+      }
+    });
+    return highlighted;
+  }, [liveChartData.blockHeights, recentBlockHighlights]);
 
   const solvedBlockHeights = useMemo(() => {
     const solved = new Set<number>();
@@ -560,15 +629,32 @@ const LiveSharenotes = () => {
       const isTopOfStack = Math.abs(nextTop - yTop) < 0.5;
 
       const isSolved = solvedBlockIndexes.has(dataIndex) && isTopOfStack;
+      const isIncoming = highlightedBlockIndexes.has(dataIndex);
       const centerX = x + width / 2;
+      const centerY = y + height / 2;
       const starSize = Math.max(8, Math.min(14, width * 0.75));
       const starGap = 6;
       const starTranslateY =
         layout === 'horizontal' ? y + height / 2 : nextTop - starGap - starSize / 2;
       const starScale = starSize / 24;
-      const starColor = '#d4af37';
       const barOpacity = ownerState?.isFaded ? 0.3 : 1;
-      const highlightFilter = ownerState?.isHighlighted ? 'brightness(115%)' : undefined;
+      const pickaxeFill = '#f3c743';
+      const pickaxeStroke = alpha(theme.palette.primary.main, 0.95);
+      const highlightFilter =
+        ownerState?.isHighlighted || isIncoming ? 'brightness(115%)' : undefined;
+      const highlightStroke = 'none';
+      const highlightAnimation = isIncoming
+        ? 'liveSharenoteHit 0.36s cubic-bezier(0.25, 0.9, 0.3, 1), liveSharenoteGlow 1.2s ease-out 0.08s'
+        : undefined;
+      const pickaxeScale = starScale * 0.034; // scale original SVG bounds (~700) down to bar size
+      const barShadow = `drop-shadow(0 6px 14px ${alpha(theme.palette.common.black, 0.18)})`;
+      const highlightShadow = isIncoming
+        ? `drop-shadow(0 10px 16px ${alpha(theme.palette.common.black, 0.3)})`
+        : undefined;
+      const filterParts = [barShadow];
+      if (highlightShadow) filterParts.unshift(highlightShadow);
+      if (highlightFilter) filterParts.unshift(highlightFilter);
+      const composedFilter = filterParts.join(' ');
 
       return (
         <g>
@@ -578,34 +664,41 @@ const LiveSharenotes = () => {
             width={width}
             height={height}
             fill={color}
-            stroke="none"
-            style={{ opacity: barOpacity, filter: highlightFilter }}
+            stroke={highlightStroke}
+            strokeWidth={0}
+            strokeLinejoin="round"
+            strokeLinecap="round"
+            vectorEffect="non-scaling-stroke"
+            style={{
+              opacity: barOpacity,
+              filter: composedFilter,
+              animation: highlightAnimation,
+              transformOrigin: `${centerX}px ${centerY}px`
+            }}
           />
+          {isIncoming && null}
           {isSolved && (
             <g
               transform={`translate(${centerX - 12 * starScale}, ${
                 starTranslateY - 12 * starScale
-              }) scale(${starScale})`}
+              }) scale(${pickaxeScale})`}
               style={{
                 pointerEvents: 'none',
-                filter: `drop-shadow(0 2px 4px ${alpha(starColor, 0.35)})`
+                filter: `drop-shadow(0 3px 10px ${alpha(theme.palette.success.dark, 0.4)})`
               }}>
               <path
-                d="M12 17.27 18.18 21 16.54 13.97 22 9.24 14.81 8.63 12 2 9.19 8.63 2 9.24 7.46 13.97 5.82 21z"
-                fill={starColor}
-                stroke={alpha(theme.palette.common.black, 0.25)}
-                strokeWidth={1.2}
-              />
-              <path
-                d="M12 4.5 14 9.4 19.4 9.85 15.2 13.22 16.4 18.5 12 15.6 7.6 18.5 8.8 13.22 4.6 9.85 10 9.4z"
-                fill={alpha(theme.palette.common.white, 0.3)}
+                d="M 62.910305,586.86333 L 125.86516,650.60806 L 354.66003,422.80608 L 582.79529,652.32059 L 649.12836,585.39956 L 419.06211,356.15214 L 538.31924,239.08217 L 656.12237,360.43632 L 672.92355,183.72974 L 632.91916,143.04888 L 643.3629,132.19791 L 578.91235,67.944477 L 566.45233,81.085597 L 489.93282,4.363831 L 390.62711,103.14697 L 467.4617,180.34954 L 355.60522,292.86066 L 249.67092,189.78284 L 335.40773,104.38653 L 238.02361,7.697965 L 153.1742,92.253519 L 144.09633,82.235117 L 78.425241,147.87971 L 87.464971,157.23449 L 4.1797765,239.7581 L 102.32623,337.47278 L 186.38467,253.2337 L 289.76593,358.64588 L 62.910305,586.86333 z"
+                fill={pickaxeFill}
+                stroke={pickaxeStroke}
+                strokeWidth={20}
+                strokeLinejoin="round"
               />
             </g>
           )}
         </g>
       );
     },
-    [solvedBlockIndexes, theme, stackTopByIndexRef]
+    [highlightedBlockIndexes, solvedBlockIndexes, theme, stackTopByIndexRef]
   );
 
   const updateAuxChainLayout = useCallback(() => {
@@ -674,6 +767,8 @@ const LiveSharenotes = () => {
       sx={{
         height: { xs: 'auto', lg: 420 },
         maxHeight: '565px',
+        ...newSharenoteHitKeyframes,
+        ...newSharenoteGlowKeyframes
       }}>
       <Box
         component="section"

@@ -141,6 +141,10 @@ const normalizeWorkerNotes = (event: IHashrateEvent) => {
   };
 
   const entries = Object.entries(event.workerDetails).map(([workerId, detail], index) => {
+    const shareCountSort =
+      typeof detail.shareCount === 'number' && Number.isFinite(detail.shareCount)
+        ? detail.shareCount
+        : -Infinity;
     if (detail.sharenoteZBits === undefined) {
       const rawSharenote =
         typeof detail.sharenote === 'string' ? detail.sharenote.trim() : detail.sharenote;
@@ -169,6 +173,7 @@ const normalizeWorkerNotes = (event: IHashrateEvent) => {
       sharenoteZBitsSort: Number.isFinite(detail.sharenoteZBits)
         ? (detail.sharenoteZBits as number)
         : -Infinity,
+      shareCountSort,
       lastShareMsSort: toMs(detail.lastShareTimestamp),
       originalIndex: index
     };
@@ -177,6 +182,9 @@ const normalizeWorkerNotes = (event: IHashrateEvent) => {
   entries.sort((a, b) => {
     if (a.sharenoteZBitsSort !== b.sharenoteZBitsSort) {
       return b.sharenoteZBitsSort - a.sharenoteZBitsSort;
+    }
+    if (a.shareCountSort !== b.shareCountSort) {
+      return b.shareCountSort - a.shareCountSort;
     }
     const lastA = a.lastShareMsSort ?? -Infinity;
     const lastB = b.lastShareMsSort ?? -Infinity;

@@ -6,11 +6,24 @@ class MyDocument extends Document {
     return (
       <Html lang="en">
         <Head>
-          <link rel="preconnect" href="https://fonts.googleapis.com" />
-          <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
           <link
-            href="https://fonts.googleapis.com/css2?family=Abril+Fatface&display=swap"
-            rel="stylesheet"
+            rel="preload"
+            href="/fonts/AbrilFatface-Zz.woff2"
+            as="font"
+            type="font/woff2"
+            crossOrigin="anonymous"
+          />
+          <style
+            dangerouslySetInnerHTML={{
+              __html: `
+                @font-face {
+                  font-family: 'AbrilFatfaceZ';
+                  src: url('/fonts/AbrilFatface-Zz.woff2') format('woff2');
+                  font-display: swap;
+                  unicode-range: U+005A, U+007A;
+                }
+              `
+            }}
           />
         </Head>
         <body>

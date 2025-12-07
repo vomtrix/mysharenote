@@ -1,5 +1,5 @@
 import { useRouter } from 'next/router';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import * as Yup from 'yup';
@@ -108,9 +108,11 @@ const Connect = ({ hasButton = false }: ConnectProps) => {
     }
   }, [errors]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
+    if (!address || inputVisible) return;
+
     const computeDisplayAddress = () => {
-      if (!address || !buttonRef.current || !measureRef.current) return;
+      if (!buttonRef.current || !measureRef.current) return;
 
       const button = buttonRef.current;
       const measure = measureRef.current;
@@ -170,7 +172,7 @@ const Connect = ({ hasButton = false }: ConnectProps) => {
     return () => {
       resizeObserver.disconnect();
     };
-  }, [address]);
+  }, [address, inputVisible]);
 
   return (
     <>

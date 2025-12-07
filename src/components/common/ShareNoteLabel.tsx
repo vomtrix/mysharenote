@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { formatSharenoteLabel } from '@utils/helpers';
 
 // const SHARENODE_HIGHLIGHT_COLOR = '#075035';
-const SHARENODE_HIGHLIGHT_FONT = '"Abril Fatface", cursive';
+const SHARENODE_HIGHLIGHT_FONT = '"AbrilFatfaceZ", cursive';
 
 interface ShareNoteLabelProps {
   value?: number | string | null;

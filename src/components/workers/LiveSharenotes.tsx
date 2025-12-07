@@ -567,6 +567,18 @@ const LiveSharenotes = () => {
         })),
     [liveChartData.series, formatChartValue]
   );
+  const topSeriesByIndex = useMemo(() => {
+    const topMap = new Map<number, string | number>();
+    chartSeries.forEach((series) => {
+      const seriesId = series.id;
+      series.data.forEach((value: number | null | undefined, idx: number) => {
+        if (typeof value === 'number' && value > 0) {
+          topMap.set(idx, seriesId);
+        }
+      });
+    });
+    return topMap;
+  }, [chartSeries]);
   const inlineLegendSlotProps = {
     direction: 'horizontal' as const,
     position: { vertical: 'top' as const, horizontal: 'start' as const },
@@ -596,12 +608,9 @@ const LiveSharenotes = () => {
   const [shouldCenterAuxChains, setShouldCenterAuxChains] = useState(false);
   const [isDraggingAuxChains, setIsDraggingAuxChains] = useState(false);
 
-  const stackTopByIndexRef = useRef<Map<number, number>>(new Map());
-  stackTopByIndexRef.current.clear();
-
   const SolvedBar = useCallback(
     (barProps: {
-      id?: string;
+      id?: string | number;
       dataIndex: number;
       x?: number;
       y?: number;
@@ -611,6 +620,7 @@ const LiveSharenotes = () => {
       color?: string;
       ownerState?: { isHighlighted?: boolean; isFaded?: boolean };
     }) => {
+      const isStackTop = topSeriesByIndex.get(barProps.dataIndex) === barProps.id;
       const {
         dataIndex,
         x = 0,
@@ -621,21 +631,15 @@ const LiveSharenotes = () => {
         color = theme.palette.primary.main,
         ownerState
       } = barProps;
-      const stackTopByIndex = stackTopByIndexRef.current;
       const yTop = Math.min(y, y + height);
-      const prevTop = stackTopByIndex.get(dataIndex);
-      const nextTop = prevTop === undefined ? yTop : Math.min(prevTop, yTop);
-      stackTopByIndex.set(dataIndex, nextTop);
-      const isTopOfStack = Math.abs(nextTop - yTop) < 0.5;
-
-      const isSolved = solvedBlockIndexes.has(dataIndex) && isTopOfStack;
+      const isSolved = solvedBlockIndexes.has(dataIndex) && isStackTop;
       const isIncoming = highlightedBlockIndexes.has(dataIndex);
       const centerX = x + width / 2;
       const centerY = y + height / 2;
       const starSize = Math.max(8, Math.min(14, width * 0.75));
       const starGap = 6;
       const starTranslateY =
-        layout === 'horizontal' ? y + height / 2 : nextTop - starGap - starSize / 2;
+        layout === 'horizontal' ? y + height / 2 : yTop - starGap - starSize / 2;
       const starScale = starSize / 24;
       const barOpacity = ownerState?.isFaded ? 0.3 : 1;
       const pickaxeFill = '#f3c743';
@@ -698,7 +702,7 @@ const LiveSharenotes = () => {
         </g>
       );
     },
-    [highlightedBlockIndexes, solvedBlockIndexes, theme, stackTopByIndexRef]
+    [highlightedBlockIndexes, solvedBlockIndexes, theme, topSeriesByIndex]
   );
 
   const updateAuxChainLayout = useCallback(() => {

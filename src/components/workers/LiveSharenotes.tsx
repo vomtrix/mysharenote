@@ -7,6 +7,7 @@ import useMediaQuery from '@mui/material/useMediaQuery';
 import { alpha, useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import { BarChart } from '@mui/x-charts/BarChart';
+import type { BarSeries } from '@mui/x-charts/BarChart';
 import StackedTotalTooltip from '@components/charts/StackedTotalTooltip';
 import {
   combineNotesSerial,
@@ -78,10 +79,15 @@ const formatLastEventAge = (timestamp?: number | null) => {
   return formatted === '--' ? undefined : formatted;
 };
 
+type LiveBarSeries = Omit<BarSeries, 'data' | 'id'> & {
+  id: string | number;
+  data: Array<number | null>;
+};
+
 type LiveChartData = {
   blockHeights: number[];
   blockLabels: string[];
-  series: Array<Record<string, any>>;
+  series: LiveBarSeries[];
   blockEventCounts: Record<string, number>;
   blockSeriesCounts: Record<string, Record<string, number>>;
   workerTotals: Array<{ workerId: string; total: number; color: string }>;
@@ -215,7 +221,7 @@ const LiveSharenotes = () => {
       return {
         blockHeights: [],
         blockLabels: [],
-        series: [] as Array<Record<string, any>>,
+        series: [] as LiveBarSeries[],
         blockEventCounts: {},
         blockSeriesCounts: {},
         workerTotals: []
@@ -232,7 +238,7 @@ const LiveSharenotes = () => {
 
     const blockLabels = trackedBlockHeights.map((height) => `#${height}`);
 
-    const baseSeries = workerIds
+    const baseSeries: LiveBarSeries[] = workerIds
       .map((workerId) => ({
         id: workerId,
         label: workerId === 'unknown' ? t('worker') : workerId,
@@ -553,12 +559,12 @@ const LiveSharenotes = () => {
     return solved;
   }, [liveChartData.blockHeights, solvedBlockHeights]);
 
-  const chartSeries = useMemo(
+  const chartSeries = useMemo<LiveBarSeries[]>(
     () =>
       liveChartData.series
         .filter((series) =>
           series.data.some(
-            (value: number | null | undefined) => typeof value === 'number' && value > 0
+            (value) => typeof value === 'number' && value > 0
           )
         )
         .map((series) => ({
@@ -571,7 +577,7 @@ const LiveSharenotes = () => {
     const topMap = new Map<number, string | number>();
     chartSeries.forEach((series) => {
       const seriesId = series.id;
-      series.data.forEach((value: number | null | undefined, idx: number) => {
+      series.data.forEach((value, idx) => {
         if (typeof value === 'number' && value > 0) {
           topMap.set(idx, seriesId);
         }

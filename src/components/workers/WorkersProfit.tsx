@@ -189,6 +189,7 @@ const WorkersProfit = ({ intervalMinutes = 60 }: Props) => {
   }, [workers, dataByWorker, theme, workerTotals, workerColorMap]);
 
   const hasData = xLabels.length > 0 && series.length > 0;
+  const shouldStretchLayout = hasData || (isLoading && address);
 
   const formatShareValue = (value: number | null | undefined) => {
     if (value === null || value === undefined || Number.isNaN(value)) return '';
@@ -224,9 +225,10 @@ const WorkersProfit = ({ intervalMinutes = 60 }: Props) => {
   };
 
   return (
-    <StyledCard sx={{
-        height: { xs: 'auto', lg: 420 },
-        minHeight: '100%',
+    <StyledCard
+      sx={{
+        height: shouldStretchLayout ? { xs: 'auto', lg: 420 } : 'auto',
+        minHeight: shouldStretchLayout ? '100%' : 'auto'
       }}>
       <Box
         component="section"
@@ -393,7 +395,7 @@ const WorkersProfit = ({ intervalMinutes = 60 }: Props) => {
                 justifyContent: 'center',
                 fontSize: '0.9rem',
                 minHeight: '45px',
-                flexGrow: 1
+                flexGrow: 0
               }}>
               No data
             </Box>

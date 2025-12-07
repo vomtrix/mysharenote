@@ -775,8 +775,8 @@ const LiveSharenotes = () => {
   return (
     <StyledCard
       sx={{
-        height: { xs: 'auto', lg: 420 },
-        maxHeight: '565px',
+        height: shouldShowEmptyState ? 'auto' : { xs: 'auto', lg: 420 },
+        maxHeight: shouldShowEmptyState ? 'none' : '565px',
         ...newSharenoteHitKeyframes,
         ...newSharenoteGlowKeyframes
       }}>
@@ -823,7 +823,7 @@ const LiveSharenotes = () => {
                   justifyContent: 'center',
                   minHeight: '45px',
                   fontSize: '0.9rem',
-                  flexGrow: 1
+                  flexGrow: 0
                 }}>
                 {t('liveSharenotes.empty')}
               </Box>

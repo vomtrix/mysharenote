@@ -24,6 +24,8 @@ const SharesTable = () => {
   const isLoading = useSelector(getIsSharesLoading);
   const shares = useSelector(getShares);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const hasShares = shares.length > 0;
+  const sectionMinHeight = isLoading || hasShares ? '200px' : 'auto';
 
   const pendingByChain = useMemo(() => {
     const totals = new Map<
@@ -134,7 +136,7 @@ const SharesTable = () => {
         component="section"
         sx={{
           p: 2,
-          minHeight: '200px',
+          minHeight: sectionMinHeight,
           justifyContent: 'center'
         }}>
         <SectionHeader>

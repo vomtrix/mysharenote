@@ -616,7 +616,7 @@ const HashrateChart = () => {
                 justifyContent: 'center',
                 minHeight: '45px',
                 fontSize: '0.9rem',
-                flexGrow: 1
+                flexGrow: 0
               }}>
               No data
             </Box>

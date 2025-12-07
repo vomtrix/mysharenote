@@ -12,7 +12,20 @@ import WorkersProfit from '@components/workers/WorkersProfit';
 import { useHasRelayConfig } from '@hooks/useHasRelayConfig';
 import { useNotification } from '@hooks/UseNotificationHook';
 import { addAddress, clearAddress } from '@store/app/AppReducer';
-import { getAddress, getRelayReady, getSettings, getSkeleton } from '@store/app/AppSelectors';
+import {
+  getAddress,
+  getHashrates as selectHashrates,
+  getIsHashratesLoading,
+  getIsLiveSharenotesLoading,
+  getIsPayoutsLoading,
+  getIsSharesLoading,
+  getLiveSharenotes as selectLiveSharenotes,
+  getPayouts as selectPayouts,
+  getRelayReady,
+  getSettings,
+  getShares as selectShares,
+  getSkeleton
+} from '@store/app/AppSelectors';
 import {
   connectRelay,
   getHashrates,
@@ -34,6 +47,14 @@ const AddressPage = () => {
   const hasConfig = useHasRelayConfig();
   const { addr } = router.query;
   const currentAddress = useSelector(getAddress);
+  const hashrates = useSelector(selectHashrates);
+  const shares = useSelector(selectShares);
+  const payouts = useSelector(selectPayouts);
+  const liveSharenotes = useSelector(selectLiveSharenotes);
+  const isHashratesLoading = useSelector(getIsHashratesLoading);
+  const isSharesLoading = useSelector(getIsSharesLoading);
+  const isPayoutsLoading = useSelector(getIsPayoutsLoading);
+  const isLiveSharenotesLoading = useSelector(getIsLiveSharenotesLoading);
   const settings = useSelector(getSettings);
   const enableSkeleton = useSelector(getSkeleton);
   const relayIsReady = useSelector(getRelayReady);
@@ -60,10 +81,18 @@ const AddressPage = () => {
     mb: { xs: 0, lg: 3 },
     '& > *': { minWidth: 0 }
   };
-  const fullHeightWrapper = {
+  const getSectionWrapper = (shouldStretch: boolean) => ({
     display: 'flex',
-    '& > *': { flexGrow: 1, width: '100%', height: '100%' }
-  };
+    '& > *': {
+      flexGrow: 1,
+      width: '100%',
+      height: shouldStretch ? '100%' : 'auto'
+    }
+  });
+  const hasHashrateContent = isHashratesLoading || (hashrates?.length ?? 0) > 0;
+  const hasShareContent = isSharesLoading || (shares?.length ?? 0) > 0;
+  const hasPayoutContent = isPayoutsLoading || (payouts?.length ?? 0) > 0;
+  const hasLiveSharenoteContent = isLiveSharenotesLoading || (liveSharenotes?.length ?? 0) > 0;
 
   useEffect(() => {
     if (!hasConfig || !addr || typeof addr !== 'string') return;
@@ -186,8 +215,8 @@ const AddressPage = () => {
             sx={{
               gridColumn: { xs: '1', lg: '1' },
               gridRow: { xs: 'auto', lg: '1' },
-              minHeight: cardHeights.tall,
-              ...fullHeightWrapper
+              minHeight: hasHashrateContent ? cardHeights.tall : 'auto',
+              ...getSectionWrapper(hasHashrateContent)
             }}>
             <HashrateChart />
           </Box>
@@ -195,7 +224,7 @@ const AddressPage = () => {
             sx={{
               gridColumn: { xs: '1', lg: '2' },
               gridRow: { xs: 'auto', lg: '1 / span 2' },
-              ...fullHeightWrapper
+              ...getSectionWrapper(hasHashrateContent)
             }}>
             <WorkersInsights />
           </Box>
@@ -203,8 +232,8 @@ const AddressPage = () => {
             sx={{
               gridColumn: { xs: '1', lg: '1' },
               gridRow: { xs: 'auto', lg: '2' },
-              minHeight: cardHeights.medium,
-              ...fullHeightWrapper
+              minHeight: hasLiveSharenoteContent ? cardHeights.medium : 'auto',
+              ...getSectionWrapper(hasLiveSharenoteContent)
             }}>
             <LiveSharenotes />
           </Box>
@@ -212,7 +241,7 @@ const AddressPage = () => {
             sx={{
               gridColumn: { xs: '1', lg: '1' },
               gridRow: { xs: 'auto', lg: '3' },
-              ...fullHeightWrapper
+              ...getSectionWrapper(hasShareContent)
             }}>
             <SharesTable />
           </Box>
@@ -220,8 +249,8 @@ const AddressPage = () => {
             sx={{
               gridColumn: { xs: '1', lg: '2' },
               gridRow: { xs: 'auto', lg: '3' },
-              minHeight: cardHeights.tall,
-              ...fullHeightWrapper
+              minHeight: hasShareContent ? cardHeights.tall : 'auto',
+              ...getSectionWrapper(hasShareContent)
             }}>
             <WorkersProfit />
           </Box>
@@ -229,7 +258,7 @@ const AddressPage = () => {
             sx={{
               gridColumn: { xs: '1', lg: '1' },
               gridRow: { xs: 'auto', lg: '4' },
-              ...fullHeightWrapper
+              ...getSectionWrapper(hasPayoutContent)
             }}>
             <PayoutsTable />
           </Box>
@@ -237,7 +266,7 @@ const AddressPage = () => {
             sx={{
               gridColumn: { xs: '1', lg: '2' },
               gridRow: { xs: 'auto', lg: '4' },
-              ...fullHeightWrapper
+              ...getSectionWrapper(hasPayoutContent)
             }}>
             <PayoutsChart />
           </Box>

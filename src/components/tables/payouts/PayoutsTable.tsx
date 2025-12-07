@@ -17,6 +17,8 @@ const PayoutsTable = () => {
   const isLoading = useSelector(getIsPayoutsLoading);
   const payouts = useSelector(getPayouts);
   const unconfirmedBalance = useSelector(getUnconfirmedBalance);
+  const hasPayouts = payouts.length > 0;
+  const sectionMinHeight = isLoading || hasPayouts ? '200px' : 'auto';
 
   return (
     <StyledCard>
@@ -24,7 +26,7 @@ const PayoutsTable = () => {
         component="section"
         sx={{
           p: 2,
-          minHeight: '200px',
+          minHeight: sectionMinHeight,
           justifyContent: 'center'
         }}>
         <SectionHeader>

@@ -66,6 +66,13 @@ const AddressPage = () => {
     lgMedium: 280,
     lgShort: 220
   };
+  const sectionMaxHeights = {
+    hashrateLg: 420,
+    liveSharenotesLg: 420
+  };
+  const gridGapLgPx = 24; // theme.spacing(3)
+  const workersInsightsMaxHeightLg =
+    sectionMaxHeights.hashrateLg + sectionMaxHeights.liveSharenotesLg + gridGapLgPx;
   const cardHeights = {
     tall: { xs: rowHeights.xs, lg: rowHeights.lgTall },
     medium: { xs: rowHeights.xs, lg: rowHeights.lgMedium },
@@ -216,6 +223,8 @@ const AddressPage = () => {
               gridColumn: { xs: '1', lg: '1' },
               gridRow: { xs: 'auto', lg: '1' },
               minHeight: hasHashrateContent ? cardHeights.tall : 'auto',
+              maxHeight: { xs: 'none', lg: sectionMaxHeights.hashrateLg },
+              overflow: { xs: 'visible', lg: 'hidden' },
               ...getSectionWrapper(hasHashrateContent)
             }}>
             <HashrateChart />
@@ -224,6 +233,8 @@ const AddressPage = () => {
             sx={{
               gridColumn: { xs: '1', lg: '2' },
               gridRow: { xs: 'auto', lg: '1 / span 2' },
+              maxHeight: { xs: 'none', lg: workersInsightsMaxHeightLg },
+              overflow: { xs: 'visible', lg: 'hidden' },
               ...getSectionWrapper(hasHashrateContent)
             }}>
             <WorkersInsights />
@@ -233,6 +244,8 @@ const AddressPage = () => {
               gridColumn: { xs: '1', lg: '1' },
               gridRow: { xs: 'auto', lg: '2' },
               minHeight: hasLiveSharenoteContent ? cardHeights.medium : 'auto',
+              maxHeight: { xs: 'none', lg: sectionMaxHeights.liveSharenotesLg },
+              overflow: { xs: 'visible', lg: 'hidden' },
               ...getSectionWrapper(hasLiveSharenoteContent)
             }}>
             <LiveSharenotes />

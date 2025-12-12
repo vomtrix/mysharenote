@@ -1,4 +1,5 @@
 import { Container } from 'typedi';
+import { IDirectMessageEvent } from '@objects/interfaces/IDirectMessageEvent';
 import { IHashrateEvent } from '@objects/interfaces/IHashrateEvent';
 import type { ILiveSharenoteEvent } from '@objects/interfaces/ILiveSharenoteEvent';
 import { IPayoutEvent } from '@objects/interfaces/IPayoutEvent';
@@ -13,11 +14,13 @@ import {
   addLiveSharenotesBatch,
   addPayoutsBatch,
   addSharesBatch,
+  addDirectMessagesBatch,
   markLiveSharenotesEose,
   setHashratesLoader,
   setLiveSharenotesLoader,
   setPayoutLoader,
   setShareLoader,
+  setDirectMessagesLoader,
   setSkeleton
 } from './AppReducer';
 
@@ -218,12 +221,114 @@ export const getLiveSharenotes = createAppAsyncThunk(
   }
 );
 
+export const getDirectMessages = createAppAsyncThunk(
+  'relay/getDirectMessages',
+  async (address: string | undefined, { rejectWithValue, dispatch, getState }) => {
+    try {
+      const { settings } = getState();
+      const relayService: any = Container.get(RelayService);
+      const workProviderPublicKeyHex = toHexPublicKey(settings.workProviderPublicKey);
+      let timeoutId: NodeJS.Timeout | undefined;
+      const buffer: IDirectMessageEvent[] = [];
+      let flushHandle: NodeJS.Timeout | undefined;
+      let hasLoaded = false;
+
+      const flush = () => {
+        if (!buffer.length) return;
+        const batch = buffer.splice(0, buffer.length);
+        dispatch(addDirectMessagesBatch(batch));
+        if (!hasLoaded) {
+          hasLoaded = true;
+          dispatch(setDirectMessagesLoader(false));
+        }
+        if (flushHandle) {
+          clearTimeout(flushHandle);
+          flushHandle = undefined;
+        }
+      };
+
+      const scheduleFlush = () => {
+        if (flushHandle) clearTimeout(flushHandle);
+        flushHandle = setTimeout(() => {
+          flushHandle = undefined;
+          flush();
+        }, BATCH_FLUSH_DEBOUNCE_MS);
+      };
+
+      const resetTimeout = () => {
+        if (timeoutId) clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => {
+          if (!hasLoaded) {
+            hasLoaded = true;
+            dispatch(setDirectMessagesLoader(false));
+          }
+        }, 5000);
+      };
+
+      relayService.subscribeDirectMessages(workProviderPublicKeyHex, {
+        onevent: (event: any) => {
+          const taggedAddress =
+            Array.isArray(event.tags) &&
+            event.tags
+              .find((tag: any) => Array.isArray(tag) && tag[0] === 'a' && typeof tag[1] === 'string')
+              ?.[1];
+          const normalized: IDirectMessageEvent = {
+            id: event.id,
+            content: event.content ?? '',
+            tags: Array.isArray(event.tags) ? event.tags : [],
+            created_at: event.created_at,
+            timestamp: event.created_at,
+            pubkey: event.pubkey,
+            kind: event.kind,
+            address: taggedAddress || address
+          };
+          buffer.push(normalized);
+          scheduleFlush();
+          resetTimeout();
+        },
+        oneose: () => {
+          flush();
+          if (timeoutId) clearTimeout(timeoutId);
+          if (!hasLoaded) {
+            hasLoaded = true;
+            dispatch(setDirectMessagesLoader(false));
+          }
+        }
+      }, address);
+
+      resetTimeout();
+    } catch (err: any) {
+      return rejectWithValue({
+        message: err?.message,
+        code: err.code,
+        status: err.status
+      });
+    }
+  }
+);
+
 export const stopLiveSharenotes = createAppAsyncThunk(
   'relay/stopLiveSharenotes',
   async (_, { rejectWithValue }) => {
     try {
       const relayService: any = Container.get(RelayService);
       await relayService.stopLiveSharenotes();
+    } catch (err: any) {
+      return rejectWithValue({
+        message: err?.message,
+        code: err.code,
+        status: err.status
+      });
+    }
+  }
+);
+
+export const stopDirectMessages = createAppAsyncThunk(
+  'relay/stopDirectMessages',
+  async (_, { rejectWithValue }) => {
+    try {
+      const relayService: any = Container.get(RelayService);
+      await relayService.stopDirectMessages();
     } catch (err: any) {
       return rejectWithValue({
         message: err?.message,

@@ -11,11 +11,22 @@ export const getHashrates = (state: ReduxState) => state.hashrates;
 export const getShares = (state: ReduxState) => state.shares;
 export const getLiveSharenotes = (state: ReduxState) => state.liveSharenotes;
 export const getLiveSharenotesEoseIndex = (state: ReduxState) => state.liveSharenotesEoseIndex;
+export const getDirectMessages = (state: ReduxState) => state.directMessages;
+export const getDirectMessagesLastOpenedAt = (state: ReduxState) => {
+  const value = (state as any).directMessagesLastOpenedAt;
+  if (typeof value === 'number' && Number.isFinite(value)) return value;
+  if (typeof value === 'string') {
+    const parsed = parseInt(value, 10);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+  return null;
+};
 
 export const getHashratesCount = (state: ReduxState) => state.shares.length;
 export const getSharesCount = (state: ReduxState) => state.shares.length;
 export const getPayoutsCount = (state: ReduxState) => state.payouts.length;
 export const getIsLiveSharenotesLoading = (state: ReduxState) => state.isLiveSharenotesLoading;
+export const getIsDirectMessagesLoading = (state: ReduxState) => state.isDirectMessagesLoading;
 
 export const getIsHashratesLoading = (state: ReduxState) => state.isHashrateLoading;
 export const getIsSharesLoading = (state: ReduxState) => state.isSharesLoading;

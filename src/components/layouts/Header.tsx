@@ -3,9 +3,11 @@ import { FAQ_LINKS } from '@config/config';
 import { Box, Link as MuiLink, Typography } from '@mui/material';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
+import MailOutlineIcon from '@mui/icons-material/MailOutline';
 import LanguageSwitcher from '@components/common/LanguageSwitcher';
 import SocialLinks from '@components/common/SocialLinks';
 import Connect from '@components/Connect';
+import DirectMessagesCenter from '@components/messages/DirectMessagesCenter';
 import { PRIMARY_WHITE, SECONDARY_COLOR } from '@styles/colors';
 import styles from '@styles/scss/Header.module.scss';
 
@@ -15,14 +17,15 @@ const Header = () => {
     <AppBar position="fixed" className={styles.header}>
       <Toolbar disableGutters className={styles.toolbar}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, sm: 1.5 }, flexShrink: 0 }}>
+          <MailOutlineIcon sx={{ color: PRIMARY_WHITE, fontSize: { xs: 36, md: 44 } }} />
           <Typography
             sx={{
               fontWeight: 700,
-              letterSpacing: -0.5,
+              letterSpacing: -0.2,
               color: PRIMARY_WHITE,
-              fontSize: { xs: '1.2rem', md: '1.7rem' }
+              fontSize: { xs: '1rem', md: '1.2rem' }
             }}>
-            myHashboard
+            MSN Mail
           </Typography>
         </Box>
         <Box className={styles.connectWrapper}>
@@ -37,6 +40,7 @@ const Header = () => {
             color={SECONDARY_COLOR}>
             {t('header.shareNote')}
           </MuiLink>
+          <DirectMessagesCenter iconSize="small" />
           <SocialLinks />
           <LanguageSwitcher />
         </div>

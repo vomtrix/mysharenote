@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import BoltIcon from '@mui/icons-material/Bolt';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import CloseIcon from '@mui/icons-material/Close';
+import CheckIcon from '@mui/icons-material/Check';
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
 import Divider from '@mui/material/Divider';
@@ -235,6 +237,11 @@ const WorkersInsights = () => {
           typeof detail?.shareCount === 'number' && Number.isFinite(detail.shareCount)
             ? detail.shareCount
             : undefined;
+        const rejectedCount =
+          typeof (detail as { crsn?: number })?.crsn === 'number' &&
+          Number.isFinite((detail as { crsn?: number })?.crsn)
+            ? (detail as { crsn: number }).crsn
+            : 0; // mock value until backend provides real rejected count
 
         return {
           worker,
@@ -247,6 +254,7 @@ const WorkersInsights = () => {
           lastShareTimestamp: detail?.lastShareTimestamp,
           lastShareMs: lastShareDate?.getTime(),
           shareCount,
+          rejectedCount,
           timestamp: latestHashrateEvent.timestamp,
           userAgent:
             typeof detail?.userAgent === 'string' && detail.userAgent.trim().length > 0
@@ -522,11 +530,40 @@ const WorkersInsights = () => {
                 sharenoteCountByWorker[normalizeWorkerKey(workerData.worker)];
               const resolvedShareCount =
                 shareCountDirect !== undefined ? shareCountDirect : shareCountFallback;
-              const shareCountDisplay =
-                typeof resolvedShareCount === 'number' && resolvedShareCount > 0
-                  ? resolvedShareCount.toLocaleString()
+              const acceptedCount =
+                typeof resolvedShareCount === 'number' && Number.isFinite(resolvedShareCount)
+                  ? Math.max(0, resolvedShareCount)
                   : undefined;
-              const showShareCount = !!shareCountDisplay;
+              const rejectedCount =
+                typeof workerData.rejectedCount === 'number' && Number.isFinite(workerData.rejectedCount)
+                  ? Math.max(0, workerData.rejectedCount)
+                  : undefined;
+              const shareCountDisplay =
+                typeof acceptedCount === 'number'
+                  ? acceptedCount.toLocaleString()
+                  : undefined;
+              const rejectedDisplay =
+                typeof rejectedCount === 'number' ? rejectedCount.toLocaleString() : undefined;
+              const rejectedPercentRaw =
+                rejectedCount !== undefined &&
+                acceptedCount !== undefined &&
+                acceptedCount > 0
+                  ? (rejectedCount / acceptedCount) * 100
+                  : undefined;
+              const rejectedPercentClamped =
+                rejectedPercentRaw !== undefined
+                  ? Math.min(100, Math.max(0, rejectedPercentRaw))
+                  : undefined;
+              const rejectedPercentDisplay =
+                rejectedPercentClamped !== undefined
+                  ? `${
+                      rejectedPercentClamped >= 100
+                        ? Math.round(rejectedPercentClamped)
+                        : rejectedPercentClamped >= 10
+                          ? rejectedPercentClamped.toFixed(1).replace(/\.0$/, '')
+                          : rejectedPercentClamped.toFixed(2)
+                    }%`
+                  : undefined;
               const lastShareLabel = (() => {
                 const date = toDateFromMaybeSeconds(workerData.lastShareTimestamp);
                 if (!date) return '--';
@@ -957,12 +994,15 @@ const WorkersInsights = () => {
                             flexWrap: 'wrap'
                           }}>
                           <Box component="span">{lastShareLabel}</Box>
-                          {showShareCount && (
+                          {shareCountDisplay && (
                             <Tooltip
                               arrow
                               placement="top"
-                              title={t('workersInsights.info.sharenoteCount', {
-                                defaultValue: 'Sharenotes printed by this worker in this session.'
+                              title={t('workersInsights.info.sharenoteTotals', {
+                                defaultValue: 'Accepted: {{accepted}} • Rejected: {{rejected}} ({{rejectedPercent}})',
+                                accepted: shareCountDisplay ?? '--',
+                                rejected: rejectedDisplay ?? '--',
+                                rejectedPercent: rejectedPercentDisplay ?? '--'
                               })}>
                               <Box
                                 component="span"
@@ -987,6 +1027,60 @@ const WorkersInsights = () => {
                                       ? `0 10px 24px -18px ${muiAlpha(accentColor, 0.65)}`
                                       : `0 12px 26px -18px ${muiAlpha(accentColor, 0.55)}`
                                 }}>
+                                <Box
+                                  component="span"
+                                  sx={{
+                                    width: 18,
+                                    height: 18,
+                                    borderRadius: '50%',
+                                    position: 'relative',
+                                    flexShrink: 0
+                                  }}>
+                                  <svg
+                                    viewBox="0 0 36 36"
+                                    width="18"
+                                    height="18"
+                                    role="presentation"
+                                    style={{ transform: 'rotate(-90deg)' }}>
+                                    <circle
+                                      cx="18"
+                                      cy="18"
+                                      r="15"
+                                      fill="none"
+                                      stroke={muiAlpha(accentColor, 0.2)}
+                                      strokeWidth="4"
+                                    />
+                                    {(rejectedPercentClamped ?? 0) > 0 && (
+                                      <circle
+                                        cx="18"
+                                        cy="18"
+                                        r="15"
+                                        fill="none"
+                                        stroke={theme.palette.error.main}
+                                        strokeWidth="4"
+                                        strokeDasharray={`${
+                                          ((rejectedPercentClamped ?? 0) / 100) * Math.PI * 30
+                                        } ${Math.PI * 30}`}
+                                        strokeDashoffset="0"
+                                        strokeLinecap="round"
+                                      />
+                                    )}
+                                    </svg>
+                                  <CheckIcon
+                                    sx={{
+                                      position: 'absolute',
+                                      top: '50%',
+                                      left: '50%',
+                                      transform: 'translate(-50%, -50%)',
+                                      fontSize: '0.82rem',
+                                      color:
+                                        theme.palette.mode === 'dark'
+                                          ? muiAlpha('#ffffff', 0.92)
+                                          : accentColor,
+                                      pointerEvents: 'none'
+                                    }}
+                                  />
+                                </Box>
                                 <Typography
                                   component="span"
                                   variant="caption"
@@ -994,7 +1088,7 @@ const WorkersInsights = () => {
                                     fontWeight: 600,
                                     letterSpacing: '0.05em'
                                   }}>
-                                  x{shareCountDisplay}
+                                  {shareCountDisplay}
                                 </Typography>
                               </Box>
                             </Tooltip>

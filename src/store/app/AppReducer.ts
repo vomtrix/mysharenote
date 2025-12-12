@@ -2,6 +2,7 @@
 import { ICustomError } from '@interfaces/ICustomError';
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import { noteFromZBits, parseNoteLabel } from '@soprinter/sharenotejs';
+import { IDirectMessageEvent } from '@objects/interfaces/IDirectMessageEvent';
 import { IHashrateEvent } from '@objects/interfaces/IHashrateEvent';
 import type { ILiveSharenoteEvent } from '@objects/interfaces/ILiveSharenoteEvent';
 import { IPayoutEvent } from '@objects/interfaces/IPayoutEvent';
@@ -10,10 +11,12 @@ import { IShareEvent } from '@objects/interfaces/IShareEvent';
 import {
   changeRelay,
   connectRelay,
+  getDirectMessages,
   getHashrates,
   getLiveSharenotes,
   getPayouts,
   getShares,
+  stopDirectMessages,
   stopHashrates,
   stopLiveSharenotes,
   stopShares
@@ -39,6 +42,8 @@ export interface AppState {
   payouts: IPayoutEvent[];
   liveSharenotes: ILiveSharenoteEvent[];
   liveSharenotesEoseIndex: number | null;
+  directMessages: IDirectMessageEvent[];
+  directMessagesLastOpenedAt: number | null;
   pendingBalance: number;
   unconfirmedBalance: number;
   settings: ISettings;
@@ -46,6 +51,7 @@ export interface AppState {
   isHashrateLoading: boolean;
   isSharesLoading: boolean;
   isPayoutsLoading: boolean;
+  isDirectMessagesLoading: boolean;
   skeleton: boolean;
   relayReady?: boolean;
   error?: ICustomError;
@@ -61,6 +67,8 @@ export const initialState: AppState = {
   payouts: [],
   liveSharenotes: [],
   liveSharenotesEoseIndex: null,
+  directMessages: [],
+  directMessagesLastOpenedAt: null,
   unconfirmedBalance: 0,
   pendingBalance: 0,
   colorMode: initialColorMode,
@@ -75,6 +83,7 @@ export const initialState: AppState = {
   isHashrateLoading: false,
   isSharesLoading: false,
   isPayoutsLoading: false,
+  isDirectMessagesLoading: false,
   skeleton: false,
   relayReady: undefined,
   error: undefined,
@@ -209,6 +218,18 @@ const applyLiveSharenoteEvent = (state: AppState, event: ILiveSharenoteEvent) =>
   state.liveSharenotes.push(event);
 };
 
+const applyDirectMessageEvent = (state: AppState, event: IDirectMessageEvent) => {
+  if (!event?.id) return;
+  const existingIndex = state.directMessages.findIndex((dm) => dm.id === event.id);
+  if (existingIndex !== -1) {
+    state.directMessages[existingIndex] = event;
+    return;
+  }
+
+  state.directMessages.unshift(event);
+  state.directMessages.sort((a, b) => (b.created_at || 0) - (a.created_at || 0));
+};
+
 export const slice = createSlice({
   name: 'app',
   initialState,
@@ -216,11 +237,17 @@ export const slice = createSlice({
     addAddress: (state: AppState, action: PayloadAction<any>) => {
       state.address = action.payload;
       state.skeleton = false;
+      state.directMessages = [];
+      state.isDirectMessagesLoading = false;
+      state.directMessagesLastOpenedAt = null;
     },
     clearAddress: (state: AppState) => {
       state.address = undefined;
       state.unconfirmedBalance = 0;
       state.pendingBalance = 0;
+      state.directMessages = [];
+      state.isDirectMessagesLoading = false;
+      state.directMessagesLastOpenedAt = null;
     },
     clearSettings: (state: AppState) => {
       state.settings = {
@@ -245,6 +272,11 @@ export const slice = createSlice({
       state.liveSharenotes = [];
       state.liveSharenotesEoseIndex = null;
     },
+    clearDirectMessages: (state: AppState) => {
+      state.directMessages = [];
+      state.isDirectMessagesLoading = false;
+      state.directMessagesLastOpenedAt = null;
+    },
     setHashratesLoader: (state: AppState, action: PayloadAction<boolean>) => {
       state.isHashrateLoading = action.payload;
     },
@@ -253,6 +285,14 @@ export const slice = createSlice({
     },
     setPayoutLoader: (state: AppState, action: PayloadAction<boolean>) => {
       state.isPayoutsLoading = action.payload;
+    },
+    setDirectMessagesLoader: (state: AppState, action: PayloadAction<boolean>) => {
+      state.isDirectMessagesLoading = action.payload;
+    },
+    setDirectMessagesLastOpened: (state: AppState, action: PayloadAction<number | null>) => {
+      const value = action.payload;
+      state.directMessagesLastOpenedAt =
+        typeof value === 'number' && Number.isFinite(value) ? value : null;
     },
     setSettings: (state: AppState, action: PayloadAction<ISettings>) => {
       state.settings = action.payload;
@@ -292,6 +332,12 @@ export const slice = createSlice({
     },
     addLiveSharenotesBatch: (state: AppState, action: PayloadAction<ILiveSharenoteEvent[]>) => {
       action.payload.forEach((event) => applyLiveSharenoteEvent(state, event));
+    },
+    addDirectMessage: (state: AppState, action: PayloadAction<IDirectMessageEvent>) => {
+      applyDirectMessageEvent(state, action.payload);
+    },
+    addDirectMessagesBatch: (state: AppState, action: PayloadAction<IDirectMessageEvent[]>) => {
+      action.payload.forEach((event) => applyDirectMessageEvent(state, event));
     }
   },
   extraReducers: (builder) => {
@@ -344,6 +390,25 @@ export const slice = createSlice({
         state.isLiveSharenotesLoading = false;
         state.liveSharenotesEoseIndex = null;
       })
+      .addCase(getDirectMessages.pending, (state) => {
+        state.directMessages = [];
+        state.isDirectMessagesLoading = true;
+      })
+      .addCase(getDirectMessages.rejected, (state, action) => {
+        state.error = action.payload;
+        state.isDirectMessagesLoading = false;
+      })
+      .addCase(stopDirectMessages.pending, (state) => {
+        state.error = undefined;
+      })
+      .addCase(stopDirectMessages.fulfilled, (state) => {
+        state.directMessages = [];
+        state.isDirectMessagesLoading = false;
+      })
+      .addCase(stopDirectMessages.rejected, (state, action) => {
+        state.error = action.payload;
+        state.isDirectMessagesLoading = false;
+      })
       .addCase(getHashrates.pending, (state) => {
         state.hashrates = [];
         state.isHashrateLoading = true;
@@ -369,6 +434,9 @@ export const slice = createSlice({
         state.payouts = [];
         state.shares = [];
         state.hashrates = [];
+        state.directMessages = [];
+        state.isDirectMessagesLoading = false;
+        state.directMessagesLastOpenedAt = null;
       })
       .addCase(changeRelay.fulfilled, (state, action) => {
         const payload = action.payload;
@@ -392,6 +460,9 @@ export const slice = createSlice({
         state.skeleton = true;
         state.error = undefined;
         state.payouts = [];
+        state.directMessages = [];
+        state.isDirectMessagesLoading = false;
+        state.directMessagesLastOpenedAt = null;
         state.relayReady = undefined;
       })
       .addCase(connectRelay.fulfilled, (state) => {
@@ -420,17 +491,22 @@ export const {
   addSharesBatch,
   addLiveSharenote,
   addLiveSharenotesBatch,
+  addDirectMessage,
+  addDirectMessagesBatch,
   addAddress,
   clearSettings,
   clearAddress,
   clearPayouts,
   clearShares,
+  clearDirectMessages,
   clearLiveSharenotes,
   clearHashrates,
   markLiveSharenotesEose,
   setHashratesLoader,
   setPayoutLoader,
   setShareLoader,
+  setDirectMessagesLoader,
+  setDirectMessagesLastOpened,
   setLiveSharenotesLoader,
   setSettings,
   setColorMode,

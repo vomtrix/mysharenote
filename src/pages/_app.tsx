@@ -5,6 +5,7 @@ import { Bounce, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { PersistGate } from 'redux-persist/integration/react';
 import 'reflect-metadata';
+import '@mdxeditor/editor/style.css';
 import { DARK_MODE_DEFAULT, DARK_MODE_ENABLED, DARK_MODE_FORCE } from '@config/config';
 import { Container } from '@mui/material';
 import GlobalStyles from '@mui/material/GlobalStyles';
@@ -95,10 +96,11 @@ const App = (props: any) => {
         <ModeThemeProvider>
           {!hideChrome && <Header />}
           <Container
+            disableGutters={hideChrome}
             sx={{
               marginTop: hideChrome ? 0 : '69px',
-              px: { xs: 1, md: 5 },
-              py: { xs: 1, md: 1 },
+              px: hideChrome ? 0 : { xs: 1, md: 5 },
+              py: hideChrome ? 0 : { xs: 1, md: 1 },
               display: 'flex',
               flexDirection: 'column',
               minHeight: hideChrome ? '100vh' : undefined,

@@ -1,7 +1,7 @@
 import { useRouter } from 'next/router';
 import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Box, Paper, Skeleton, Stack, Typography } from '@mui/material';
+import { Box, Skeleton, Typography } from '@mui/material';
 import HashrateChart from '@components/charts/HashrateChart';
 import PayoutsChart from '@components/charts/PayoutsChart';
 import PayoutsTable from '@components/tables/payouts/PayoutsTable';
@@ -29,7 +29,7 @@ import {
 import {
   connectRelay,
   getHashrates,
-  getDirectMessages,
+  getDirectMessages as subscribeDirectMessages,
   getLiveSharenotes,
   getPayouts,
   getShares,
@@ -41,8 +41,6 @@ import {
 } from '@store/app/AppThunks';
 import { useDispatch, useSelector } from '@store/store';
 import { validateAddress } from '@utils/helpers';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
 
 const AddressPage = () => {
   const { t } = useTranslation();
@@ -55,7 +53,6 @@ const AddressPage = () => {
   const shares = useSelector(selectShares);
   const payouts = useSelector(selectPayouts);
   const liveSharenotes = useSelector(selectLiveSharenotes);
-  const directMessages = useSelector(getDirectMessages);
   const isHashratesLoading = useSelector(getIsHashratesLoading);
   const isSharesLoading = useSelector(getIsSharesLoading);
   const isPayoutsLoading = useSelector(getIsPayoutsLoading);
@@ -105,11 +102,6 @@ const AddressPage = () => {
   const hasShareContent = isSharesLoading || (shares?.length ?? 0) > 0;
   const hasPayoutContent = isPayoutsLoading || (payouts?.length ?? 0) > 0;
   const hasLiveSharenoteContent = isLiveSharenotesLoading || (liveSharenotes?.length ?? 0) > 0;
-  const latestDirectMessage = Array.isArray(directMessages)
-    ? directMessages
-        .filter((msg) => msg.address === currentAddress)
-        .sort((a, b) => (b.created_at ?? 0) - (a.created_at ?? 0))[0]
-    : undefined;
 
   useEffect(() => {
     if (!hasConfig || !addr || typeof addr !== 'string') return;
@@ -138,7 +130,7 @@ const AddressPage = () => {
       dispatch(getShares(currentAddress));
       dispatch(getLiveSharenotes(currentAddress));
       dispatch(getPayouts(currentAddress));
-      dispatch(getDirectMessages(currentAddress));
+      dispatch(subscribeDirectMessages(currentAddress));
     }
   }, [currentAddress, hasConfig, hasConnectedRelayRef, relayIsReady]);
 
@@ -294,84 +286,6 @@ const AddressPage = () => {
               ...getSectionWrapper(hasPayoutContent)
             }}>
             <PayoutsChart />
-          </Box>
-          <Box
-            sx={{
-              gridColumn: { xs: '1', lg: '1 / span 2' },
-              gridRow: { xs: 'auto', lg: '5' },
-              width: '100%'
-            }}>
-            <Paper
-              variant="outlined"
-              sx={{
-                width: '100%',
-                borderRadius: 3,
-                borderColor: (theme) => theme.palette.divider,
-                p: { xs: 2, md: 3 }
-              }}>
-              <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 1 }}>
-                <Typography variant="subtitle1" sx={{ fontWeight: 800 }}>
-                  Pool messages
-                </Typography>
-                <Typography variant="caption" color="text.secondary">
-                  {latestDirectMessage?.created_at
-                    ? new Date((latestDirectMessage.created_at ?? 0) * 1000).toLocaleString()
-                    : '—'}
-                </Typography>
-              </Stack>
-              {latestDirectMessage ? (
-                <Box
-                  sx={{
-                    maxHeight: 320,
-                    overflowY: 'auto',
-                    '&::-webkit-scrollbar': { width: 6 },
-                    '&::-webkit-scrollbar-thumb': (theme) => ({
-                      backgroundColor: theme.palette.action.hover,
-                      borderRadius: 999
-                    })
-                  }}>
-                  <ReactMarkdown
-                    remarkPlugins={[remarkGfm]}
-                    components={{
-                      h1: ({ node, ...props }) => (
-                        <Typography variant="h5" component="div" sx={{ mb: 1, fontWeight: 700 }} {...props} />
-                      ),
-                      h2: ({ node, ...props }) => (
-                        <Typography variant="h6" component="div" sx={{ mb: 1, fontWeight: 700 }} {...props} />
-                      ),
-                      h3: ({ node, ...props }) => (
-                        <Typography variant="subtitle1" component="div" sx={{ mb: 1, fontWeight: 700 }} {...props} />
-                      ),
-                      p: ({ node, ...props }) => (
-                        <Typography
-                          variant="body2"
-                          component="p"
-                          sx={{ mb: 1.2, lineHeight: 1.6, whiteSpace: 'pre-wrap' }}
-                          {...props}
-                        />
-                      ),
-                      li: ({ node, ordered, ...props }) => (
-                        <Box
-                          component="li"
-                          sx={{ ml: 2.5, mb: 0.6, lineHeight: 1.5, color: 'text.primary', whiteSpace: 'pre-wrap' }}
-                          {...props}
-                        />
-                      ),
-                      ul: ({ node, ordered, ...props }) => <Box component="ul" sx={{ pl: 1, mb: 1.2 }} {...props} />,
-                      ol: ({ node, ordered, ...props }) => <Box component="ol" sx={{ pl: 1, mb: 1.2 }} {...props} />,
-                      strong: ({ node, ...props }) => (
-                        <Typography component="strong" sx={{ fontWeight: 700 }} {...props} />
-                      )
-                    }}>
-                    {latestDirectMessage.content || ''}
-                  </ReactMarkdown>
-                </Box>
-              ) : (
-                <Typography variant="body2" color="text.secondary">
-                  No pool messages yet for this address.
-                </Typography>
-              )}
-            </Paper>
           </Box>
         </Box>
       )}

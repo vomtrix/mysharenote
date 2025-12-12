@@ -194,6 +194,12 @@ export class RelayService {
     if (!this.nostrClient) {
       throw new Error('Relay not connected');
     }
+    const privateKeyBytes = Uint8Array.from(
+      privateKeyHex.match(/.{1,2}/g)?.map((b) => parseInt(b, 16)) ?? []
+    );
+    if (privateKeyBytes.length !== 32) {
+      throw new Error('Invalid private key');
+    }
     const createdAt = Math.floor(Date.now() / 1000);
     const unsignedEvent = {
       kind: 35515,
@@ -201,7 +207,7 @@ export class RelayService {
       tags: [['a', address]],
       content
     };
-    const signed = finalizeEvent(unsignedEvent as any, privateKeyHex);
+    const signed = finalizeEvent(unsignedEvent as any, privateKeyBytes);
     return this.nostrClient.relay.publish(signed);
   }
 }

@@ -133,15 +133,17 @@ const decodePrivateKey = (value: string): PoolSession | null => {
   try {
     const decoded = nip19.decode(trimmed);
     if (decoded.type !== 'nsec') return null;
-    const data = decoded.data;
+    const data = decoded.data as string | Uint8Array | number[];
     const privBytes =
       data instanceof Uint8Array
         ? data
         : typeof data === 'string'
-          ? Uint8Array.from(
-              data.match(/.{1,2}/g)?.map((byte) => parseInt(byte, 16)) ?? []
-            )
-          : null;
+            ? Uint8Array.from(
+                data.match(/.{1,2}/g)?.map((byte) => parseInt(byte, 16)) ?? []
+              )
+          : Array.isArray(data)
+            ? Uint8Array.from(data)
+            : null;
     return tryFromBytes(privBytes);
   } catch {
     return null;
@@ -169,6 +171,7 @@ const PoolPage = () => {
   const [composeBody, setComposeBody] = useState('');
   const [sending, setSending] = useState(false);
   const [sendError, setSendError] = useState<string | null>(null);
+  const [sendSuccess, setSendSuccess] = useState(false);
   const [isComposingNew, setIsComposingNew] = useState(false);
   const [focusTarget, setFocusTarget] = useState<'address' | 'body' | null>(null);
   const hasConnectedRelayRef = useRef(false);
@@ -316,7 +319,9 @@ const PoolPage = () => {
   const isRecipientValid = !!recipientAddress && validateAddress(recipientAddress, settings?.network);
   const canSend = !!session && !!composeBody.trim() && isRecipientValid && !sending;
   const noMessagesForContact = !emptyState && filteredMessages.length === 0;
-  const accentBorder = muiAlpha(theme.palette.divider, 0.7);
+  const showSuccessState = sendSuccess;
+  const showPreview =
+    contactHasMessages && selectedMessage && !isComposingNew && !showSuccessState;
   const codeBlockLanguages = useMemo(
     () => ({
       txt: 'Plain text',
@@ -401,6 +406,7 @@ const PoolPage = () => {
       return;
     }
     setSendError(null);
+    setSendSuccess(false);
     setSending(true);
     (async () => {
       try {
@@ -408,6 +414,7 @@ const PoolPage = () => {
         await relayService.publishDirectMessage(session.privHex, composeBody.trim(), targetAddress);
         setComposeBody('');
         if (!selectedContact) setSelectedContact(targetAddress);
+        setSendSuccess(true);
       } catch (err: any) {
         setSendError(err?.message || 'Failed to send message');
       } finally {
@@ -423,6 +430,7 @@ const PoolPage = () => {
     setIsComposingNew(true);
     setComposeBody('');
     setSendError(null);
+    setSendSuccess(false);
     setFocusTarget('address');
   };
 
@@ -432,10 +440,12 @@ const PoolPage = () => {
     setComposeBody('');
     setSendError(null);
     setContactInput(selectedContact ?? '');
+    setSendSuccess(false);
     setFocusTarget(selectedContact ? 'body' : 'address');
   };
 
   const handleSelectMessageClick = (id: string) => {
+    setSendSuccess(false);
     setIsComposingNew(false);
     setSelectedMessageId(id);
     const msg = messages.find((m) => m.id === id);
@@ -445,6 +455,7 @@ const PoolPage = () => {
   };
 
   const handleContactClick = (contactId: string) => {
+    setSendSuccess(false);
     setIsComposingNew(false);
     setSelectedContact(contactId);
     const firstForContact = messages.find((msg) => msg.address === contactId);
@@ -999,15 +1010,53 @@ const PoolPage = () => {
                 gap: 1
               }}>
               <Typography variant="subtitle1" sx={{ fontWeight: 800 }}>
-                {contactHasMessages && !isComposingNew ? 'Preview' : 'New message to miner'}
+                {showSuccessState
+                  ? 'Message sent'
+                  : showPreview
+                  ? 'Preview'
+                  : 'New message to miner'}
               </Typography>
-              {contactHasMessages && selectedMessage && !isComposingNew && (
+              {showPreview && selectedMessage && (
                 <Typography variant="caption" sx={{ color: 'text.secondary' }}>
                   {formatRelativeFromTimestamp(selectedMessage.created_at)}
                 </Typography>
               )}
             </Box>
-              {contactHasMessages && selectedMessage && !isComposingNew ? (
+            {showSuccessState ? (
+              <Box
+                sx={{
+                  position: 'relative',
+                  flex: 1,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  p: { xs: 3, md: 4 },
+                  overflow: 'hidden',
+                  textAlign: 'center'
+                }}>
+                <Stack spacing={2} alignItems="center" sx={{ position: 'relative', zIndex: 1, maxWidth: 520 }}>
+                  <Box
+                    sx={{
+                      width: 96,
+                      height: 96,
+                      display: 'grid',
+                      placeItems: 'center'
+                    }}>
+                    <MailOutlineIcon
+                      sx={{ fontSize: 76, color: theme.palette.primary.main }}
+                    />
+                  </Box>
+                  <Typography variant="h6" sx={{ fontWeight: 800 }}>
+                    Message sent
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: 'text.secondary', maxWidth: 520 }}>
+                    {recipientAddress
+                      ? `We delivered your message to ${recipientAddress}.`
+                      : 'Your message has been delivered.'}
+                  </Typography>
+                </Stack>
+              </Box>
+            ) : showPreview ? (
               <Box
                 sx={{
                   flex: 1,
@@ -1042,6 +1091,7 @@ const PoolPage = () => {
                   onChange={(e) => {
                     setSelectedContact(e.target.value);
                     setContactInput(e.target.value);
+                    if (sendSuccess) setSendSuccess(false);
                   }}
                   placeholder="Enter miner address"
                   disabled={!isComposingNew}
@@ -1052,7 +1102,12 @@ const PoolPage = () => {
                   sx={{
                     borderRadius: 2,
                     border: `1px solid ${muiAlpha(theme.palette.divider, 0.7)}`,
-                    backgroundColor: muiAlpha(theme.palette.background.paper, 0.85)
+                    backgroundColor: muiAlpha(theme.palette.background.paper, 0.85),
+                    minHeight: isMdUp ? 320 : 220,
+                    p: '8px 10px',
+                    '& .mdxeditor-content': {
+                      minHeight: isMdUp ? 300 : 200
+                    }
                   }}>
                   <MarkdownEditor
                     ref={composeBodyRef}
@@ -1061,7 +1116,6 @@ const PoolPage = () => {
                     plugins={editorPlugins}
                     placeholder="Write your message..."
                     contentEditableClassName="mdxeditor-content"
-                    style={{ minHeight: isMdUp ? 320 : 220, padding: '8px 10px' }}
                   />
                 </Box>
                 {sendError && (

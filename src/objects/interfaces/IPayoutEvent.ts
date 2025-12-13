@@ -13,4 +13,5 @@ export interface IPayoutEvent {
   totalShares: number | string;
   totalSharesCount?: number;
   timestamp: string;
+  chainId?: string;
 }

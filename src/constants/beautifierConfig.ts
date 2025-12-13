@@ -29,7 +29,8 @@ export const beautifierConfig: Record<number, KeysMap> = {
     amount: 'amount',
     shares: 'shares',
     totalshares: 'totalShares',
-    timestamp: 'timestamp'
+    timestamp: 'timestamp',
+    chain: 'chainId'
   },
   35510: {
     z: 'zBits',

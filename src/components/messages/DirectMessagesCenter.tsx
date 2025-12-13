@@ -501,11 +501,17 @@ const DirectMessagesCenter = ({ iconSize = 'medium' }: DirectMessagesCenterProps
         onClose={() => setOpen(false)}
         maxWidth="md"
         fullWidth
+        fullScreen={isSmall}
         TransitionComponent={SlideDown}
         TransitionProps={{ onEntered: handleDialogEntered }}
         PaperProps={{
           sx: {
-            borderRadius: 3,
+            width: { xs: '100%', sm: 'auto' },
+            maxWidth: { xs: '92vw', sm: undefined },
+            maxHeight: { xs: '90vh', sm: '82vh' },
+            minHeight: { xs: '78vh', sm: 'auto' },
+            mx: { xs: 1, sm: 'auto' },
+            borderRadius: isSmall ? 0 : 3,
             overflow: 'hidden',
             border: `1px solid ${accentBorder}`,
             boxShadow:
@@ -588,7 +594,7 @@ const DirectMessagesCenter = ({ iconSize = 'medium' }: DirectMessagesCenterProps
           ) : (
             <Paper
               sx={{
-                minHeight: isSmall ? 320 : 420,
+                minHeight: isSmall ? '68vh' : 420,
                 borderRadius: 2.5,
                 overflow: 'hidden',
                 display: 'flex',
@@ -604,10 +610,10 @@ const DirectMessagesCenter = ({ iconSize = 'medium' }: DirectMessagesCenterProps
                   overflowY: 'auto',
                   display: 'flex',
                   flexDirection: 'column',
-                  gap: 1.5,
-                  p: { xs: 1.1, md: 1.4 },
-                  pr: { xs: 0.75, md: 1.1 },
-                  pb: { xs: 2, md: 2.4 },
+                  gap: { xs: 1.1, md: 1.5 },
+                  p: { xs: 1.2, md: 1.4 },
+                  pr: { xs: 1, md: 1.1 },
+                  pb: { xs: 1.4, md: 2.4 },
                   '&::-webkit-scrollbar': { width: 6 },
                   '&::-webkit-scrollbar-thumb': {
                     backgroundColor: muiAlpha(theme.palette.text.primary, 0.2),
@@ -684,11 +690,11 @@ const DirectMessagesCenter = ({ iconSize = 'medium' }: DirectMessagesCenterProps
                             sx={{
                               position: 'relative',
                               alignSelf: 'flex-start',
-                              maxWidth: { xs: '92%', md: '76%' },
-                              minWidth: { xs: 180, sm: 220 },
-                              width: 'fit-content',
-                              borderRadius: 1.5,
-                              p: { xs: 1, md: 1.25 },
+                              maxWidth: { xs: '100%', md: '76%' },
+                              minWidth: { xs: '100%', sm: 220 },
+                              width: { xs: '100%', md: 'fit-content' },
+                              borderRadius: { xs: 2, md: 1.5 },
+                              p: { xs: 1.05, md: 1.25 },
                               backgroundColor: muiAlpha(theme.palette.primary.main, 0.08),
                               border:
                                 highlightedMessageId === msg.id
@@ -728,12 +734,12 @@ const DirectMessagesCenter = ({ iconSize = 'medium' }: DirectMessagesCenterProps
                 <Box
                   ref={noticeRef}
                   sx={{
-                    width: '80%',
-                    maxWidth: 720,
+                    width: { xs: '100%', md: '80%' },
+                    maxWidth: { xs: '100%', md: 720 },
                     alignSelf: 'center',
-                    mt: 1.25,
-                    p: { xs: 1.25, md: 1.5 },
-                    borderRadius: 2,
+                    mt: { xs: 1, md: 1.25 },
+                    p: { xs: 1, md: 1.5 },
+                    borderRadius: { xs: 1.5, md: 2 },
                     backgroundColor: muiAlpha(
                       theme.palette.primary.main,
                       theme.palette.mode === 'dark' ? 0.14 : 0.1

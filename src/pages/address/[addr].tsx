@@ -1,7 +1,7 @@
 import { useRouter } from 'next/router';
 import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Box, Skeleton, Typography } from '@mui/material';
+import { Box, Skeleton, Stack, Typography } from '@mui/material';
 import HashrateChart from '@components/charts/HashrateChart';
 import PayoutsChart from '@components/charts/PayoutsChart';
 import PayoutsTable from '@components/tables/payouts/PayoutsTable';
@@ -29,12 +29,10 @@ import {
 import {
   connectRelay,
   getHashrates,
-  getDirectMessages as subscribeDirectMessages,
   getLiveSharenotes,
   getPayouts,
   getShares,
   stopHashrates,
-  stopDirectMessages,
   stopLiveSharenotes,
   stopPayouts,
   stopShares
@@ -125,12 +123,10 @@ const AddressPage = () => {
       dispatch(stopShares());
       dispatch(stopLiveSharenotes());
       dispatch(stopPayouts());
-      dispatch(stopDirectMessages());
       dispatch(getHashrates(currentAddress));
       dispatch(getShares(currentAddress));
       dispatch(getLiveSharenotes(currentAddress));
       dispatch(getPayouts(currentAddress));
-      dispatch(subscribeDirectMessages(currentAddress));
     }
   }, [currentAddress, hasConfig, hasConnectedRelayRef, relayIsReady]);
 

@@ -588,9 +588,7 @@ const LiveSharenotes = () => {
   const inlineLegendSlotProps = {
     direction: 'horizontal' as const,
     position: { vertical: 'top' as const, horizontal: 'start' as const },
-    padding: { top: 4, bottom: 4 },
-    itemGap: 10,
-    labelStyle: { whiteSpace: 'nowrap' }
+    padding: { top: 4, bottom: 4 }
   };
   const inlineLegendSx = {
     '& .MuiChartsLegend-root': {

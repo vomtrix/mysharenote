@@ -17,15 +17,14 @@ const Header = () => {
     <AppBar position="fixed" className={styles.header}>
       <Toolbar disableGutters className={styles.toolbar}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, sm: 1.5 }, flexShrink: 0 }}>
-          <MailOutlineIcon sx={{ color: PRIMARY_WHITE, fontSize: { xs: 36, md: 44 } }} />
           <Typography
             sx={{
               fontWeight: 700,
-              letterSpacing: -0.2,
+              letterSpacing: -0.5,
               color: PRIMARY_WHITE,
-              fontSize: { xs: '1rem', md: '1.2rem' }
+              fontSize: { xs: '1.2rem', md: '1.7rem' }
             }}>
-            MSN Mail
+            myHashboard
           </Typography>
         </Box>
         <Box className={styles.connectWrapper}>

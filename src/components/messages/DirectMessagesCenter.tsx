@@ -1,4 +1,14 @@
-import { type ReactElement, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  type ReactElement,
+  forwardRef,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState
+} from 'react';
+import dayjs from 'dayjs';
 import CloseIcon from '@mui/icons-material/Close';
 import MailOutlineIcon from '@mui/icons-material/MailOutline';
 import { alpha as muiAlpha, useTheme } from '@mui/material/styles';
@@ -10,13 +20,12 @@ import {
   DialogContent,
   DialogTitle,
   IconButton,
-  List,
-  ListItemButton,
-  ListItemText,
   Paper,
   Stack,
   Typography,
-  useMediaQuery
+  useMediaQuery,
+  LinearProgress,
+  Tooltip
 } from '@mui/material';
 import Slide from '@mui/material/Slide';
 import { TransitionProps } from '@mui/material/transitions';
@@ -26,8 +35,10 @@ import {
   getAddress,
   getDirectMessages,
   getDirectMessagesLastOpenedAt,
-  getIsDirectMessagesLoading
+  getIsDirectMessagesLoading,
+  getRelayReady
 } from '@store/app/AppSelectors';
+import { getDirectMessages as fetchDirectMessages, stopDirectMessages } from '@store/app/AppThunks';
 import { IDirectMessageEvent } from '@objects/interfaces/IDirectMessageEvent';
 import { setDirectMessagesLastOpened } from '@store/app/AppReducer';
 import { formatRelativeFromTimestamp } from '@utils/time';
@@ -49,9 +60,12 @@ const MarkdownViewer = dynamic(() => import('@mdxeditor/editor').then((mod) => m
   ssr: false
 });
 
-const SlideDown = (props: TransitionProps & { children: ReactElement<any, any> }) => (
-  <Slide {...props} direction="down" />
-);
+const SlideDown = forwardRef(function SlideDown(
+  props: TransitionProps & { children: ReactElement<any, any> },
+  ref
+) {
+  return <Slide {...props} ref={ref} direction="down" />;
+});
 
 const decodeHtmlEntities = (input: string) =>
   input
@@ -84,12 +98,6 @@ const extractTitle = (text: string) => {
   return asciiTitle.slice(0, 100) || 'New message';
 };
 
-  const buildPreview = (text: string) => {
-  const clean = normalizePreviewText(text);
-  if (clean.length <= MAX_PREVIEW_LENGTH) return clean;
-  return `${clean.slice(0, MAX_PREVIEW_LENGTH)}...`;
-};
-
 const hasAlertTag = (tags: string[][]) =>
   Array.isArray(tags) && tags.some((tag) => tag?.[0] === 'alert' && tag?.[1] === '1');
 
@@ -107,10 +115,15 @@ const DirectMessagesCenter = ({ iconSize = 'medium' }: DirectMessagesCenterProps
   const lastOpenedAt = useSelector(getDirectMessagesLastOpenedAt);
   const address = useSelector(getAddress);
   const isLoading = useSelector(getIsDirectMessagesLoading);
+  const relayReady = useSelector(getRelayReady);
   const [open, setOpen] = useState(false);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [alertMessage, setAlertMessage] = useState<IDirectMessageEvent | null>(null);
+  const [highlightedMessageId, setHighlightedMessageId] = useState<string | null>(null);
   const seenAlertsRef = useRef<Set<string>>(new Set());
+  const messagesRef = useRef<HTMLDivElement | null>(null);
+  const lastMessageRef = useRef<HTMLDivElement | null>(null);
+  const noticeRef = useRef<HTMLDivElement | null>(null);
+  const lastSeenMessageIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -128,6 +141,57 @@ const DirectMessagesCenter = ({ iconSize = 'medium' }: DirectMessagesCenterProps
     return directMessages;
   }, [address, directMessages]);
 
+  const groupedMessages = useMemo(() => {
+    const groups: Array<{ dateKey: string; label: string; items: IDirectMessageEvent[] }> = [];
+    relevantMessages
+      .slice()
+      .sort((a, b) => (a.created_at ?? 0) - (b.created_at ?? 0))
+      .forEach((msg) => {
+        const tsMs = (msg.created_at ?? 0) * 1000 || Date.now();
+        const dateKey = dayjs(tsMs).format('YYYY-MM-DD');
+        const label = dayjs(tsMs).format('MMM D, YYYY');
+        const current = groups[groups.length - 1];
+        if (!current || current.dateKey !== dateKey) {
+          groups.push({ dateKey, label, items: [msg] });
+        } else {
+          current.items.push(msg);
+        }
+      });
+    return groups;
+  }, [relevantMessages]);
+  const messageIdsSignature = useMemo(
+    () => relevantMessages.map((m) => m.id).join('|'),
+    [relevantMessages]
+  );
+  const lastMessageId = useMemo(
+    () => relevantMessages[relevantMessages.length - 1]?.id,
+    [relevantMessages]
+  );
+
+  const scrollToBottom = useCallback(() => {
+    const node = messagesRef.current;
+    if (!node) return;
+    const doScroll = () => {
+      const target = noticeRef.current || lastMessageRef.current;
+      if (target) {
+        target.scrollIntoView({ block: 'end', inline: 'nearest', behavior: 'auto' });
+      } else {
+        node.scrollTop = node.scrollHeight;
+      }
+    };
+    const attempt = (remaining: number) => {
+      requestAnimationFrame(() => {
+        doScroll();
+        if (remaining > 0) attempt(remaining - 1);
+      });
+    };
+    attempt(3); // a few frames to ensure DOM paint before scrolling
+  }, []);
+
+  const handleDialogEntered: TransitionProps['onEntered'] = () => {
+    scrollToBottom();
+  };
+
   const effectiveLastOpened = useMemo(() => {
     if (typeof lastOpenedAt === 'number' && Number.isFinite(lastOpenedAt)) return lastOpenedAt;
     if (typeof window !== 'undefined') {
@@ -139,21 +203,6 @@ const DirectMessagesCenter = ({ iconSize = 'medium' }: DirectMessagesCenterProps
   }, [lastOpenedAt]);
 
   const hasMessages = relevantMessages.length > 0;
-
-  useEffect(() => {
-    if (!hasMessages) {
-      setSelectedId(null);
-      return;
-    }
-    if (!selectedId) {
-      setSelectedId(relevantMessages[0].id);
-      return;
-    }
-    const exists = relevantMessages.some((msg) => msg.id === selectedId);
-    if (!exists) {
-      setSelectedId(relevantMessages[0]?.id ?? null);
-    }
-  }, [hasMessages, relevantMessages, selectedId]);
 
   useEffect(() => {
     if (!address || !hasMessages) return;
@@ -168,19 +217,13 @@ const DirectMessagesCenter = ({ iconSize = 'medium' }: DirectMessagesCenterProps
 
   const handleCloseAlert = () => setAlertMessage(null);
 
-  const handleSelectMessage = (message: IDirectMessageEvent) => {
-    setSelectedId(message.id);
-  };
-
   const unreadCount = useMemo(() => {
+    if (open) return 0;
     if (!relevantMessages.length) return 0;
     if (!effectiveLastOpened) return relevantMessages.length;
     return relevantMessages.filter((msg) => (msg.created_at ?? 0) > effectiveLastOpened).length;
-  }, [effectiveLastOpened, relevantMessages]);
+  }, [effectiveLastOpened, open, relevantMessages]);
 
-  const selectedMessage = relevantMessages.find((msg) => msg.id === selectedId) ?? null;
-
-  const accentSurface = muiAlpha(theme.palette.primary.main, theme.palette.mode === 'dark' ? 0.08 : 0.12);
   const accentBorder = muiAlpha(theme.palette.primary.main, theme.palette.mode === 'dark' ? 0.25 : 0.2);
   const codeBlockLanguages = useMemo(
     () => ({
@@ -208,27 +251,62 @@ const DirectMessagesCenter = ({ iconSize = 'medium' }: DirectMessagesCenterProps
     [codeBlockLanguages]
   );
 
-  const updateLastOpenedNow = () => {
-    const now = Math.floor(Date.now() / 1000);
-    dispatch(setDirectMessagesLastOpened(now));
+  const updateLastOpened = useCallback((timestampSeconds?: number) => {
+    const ts = Number.isFinite(timestampSeconds) ? Math.floor(timestampSeconds as number) : null;
+    const value = ts ?? Math.floor(Date.now() / 1000);
+    dispatch(setDirectMessagesLastOpened(value));
     if (typeof window !== 'undefined') {
-      localStorage.setItem(DM_LAST_OPENED_STORAGE_KEY, String(now));
+      localStorage.setItem(DM_LAST_OPENED_STORAGE_KEY, String(value));
     }
-  };
+  }, [dispatch]);
 
-  const handleOpenInbox = (forcedSelectedId?: string) => {
-    updateLastOpenedNow();
+  const handleOpenInbox = () => {
+    updateLastOpened();
     setOpen(true);
-    if (forcedSelectedId) {
-      setSelectedId(forcedSelectedId);
-    }
   };
 
   useEffect(() => {
     if (open) {
-      updateLastOpenedNow();
+      updateLastOpened();
     }
-  }, [dispatch, open]);
+  }, [open, updateLastOpened]);
+
+  useEffect(() => {
+    if (!open) return;
+    if (lastMessageId) {
+      lastSeenMessageIdRef.current = lastMessageId;
+    }
+    if (hasMessages) {
+      updateLastOpened();
+    }
+  }, [hasMessages, lastMessageId, messageIdsSignature, open, updateLastOpened]);
+
+  useEffect(() => {
+    if (!lastMessageId || !open) return;
+    const previousId = lastSeenMessageIdRef.current;
+    const isNewMessage = Boolean(previousId && previousId !== lastMessageId);
+    lastSeenMessageIdRef.current = lastMessageId;
+
+    updateLastOpened();
+
+    if (!isNewMessage) return;
+    setHighlightedMessageId(lastMessageId);
+    const timer = window.setTimeout(() => setHighlightedMessageId(null), 1800);
+    return () => window.clearTimeout(timer);
+  }, [lastMessageId, open, relevantMessages, updateLastOpened]);
+
+  useEffect(() => {
+    if (!address || !relayReady) return;
+    dispatch(fetchDirectMessages(address));
+    return () => {
+      dispatch(stopDirectMessages());
+    };
+  }, [address, relayReady, dispatch]);
+
+  useLayoutEffect(() => {
+    if (!open) return;
+    scrollToBottom();
+  }, [groupedMessages.length, messageIdsSignature, lastMessageId, open, scrollToBottom]);
 
   const renderMessageBody = (message: IDirectMessageEvent) => (
     <MarkdownViewer
@@ -303,7 +381,7 @@ const DirectMessagesCenter = ({ iconSize = 'medium' }: DirectMessagesCenterProps
                 size="small"
                 variant="outlined"
                 onClick={() => {
-                  handleOpenInbox(alertMessage.id);
+                  handleOpenInbox();
                   handleCloseAlert();
                 }}
                 sx={{
@@ -331,6 +409,7 @@ const DirectMessagesCenter = ({ iconSize = 'medium' }: DirectMessagesCenterProps
     <>
       <IconButton
         size={iconSize}
+        disabled={isLoading || !relayReady || !address}
         onClick={() => handleOpenInbox()}
         sx={{
           color: theme.palette.common.white,
@@ -391,6 +470,28 @@ const DirectMessagesCenter = ({ iconSize = 'medium' }: DirectMessagesCenterProps
             transform: rotate(360deg);
           }
         }
+        @keyframes dm-arrive {
+          0% {
+            box-shadow: 0 0 0 0 ${muiAlpha(theme.palette.primary.main, 0.35)};
+            transform: translateY(10px) scale(0.99);
+          }
+          35% {
+            box-shadow: 0 0 0 12px ${muiAlpha(theme.palette.primary.main, 0.16)};
+            transform: translateY(0) scale(1);
+          }
+          100% {
+            box-shadow: 0 0 0 0 ${muiAlpha(theme.palette.primary.main, 0)};
+            transform: translateY(0) scale(1);
+          }
+        }
+        @keyframes dm-fade-border {
+          0% {
+            border-color: ${muiAlpha(theme.palette.primary.main, 0.65)};
+          }
+          100% {
+            border-color: transparent;
+          }
+        }
       `}</style>
 
       {AlertBanner}
@@ -398,9 +499,10 @@ const DirectMessagesCenter = ({ iconSize = 'medium' }: DirectMessagesCenterProps
       <Dialog
         open={open}
         onClose={() => setOpen(false)}
-        maxWidth="lg"
+        maxWidth="md"
         fullWidth
         TransitionComponent={SlideDown}
+        TransitionProps={{ onEntered: handleDialogEntered }}
         PaperProps={{
           sx: {
             borderRadius: 3,
@@ -435,9 +537,6 @@ const DirectMessagesCenter = ({ iconSize = 'medium' }: DirectMessagesCenterProps
         <DialogContent
           dividers
           sx={{
-            display: 'grid',
-            gap: 2,
-            gridTemplateColumns: hasMessages ? { xs: '1fr', md: '320px 1fr' } : '1fr',
             background: `linear-gradient(180deg, ${muiAlpha(
               theme.palette.background.default,
               0.98
@@ -487,156 +586,179 @@ const DirectMessagesCenter = ({ iconSize = 'medium' }: DirectMessagesCenterProps
               </Stack>
             </Box>
           ) : (
-            <>
-              <Paper
-                variant="outlined"
+            <Paper
+              sx={{
+                minHeight: isSmall ? 320 : 420,
+                borderRadius: 2.5,
+                overflow: 'hidden',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 0,
+                bgcolor: 'transparent',
+                boxShadow: 'none'
+              }}>
+              <Box
+                ref={messagesRef}
                 sx={{
-                  height: isSmall ? '320px' : '400px',
-                  overflow: 'hidden',
-                  borderRadius: 2,
-                  borderColor: accentBorder,
+                  flex: 1,
+                  overflowY: 'auto',
                   display: 'flex',
-                  flexDirection: 'column'
+                  flexDirection: 'column',
+                  gap: 1.5,
+                  p: { xs: 1.1, md: 1.4 },
+                  pr: { xs: 0.75, md: 1.1 },
+                  pb: { xs: 2, md: 2.4 },
+                  '&::-webkit-scrollbar': { width: 6 },
+                  '&::-webkit-scrollbar-thumb': {
+                    backgroundColor: muiAlpha(theme.palette.text.primary, 0.2),
+                    borderRadius: 999
+                  }
                 }}>
-                <Box
-                  sx={{
-                    px: 1.5,
-                    py: 1,
-                    borderBottom: `1px solid ${accentBorder}`,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between'
-                  }}>
-                  <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
-                    Inbox
-                  </Typography>
-                  {isLoading && (
-                    <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                      Syncing...
-                    </Typography>
-                  )}
-                </Box>
-                <List
-                  disablePadding
-                  sx={{
-                    flex: 1,
-                    overflowY: 'auto',
-                    '&::-webkit-scrollbar': { width: 6 },
-                    '&::-webkit-scrollbar-thumb': {
-                      backgroundColor: muiAlpha(theme.palette.text.primary, 0.2),
+                {isLoading && (
+                  <LinearProgress
+                    sx={{
+                      mx: { xs: 0.75, md: 1 },
+                      mb: 0.75,
                       borderRadius: 999
-                    }
-                  }}>
-                  {relevantMessages.map((message) => {
-                    const isNew =
-                      !effectiveLastOpened ||
-                      (message.created_at ?? 0) > (effectiveLastOpened ?? 0);
-                    return (
-                      <ListItemButton
-                        key={message.id}
-                        onClick={() => handleSelectMessage(message)}
-                        selected={selectedId === message.id}
-                        alignItems="flex-start"
-                        sx={{
-                          borderBottom: `1px solid ${muiAlpha(theme.palette.divider, 0.6)}`,
-                          backgroundColor:
-                            selectedId === message.id
-                              ? muiAlpha(
-                                  theme.palette.primary.main,
-                                  theme.palette.mode === 'dark' ? 0.16 : 0.1
-                                )
-                              : 'transparent',
-                          transition: 'background-color 120ms ease'
-                        }}>
-                        <ListItemText
-                          primary={
-                            <Stack
-                              direction="row"
-                              spacing={1}
-                              alignItems="center"
-                              justifyContent="space-between"
-                              sx={{ width: '100%', minWidth: 0 }}>
-                              <Typography
-                                variant="body2"
-                                sx={{
-                                  fontWeight: isNew ? 800 : 600,
-                                  color: isNew ? theme.palette.text.primary : 'text.secondary',
-                                  textOverflow: 'ellipsis',
-                                  overflow: 'hidden',
-                                  whiteSpace: 'nowrap',
-                          flex: 1
-                        }}>
-                                {buildPreview(message.content) || 'Message'}
-                              </Typography>
-                              <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                                {formatRelativeFromTimestamp(message.created_at)}
-                              </Typography>
-                            </Stack>
-                          }
-                        />
-                      </ListItemButton>
-                    );
-                  })}
-                </List>
-              </Paper>
-
-              <Paper
-                variant="outlined"
-                sx={{
-                  minHeight: isSmall ? 'auto' : '400px',
-                  borderRadius: 2,
-                  borderColor: accentBorder,
-                  overflow: 'hidden',
-                  display: 'flex',
-                  flexDirection: 'column'
-                }}>
-                {!selectedMessage ? (
+                    }}
+                  />
+                )}
+                {groupedMessages.length === 0 ? (
                   <Box
                     sx={{
                       flex: 1,
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      color: 'text.secondary',
-                      px: 3,
-                      textAlign: 'center'
+                      color: 'text.secondary'
                     }}>
-                    <Typography variant="body2">Select a message to preview it.</Typography>
+                    <Typography variant="body2">No messages yet.</Typography>
                   </Box>
                 ) : (
-                  <>
-                    <Box
-                      sx={{
-                        px: 2,
-                        py: 1.5,
-                        borderBottom: `1px solid ${accentBorder}`,
-                        backgroundColor: accentSurface,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        gap: 1
-                      }}>
-                      <Typography variant="subtitle2" sx={{ fontWeight: 800 }}>
-                        Message
-                      </Typography>
-                      <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                        {formatRelativeFromTimestamp(selectedMessage.created_at)}
-                      </Typography>
+                  groupedMessages.map((group) => (
+                    <Box key={group.dateKey} sx={{ display: 'flex', flexDirection: 'column', gap: 1.1 }}>
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 1,
+                          color: 'text.secondary',
+                          fontSize: '0.8rem',
+                          mx: 1.4
+                        }}>
+                        <Box
+                          sx={{
+                            flex: 1,
+                            height: '1px',
+                            backgroundImage: `linear-gradient(90deg, transparent, ${muiAlpha(
+                              theme.palette.primary.main,
+                              0.18
+                            )}, transparent)`
+                          }}
+                        />
+                        <Typography variant="caption" sx={{ whiteSpace: 'nowrap' }}>
+                          {group.label}
+                        </Typography>
+                        <Box
+                          sx={{
+                            flex: 1,
+                            height: '1px',
+                            backgroundImage: `linear-gradient(90deg, transparent, ${muiAlpha(
+                              theme.palette.primary.main,
+                              0.18
+                            )}, transparent)`
+                          }}
+                        />
+                      </Box>
+                      {group.items.map((msg, idx) => {
+                        const createdMs = (msg.created_at ?? 0) * 1000 || Date.now();
+                        const shortTime = dayjs(createdMs).format('h:mm A');
+                        const longTime = dayjs(createdMs).format('MMM D, YYYY h:mm:ss A');
+                        const isLastGroup =
+                          group.dateKey === groupedMessages[groupedMessages.length - 1].dateKey;
+                        const isLast = isLastGroup && idx === group.items.length - 1;
+                        return (
+                          <Box
+                            key={msg.id}
+                            ref={isLast ? lastMessageRef : undefined}
+                            sx={{
+                              position: 'relative',
+                              alignSelf: 'flex-start',
+                              maxWidth: { xs: '92%', md: '76%' },
+                              minWidth: { xs: 180, sm: 220 },
+                              width: 'fit-content',
+                              borderRadius: 1.5,
+                              p: { xs: 1, md: 1.25 },
+                              backgroundColor: muiAlpha(theme.palette.primary.main, 0.08),
+                              border:
+                                highlightedMessageId === msg.id
+                                  ? `1px solid ${muiAlpha(theme.palette.primary.main, 0.45)}`
+                                  : '1px solid transparent',
+                              boxShadow:
+                                theme.palette.mode === 'dark'
+                                  ? '0 10px 28px -18px rgba(0,0,0,0.6)'
+                                  : '0 12px 32px -20px rgba(60,45,120,0.25)',
+                              scrollMarginBottom: { xs: 80, md: 110 },
+                              animation:
+                                highlightedMessageId === msg.id
+                                  ? 'dm-arrive 1.6s ease-out, dm-fade-border 2.1s ease-out'
+                                  : 'none',
+                              transition: 'border-color 0.4s ease'
+                            }}>
+                            <MarkdownViewer
+                              key={msg.id}
+                              markdown={msg.content || ''}
+                              readOnly
+                              plugins={viewerPlugins}
+                              contentEditableClassName="mdxeditor-root-contenteditable"
+                            />
+                            <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 0.5 }}>
+                              <Tooltip title={longTime}>
+                                <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                                  {shortTime}
+                                </Typography>
+                              </Tooltip>
+                            </Box>
+                            </Box>
+                        );
+                      })}
                     </Box>
+                  ))
+                )}
                 <Box
+                  ref={noticeRef}
                   sx={{
-                    flex: 1,
-                    overflowY: 'auto',
-                    px: { xs: 1.25, md: 2 },
-                    py: { xs: 1, md: 1.5 },
-                    maxHeight: { xs: '40vh', md: 'none' }
+                    width: '80%',
+                    maxWidth: 720,
+                    alignSelf: 'center',
+                    mt: 1.25,
+                    p: { xs: 1.25, md: 1.5 },
+                    borderRadius: 2,
+                    backgroundColor: muiAlpha(
+                      theme.palette.primary.main,
+                      theme.palette.mode === 'dark' ? 0.14 : 0.1
+                    ),
+                    boxShadow:
+                      theme.palette.mode === 'dark'
+                        ? '0 10px 26px -18px rgba(0,0,0,0.65)'
+                        : '0 12px 32px -20px rgba(60,45,120,0.25)',
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 0.6,
+                    textAlign: 'center',
+                    mb: { xs: 1, md: 1.25 }
                   }}>
-                  {renderMessageBody(selectedMessage)}
+                  <Typography variant="body2" sx={{ fontWeight: 700 }}>
+                    This conversation is read-only.
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    For support or contact, write in Discord #mining or DM us there.
+                  </Typography>
                 </Box>
-              </>
-            )}
-              </Paper>
-            </>
+              </Box>
+            </Paper>
           )}
         </DialogContent>
       </Dialog>

@@ -1,3 +1,4 @@
+import type { KeyboardEvent } from 'react';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getPublicKey, nip19 } from 'nostr-tools';
@@ -475,6 +476,13 @@ const PoolPage = () => {
       localStorage.setItem(DM_LAST_OPENED_STORAGE_KEY, String(now));
     }
   }, [dispatch, session]);
+
+  const handleComposerKeyDown = (event: KeyboardEvent) => {
+    if (event.key === 'Enter' && (event.metaKey || event.ctrlKey)) {
+      event.preventDefault();
+      if (canSend) handleComposeSend();
+    }
+  };
 
   const handleComposeSend = () => {
     if (!session) return;
@@ -1277,6 +1285,7 @@ const PoolPage = () => {
                     backgroundColor: muiAlpha(theme.palette.background.default, 0.9)
                   }}>
                   <Box
+                    onKeyDown={handleComposerKeyDown}
                     sx={{
                       borderRadius: 1.5,
                       backgroundColor: muiAlpha(theme.palette.background.paper, 0.98),

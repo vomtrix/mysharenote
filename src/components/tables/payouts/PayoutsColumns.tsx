@@ -6,6 +6,7 @@ import {
   getChainName,
   getExplorerBaseUrl
 } from '@constants/chainIcons';
+import { getGridNumericOperators } from '@mui/x-data-grid';
 import { Avatar, Box, Chip, Tooltip } from '@mui/material';
 import ShareNoteLabel from '@components/common/ShareNoteLabel';
 import { getSettings } from '@store/app/AppSelectors';
@@ -16,6 +17,11 @@ const payoutsColumns = () => {
   const { t } = useTranslation();
   const settings = useSelector(getSettings);
   const explorerBase = (chainId?: string) => getExplorerBaseUrl(chainId, settings.explorers);
+  const equalsNumberOperator = (() => {
+    const numericOps = getGridNumericOperators();
+    const equalsOp = numericOps.find((op) => op.value === 'equals');
+    return equalsOp ? [equalsOp] : numericOps.slice(0, 1);
+  })();
   const renderSharenoteCell = (value: any, count?: number) => {
     const parsedCount = Number(count);
     const hasCount = Number.isFinite(parsedCount);
@@ -78,7 +84,9 @@ const payoutsColumns = () => {
       minWidth: 150,
       headerClassName: 'text-blue text-uppercase',
       cellClassName: 'text-bold',
-      valueFormatter: (value: any) => fromEpoch(value).format('L LT')
+      valueFormatter: (value: any) => fromEpoch(value).format('L LT'),
+      filterable: false,
+      disableColumnMenu: true
     },
     {
       headerName: t('block'),
@@ -87,6 +95,7 @@ const payoutsColumns = () => {
       minWidth: 100,
       headerClassName: 'text-blue text-uppercase',
       cellClassName: 'text-blue',
+      filterOperators: equalsNumberOperator,
       renderCell: (params: any) => {
         const chainId = params.row?.chainId ?? 'flokicoin';
         const chainName = getChainName(chainId) ?? chainId;
@@ -107,7 +116,7 @@ const payoutsColumns = () => {
             size="small"
             component="a"
             target="_blank"
-            href={`${explorerBase(chainId)}/${params.row.blockHash}`}
+            href={`${explorerBase(chainId)}/block/${params.row.blockHash}`}
             clickable
           />
         );
@@ -120,6 +129,8 @@ const payoutsColumns = () => {
       minWidth: 100,
       headerClassName: 'text-blue text-uppercase',
       cellClassName: 'text-bold',
+      filterable: false,
+      disableColumnMenu: true,
       renderCell: (params: any) => renderSharenoteCell(params.value, params.row?.totalSharesCount)
     },
     {
@@ -129,6 +140,8 @@ const payoutsColumns = () => {
       minWidth: 90,
       headerClassName: 'text-blue text-uppercase',
       cellClassName: 'text-bold',
+      filterable: false,
+      disableColumnMenu: true,
       renderCell: (params: any) => renderSharenoteCell(params.value, params.row?.sharesCount)
     },
     {
@@ -138,6 +151,8 @@ const payoutsColumns = () => {
       minWidth: 120,
       headerClassName: 'text-blue text-uppercase',
       cellClassName: 'text-blue text-bold',
+      filterable: false,
+      disableColumnMenu: true,
       renderCell: (params: any) => {
         const formattedValue = numeral(params.value).format('0,0').replace(/,/g, ' ');
         return <Chip label={formattedValue} sx={{ fontWeight: 'bold' }} size="small" />;
@@ -150,6 +165,8 @@ const payoutsColumns = () => {
       minWidth: 120,
       headerClassName: 'text-blue text-uppercase',
       cellClassName: 'text-blue text-bold',
+      filterable: false,
+      disableColumnMenu: true,
       renderCell: (params: any) => {
         const label = formatPayoutAmount(params.value, params.row?.chainId);
         return (

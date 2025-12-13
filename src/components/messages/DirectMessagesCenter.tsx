@@ -119,11 +119,13 @@ const DirectMessagesCenter = ({ iconSize = 'medium' }: DirectMessagesCenterProps
   const [open, setOpen] = useState(false);
   const [alertMessage, setAlertMessage] = useState<IDirectMessageEvent | null>(null);
   const [highlightedMessageId, setHighlightedMessageId] = useState<string | null>(null);
+  const [unreadDividerMessageId, setUnreadDividerMessageId] = useState<string | null>(null);
   const seenAlertsRef = useRef<Set<string>>(new Set());
   const messagesRef = useRef<HTMLDivElement | null>(null);
   const lastMessageRef = useRef<HTMLDivElement | null>(null);
   const noticeRef = useRef<HTMLDivElement | null>(null);
   const lastSeenMessageIdRef = useRef<string | null>(null);
+  const prevMessageIdsSignatureRef = useRef<string>('');
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -141,24 +143,29 @@ const DirectMessagesCenter = ({ iconSize = 'medium' }: DirectMessagesCenterProps
     return directMessages;
   }, [address, directMessages]);
 
+  const sortedMessages = useMemo(
+    () =>
+      relevantMessages
+        .slice()
+        .sort((a, b) => (a.created_at ?? 0) - (b.created_at ?? 0)),
+    [relevantMessages]
+  );
+
   const groupedMessages = useMemo(() => {
     const groups: Array<{ dateKey: string; label: string; items: IDirectMessageEvent[] }> = [];
-    relevantMessages
-      .slice()
-      .sort((a, b) => (a.created_at ?? 0) - (b.created_at ?? 0))
-      .forEach((msg) => {
-        const tsMs = (msg.created_at ?? 0) * 1000 || Date.now();
-        const dateKey = dayjs(tsMs).format('YYYY-MM-DD');
-        const label = dayjs(tsMs).format('MMM D, YYYY');
-        const current = groups[groups.length - 1];
-        if (!current || current.dateKey !== dateKey) {
-          groups.push({ dateKey, label, items: [msg] });
-        } else {
-          current.items.push(msg);
-        }
-      });
+    sortedMessages.forEach((msg) => {
+      const tsMs = (msg.created_at ?? 0) * 1000 || Date.now();
+      const dateKey = dayjs(tsMs).format('YYYY-MM-DD');
+      const label = dayjs(tsMs).format('MMM D, YYYY');
+      const current = groups[groups.length - 1];
+      if (!current || current.dateKey !== dateKey) {
+        groups.push({ dateKey, label, items: [msg] });
+      } else {
+        current.items.push(msg);
+      }
+    });
     return groups;
-  }, [relevantMessages]);
+  }, [sortedMessages]);
   const messageIdsSignature = useMemo(
     () => relevantMessages.map((m) => m.id).join('|'),
     [relevantMessages]
@@ -201,6 +208,8 @@ const DirectMessagesCenter = ({ iconSize = 'medium' }: DirectMessagesCenterProps
     }
     return null;
   }, [lastOpenedAt]);
+
+  const hasUnreadBaseline = typeof effectiveLastOpened === 'number' && Number.isFinite(effectiveLastOpened);
 
   const hasMessages = relevantMessages.length > 0;
 
@@ -261,6 +270,10 @@ const DirectMessagesCenter = ({ iconSize = 'medium' }: DirectMessagesCenterProps
   }, [dispatch]);
 
   const handleOpenInbox = () => {
+    const firstUnread = hasUnreadBaseline
+      ? sortedMessages.find((msg) => (msg.created_at ?? 0) > (effectiveLastOpened as number))
+      : null;
+    setUnreadDividerMessageId(firstUnread?.id ?? null);
     updateLastOpened();
     setOpen(true);
   };
@@ -290,10 +303,24 @@ const DirectMessagesCenter = ({ iconSize = 'medium' }: DirectMessagesCenterProps
     updateLastOpened();
 
     if (!isNewMessage) return;
+    setUnreadDividerMessageId(null);
     setHighlightedMessageId(lastMessageId);
     const timer = window.setTimeout(() => setHighlightedMessageId(null), 1800);
     return () => window.clearTimeout(timer);
   }, [lastMessageId, open, relevantMessages, updateLastOpened]);
+
+  useEffect(() => {
+    if (!open) {
+      prevMessageIdsSignatureRef.current = messageIdsSignature;
+      return;
+    }
+    const hadSignature = Boolean(prevMessageIdsSignatureRef.current);
+    const signatureChanged = prevMessageIdsSignatureRef.current !== messageIdsSignature;
+    if (hadSignature && signatureChanged && unreadDividerMessageId) {
+      setUnreadDividerMessageId(null);
+    }
+    prevMessageIdsSignatureRef.current = messageIdsSignature;
+  }, [messageIdsSignature, open, unreadDividerMessageId]);
 
   useEffect(() => {
     if (!address || !relayReady) return;
@@ -316,6 +343,58 @@ const DirectMessagesCenter = ({ iconSize = 'medium' }: DirectMessagesCenterProps
       plugins={viewerPlugins}
       contentEditableClassName="mdxeditor-root-contenteditable"
     />
+  );
+
+  const UnreadDivider = () => (
+    <Box
+      sx={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 1,
+        my: { xs: 0.6, md: 0.75 },
+        mx: { xs: 0.25, md: 0.75 },
+        color: theme.palette.error.main
+      }}>
+      <Box
+        sx={{
+          flex: 1,
+          height: 1.5,
+          backgroundColor: muiAlpha(theme.palette.error.main, 0.28),
+          borderRadius: 999
+        }}
+      />
+      <Box
+        sx={{
+          px: 1.25,
+          py: 0.3,
+          borderRadius: 999,
+          border: `1px solid ${muiAlpha(theme.palette.error.main, 0.55)}`,
+          backgroundColor: muiAlpha(theme.palette.error.main, theme.palette.mode === 'dark' ? 0.18 : 0.14),
+          boxShadow:
+            theme.palette.mode === 'dark'
+              ? '0 6px 18px -10px rgba(0,0,0,0.65)'
+              : '0 8px 20px -12px rgba(200,60,60,0.35)'
+        }}>
+        <Typography
+          variant="caption"
+          sx={{
+            fontWeight: 800,
+            textTransform: 'uppercase',
+            letterSpacing: 0.6,
+            fontSize: '0.72rem'
+          }}>
+          Unread messages
+        </Typography>
+      </Box>
+      <Box
+        sx={{
+          flex: 1,
+          height: 1.5,
+          backgroundColor: muiAlpha(theme.palette.error.main, 0.28),
+          borderRadius: 999
+        }}
+      />
+    </Box>
   );
 
   const AlertBanner = alertMessage ? (
@@ -506,8 +585,8 @@ const DirectMessagesCenter = ({ iconSize = 'medium' }: DirectMessagesCenterProps
         TransitionProps={{ onEntered: handleDialogEntered }}
         PaperProps={{
           sx: {
-            width: { xs: '100%', sm: 'auto' },
-            maxWidth: { xs: '92vw', sm: undefined },
+            width: '100%',
+            maxWidth: { xs: '92vw', sm: 860, md: 940 },
             maxHeight: { xs: '90vh', sm: '82vh' },
             minHeight: { xs: '78vh', sm: 'auto' },
             mx: { xs: 1, sm: 'auto' },
@@ -674,18 +753,20 @@ const DirectMessagesCenter = ({ iconSize = 'medium' }: DirectMessagesCenterProps
                               0.18
                             )}, transparent)`
                           }}
-                        />
-                      </Box>
-                      {group.items.map((msg, idx) => {
-                        const createdMs = (msg.created_at ?? 0) * 1000 || Date.now();
-                        const shortTime = dayjs(createdMs).format('h:mm A');
-                        const longTime = dayjs(createdMs).format('MMM D, YYYY h:mm:ss A');
-                        const isLastGroup =
-                          group.dateKey === groupedMessages[groupedMessages.length - 1].dateKey;
-                        const isLast = isLastGroup && idx === group.items.length - 1;
-                        return (
+                      />
+                    </Box>
+                    {group.items.map((msg, idx) => {
+                      const createdMs = (msg.created_at ?? 0) * 1000 || Date.now();
+                      const shortTime = dayjs(createdMs).format('h:mm A');
+                      const longTime = dayjs(createdMs).format('MMM D, YYYY h:mm:ss A');
+                      const isLastGroup =
+                        group.dateKey === groupedMessages[groupedMessages.length - 1].dateKey;
+                      const isLast = isLastGroup && idx === group.items.length - 1;
+                      const showUnreadDivider = unreadDividerMessageId === msg.id;
+                      return (
+                        <Box key={msg.id} sx={{ display: 'flex', flexDirection: 'column', gap: 0.35 }}>
+                          {showUnreadDivider && <UnreadDivider />}
                           <Box
-                            key={msg.id}
                             ref={isLast ? lastMessageRef : undefined}
                             sx={{
                               position: 'relative',
@@ -725,12 +806,13 @@ const DirectMessagesCenter = ({ iconSize = 'medium' }: DirectMessagesCenterProps
                                 </Typography>
                               </Tooltip>
                             </Box>
-                            </Box>
-                        );
-                      })}
-                    </Box>
-                  ))
-                )}
+                          </Box>
+                        </Box>
+                      );
+                    })}
+                  </Box>
+                ))
+              )}
                 <Box
                   ref={noticeRef}
                   sx={{

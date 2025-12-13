@@ -298,6 +298,7 @@ const SharesTable = () => {
             <CustomTable
               columns={columns}
               rows={shares}
+              filters
               pageSizeOptions={[10]}
               initialState={{
                 sorting: {

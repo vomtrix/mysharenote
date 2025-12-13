@@ -1,5 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
-import { gridClasses, useGridApiRef } from '@mui/x-data-grid';
+import {
+  GridColumnMenuContainer,
+  GridFilterPanel,
+  type GridColumnMenuProps,
+  gridClasses,
+  useGridApiRef
+} from '@mui/x-data-grid';
 import { getVisibleRows } from '@mui/x-data-grid/internals';
 import StyledDataGrid from '@components/styled/StyledDataGrid';
 import { IPaginationModel } from '@objects/interfaces/IPaginationModel';
@@ -101,6 +107,27 @@ const CustomTable = ({
     }
   };
 
+  const FilterOnlyColumnMenu = (props: GridColumnMenuProps) => {
+    const { hideMenu, colDef, ...other } = props;
+    const hasMultipleOperators = (colDef.filterOperators?.length ?? 0) > 1;
+    return (
+      <GridColumnMenuContainer hideMenu={hideMenu} colDef={colDef} {...other}>
+        <GridFilterPanel
+          columnsSort="asc"
+          logicOperators={[]}
+          disableAddFilterButton
+          disableRemoveAllButton
+          getColumnForNewFilter={() => colDef.field}
+          filterFormProps={{
+            logicOperatorInputProps: { sx: { display: 'none' } },
+            operatorInputProps: { disabled: !hasMultipleOperators },
+            columnInputProps: { disabled: true }
+          }}
+        />
+      </GridColumnMenuContainer>
+    );
+  };
+
   return (
     <>
       {columns && rows && (
@@ -110,6 +137,7 @@ const CustomTable = ({
           loading={isLoading}
           rows={rows ?? []}
           columns={columns}
+          slots={filters ? { columnMenu: FilterOnlyColumnMenu } : undefined}
           onPaginationModelChange={onPaginationModelChange}
           onStateChange={onVisibleRowChange ? handleStateChange : undefined}
           disableColumnMenu={!filters}

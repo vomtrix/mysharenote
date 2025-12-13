@@ -5,6 +5,7 @@ import {
   getChainName,
   getExplorerBaseUrl
 } from '@constants/chainIcons';
+import { getGridNumericOperators, getGridStringOperators } from '@mui/x-data-grid';
 import { Avatar, Box, Chip, IconButton, Tooltip } from '@mui/material';
 import InfoOutlined from '@mui/icons-material/InfoOutlined';
 import ShareNoteLabel from '@components/common/ShareNoteLabel';
@@ -17,6 +18,23 @@ const sharesColumns = () => {
   const { t } = useTranslation();
   const settings = useSelector(getSettings);
   const explorerBase = (chainId?: string) => getExplorerBaseUrl(chainId, settings.explorers);
+  const equalsNumberOperator = (() => {
+    const numericOps = getGridNumericOperators();
+    const equalsOp = numericOps.find((op) => op.value === 'equals');
+    return equalsOp ? [equalsOp] : numericOps.slice(0, 1);
+  })();
+  const workerStringOperators = (() => {
+    const stringOps = getGridStringOperators();
+    const containsOp = stringOps.find((op) => op.value === 'contains');
+    if (!containsOp) return stringOps;
+    const remaining = stringOps.filter((op) => op.value !== 'contains');
+    return [containsOp, ...remaining];
+  })();
+  const containsStringOperator = (() => {
+    const stringOps = getGridStringOperators();
+    const containsOp = stringOps.find((op) => op.value === 'contains');
+    return containsOp ? [containsOp] : stringOps.slice(0, 1);
+  })();
   const formatProfitAmount = (amount: number, chainId?: string) => {
     const meta = getChainMetadata(chainId);
     const decimals = meta?.decimals ?? 8;
@@ -85,7 +103,9 @@ const sharesColumns = () => {
       minWidth: 160,
       headerClassName: 'text-blue text-uppercase',
       cellClassName: 'text-bold',
-      valueFormatter: (value: any) => fromEpoch(value).format('L LT')
+      valueFormatter: (value: any) => fromEpoch(value).format('L LT'),
+      filterable: false,
+      disableColumnMenu: true
     },
     {
       headerName: t('worker'),
@@ -93,7 +113,8 @@ const sharesColumns = () => {
       flex: 1,
       minWidth: 120,
       headerClassName: 'text-blue text-uppercase',
-      cellClassName: 'text-bold'
+      cellClassName: 'text-bold',
+      filterOperators: workerStringOperators
     },
     {
       headerName: t('block'),
@@ -102,6 +123,7 @@ const sharesColumns = () => {
       minWidth: 120,
       headerClassName: 'text-blue text-uppercase',
       cellClassName: 'text-blue',
+      filterOperators: equalsNumberOperator,
       renderCell: (params: any) => {
         const chainName = getChainName(params.row?.chainId);
         const chainIcon = getChainIconPath(chainName);
@@ -124,7 +146,7 @@ const sharesColumns = () => {
             size="small"
             component="a"
             target="_blank"
-            href={`${explorerBase(params.row.chainId)}/${params.row.blockHash}`}
+            href={`${explorerBase(params.row.chainId)}/block/${params.row.blockHash}`}
             clickable
             // color="primary"
             // variant="outlined"
@@ -169,6 +191,8 @@ const sharesColumns = () => {
       minWidth: 140,
       headerClassName: 'text-blue text-uppercase',
       cellClassName: 'text-bold',
+      filterable: false,
+      disableColumnMenu: true,
       renderCell: (params: any) => renderSharenoteCell(params.value, params.row?.sharesCount)
     },
     {
@@ -183,6 +207,8 @@ const sharesColumns = () => {
       minWidth: 140,
       headerClassName: 'text-blue text-uppercase',
       cellClassName: 'text-bold',
+      filterable: false,
+      disableColumnMenu: true,
       renderCell: (params: any) => renderSharenoteCell(params.value, params.row?.totalSharesCount)
     },
     {
@@ -192,6 +218,8 @@ const sharesColumns = () => {
       minWidth: 130,
       headerClassName: 'text-blue text-uppercase',
       cellClassName: 'text-blue text-bold',
+      filterable: false,
+      disableColumnMenu: true,
       renderCell: (params: any) => {
         const chip = (
           <Chip

@@ -37,6 +37,8 @@ const PayoutsTable = () => {
           <CustomTable
             columns={columns}
             rows={payouts}
+            filters
+            pageSizeOptions={[10]}
             initialState={{
               pagination: { paginationModel: { pageSize: 10 } },
               sorting: {

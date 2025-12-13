@@ -1,4 +1,4 @@
-import type { KeyboardEvent } from 'react';
+import type { KeyboardEvent as ReactKeyboardEvent } from 'react';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getPublicKey, nip19 } from 'nostr-tools';
@@ -477,7 +477,7 @@ const PoolPage = () => {
     }
   }, [dispatch, session]);
 
-  const handleComposerKeyDown = (event: KeyboardEvent) => {
+  const handleComposerKeyDown = (event: ReactKeyboardEvent) => {
     if (event.key === 'Enter' && (event.metaKey || event.ctrlKey)) {
       event.preventDefault();
       if (canSend) handleComposeSend();

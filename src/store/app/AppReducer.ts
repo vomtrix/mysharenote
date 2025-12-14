@@ -47,6 +47,8 @@ export interface AppState {
   pendingBalance: number;
   unconfirmedBalance: number;
   settings: ISettings;
+  settingsUserModified: boolean;
+  settingsVersionApplied: number;
   colorMode: 'light' | 'dark';
   isHashrateLoading: boolean;
   isSharesLoading: boolean;
@@ -57,6 +59,9 @@ export interface AppState {
   error?: ICustomError;
   isLiveSharenotesLoading: boolean;
 }
+
+// Increment when default settings change (e.g., new env-based defaults).
+export const SETTINGS_DEFAULT_VERSION = 2;
 
 const initialColorMode: 'light' | 'dark' = DARK_MODE_FORCE ? 'dark' : DARK_MODE_DEFAULT;
 
@@ -80,6 +85,8 @@ export const initialState: AppState = {
     explorer: EXPLORER_URL,
     explorers: { ...DEFAULT_CHAIN_EXPLORERS }
   },
+  settingsUserModified: false,
+  settingsVersionApplied: SETTINGS_DEFAULT_VERSION,
   isHashrateLoading: false,
   isSharesLoading: false,
   isPayoutsLoading: false,
@@ -258,6 +265,8 @@ export const slice = createSlice({
         explorer: EXPLORER_URL,
         explorers: { ...DEFAULT_CHAIN_EXPLORERS }
       };
+      state.settingsUserModified = false;
+      state.settingsVersionApplied = SETTINGS_DEFAULT_VERSION;
     },
     clearHashrates: (state: AppState) => {
       state.hashrates = [];
@@ -296,6 +305,8 @@ export const slice = createSlice({
     },
     setSettings: (state: AppState, action: PayloadAction<ISettings>) => {
       state.settings = action.payload;
+      state.settingsUserModified = true;
+      state.settingsVersionApplied = SETTINGS_DEFAULT_VERSION;
     },
     setColorMode: (state: AppState, action: PayloadAction<'light' | 'dark'>) => {
       state.colorMode = action.payload;
@@ -445,6 +456,8 @@ export const slice = createSlice({
           ...payload,
           explorers: { ...DEFAULT_CHAIN_EXPLORERS, ...(payload?.explorers ?? {}) }
         };
+        state.settingsUserModified = true;
+        state.settingsVersionApplied = SETTINGS_DEFAULT_VERSION;
         state.error = undefined;
         state.skeleton = false;
         state.relayReady = true;

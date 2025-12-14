@@ -17,7 +17,7 @@ const cloneSettings = (settings: any) => JSON.parse(JSON.stringify(settings));
 const FORCE_DEFAULT_SETTINGS_UPDATE = true;
 
 // Persist version used by redux-persist migrations. Bump when adding/changing migrations.
-const PERSIST_VERSION = 2;
+const PERSIST_VERSION = 3;
 
 // Snapshot of the previous default settings. When you update defaults, bump the version
 // below and add a new snapshot so users who never changed settings get the new defaults

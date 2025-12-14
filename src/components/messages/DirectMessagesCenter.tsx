@@ -622,6 +622,8 @@ const DirectMessagesCenter = ({ iconSize = 'medium' }: DirectMessagesCenterProps
         <DialogContent
           dividers
           sx={{
+            display: 'flex',
+            flexDirection: 'column',
             background: `linear-gradient(180deg, ${muiAlpha(
               theme.palette.background.default,
               0.98
@@ -631,7 +633,8 @@ const DirectMessagesCenter = ({ iconSize = 'medium' }: DirectMessagesCenterProps
             <Box
               sx={{
                 width: '100%',
-                minHeight: { xs: '340px', md: '420px' },
+                flex: 1,
+                minHeight: { xs: '100%', md: '420px' },
                 borderRadius: 3,
                 position: 'relative',
                 overflow: 'hidden',
@@ -642,7 +645,38 @@ const DirectMessagesCenter = ({ iconSize = 'medium' }: DirectMessagesCenterProps
                 textAlign: 'center',
                 px: 3,
                 py: 4,
-                backgroundImage: `radial-gradient(circle at 20% 20%, ${muiAlpha(
+                backgroundColor: theme.palette.background.paper,
+                backgroundImage: `linear-gradient(180deg, ${muiAlpha(
+                  theme.palette.background.paper,
+                  theme.palette.mode === 'dark' ? 0.38 : 0.96
+                )} 0%, ${muiAlpha(
+                  theme.palette.background.paper,
+                  theme.palette.mode === 'dark' ? 0.3 : 0.9
+                )} 8%, transparent 20%, transparent 80%, ${muiAlpha(
+                  theme.palette.background.paper,
+                  theme.palette.mode === 'dark' ? 0.32 : 0.9
+                )} 92%, ${muiAlpha(
+                  theme.palette.background.paper,
+                  theme.palette.mode === 'dark' ? 0.38 : 0.96
+                )} 100%), linear-gradient(90deg, ${muiAlpha(
+                  theme.palette.background.paper,
+                  theme.palette.mode === 'dark' ? 0.32 : 0.9
+                )} 0%, ${muiAlpha(
+                  theme.palette.background.paper,
+                  theme.palette.mode === 'dark' ? 0.24 : 0.85
+                )} 10%, transparent 22%, transparent 78%, ${muiAlpha(
+                  theme.palette.background.paper,
+                  theme.palette.mode === 'dark' ? 0.24 : 0.85
+                )} 90%, ${muiAlpha(
+                  theme.palette.background.paper,
+                  theme.palette.mode === 'dark' ? 0.32 : 0.9
+                )} 100%), linear-gradient(120deg, ${muiAlpha(
+                  theme.palette.primary.main,
+                  theme.palette.mode === 'dark' ? 0.07 : 0.05
+                )}, ${muiAlpha(
+                  theme.palette.secondary.main,
+                  theme.palette.mode === 'dark' ? 0.06 : 0.045
+                )}), radial-gradient(circle at 20% 20%, ${muiAlpha(
                   theme.palette.primary.main,
                   theme.palette.mode === 'dark' ? 0.15 : 0.12
                 )}, transparent 38%), radial-gradient(circle at 80% 30%, ${muiAlpha(
@@ -650,10 +684,9 @@ const DirectMessagesCenter = ({ iconSize = 'medium' }: DirectMessagesCenterProps
                   theme.palette.mode === 'dark' ? 0.16 : 0.12
                 )}, transparent 40%), linear-gradient(135deg, ${muiAlpha(
                   theme.palette.background.paper,
-                  0.8
-                )}, ${muiAlpha(theme.palette.background.default, 0.9)})`,
-                backdropFilter: 'blur(6px)',
-                border: `1px dashed ${muiAlpha(theme.palette.primary.main, 0.25)}`
+                  0.88
+                )}, ${muiAlpha(theme.palette.background.default, 0.92)})`,
+                backdropFilter: 'blur(6px)'
               }}>
               <Stack spacing={1} alignItems="center" sx={{ maxWidth: 420 }}>
                 <MailOutlineIcon

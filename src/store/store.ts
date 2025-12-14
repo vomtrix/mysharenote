@@ -12,6 +12,13 @@ import app, { initialState as appInitialState } from '@store/app/AppReducer';
 
 const cloneSettings = (settings: any) => JSON.parse(JSON.stringify(settings));
 
+// Set to true only when you need to force all users onto the new defaults
+// regardless of their custom changes. Leave false for normal behavior.
+const FORCE_DEFAULT_SETTINGS_UPDATE = true;
+
+// Persist version used by redux-persist migrations. Bump when adding/changing migrations.
+const PERSIST_VERSION = 2;
+
 // Snapshot of the previous default settings. When you update defaults, bump the version
 // below and add a new snapshot so users who never changed settings get the new defaults
 // while customized users keep their preferences.
@@ -48,7 +55,7 @@ const migrations = {
       DEFAULT_SETTINGS_SNAPSHOT_V0
     );
 
-    if (userChangedSettings) return state;
+    if (userChangedSettings && !FORCE_DEFAULT_SETTINGS_UPDATE) return state;
 
     return {
       ...state,
@@ -60,7 +67,7 @@ const migrations = {
 
 const persistConfig = {
   key: 'shares',
-  version: 2,
+  version: PERSIST_VERSION,
   storage,
   whitelist: ['address', 'settings', 'colorMode'],
   migrate: createMigrate(migrations, { debug: false })

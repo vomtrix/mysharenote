@@ -37,8 +37,18 @@ const areSettingsEqual = (a: any, b: any): boolean => {
 // regardless of their custom changes. Leave false for normal behavior.
 const FORCE_DEFAULT_SETTINGS_UPDATE = true;
 
-// Persist version used by redux-persist migrations. Bump when adding/changing migrations.
-const PERSIST_VERSION = 7;
+// Persist version tied to the current commit so deployments automatically bump migrations.
+const DEFAULT_PERSIST_VERSION = 8;
+const commitHash =
+  process.env.NEXT_PUBLIC_PERSIST_VERSION ??
+  process.env.CF_PAGES_COMMIT_SHA ??
+  process.env.VERCEL_GIT_COMMIT_SHA ??
+  process.env.GITHUB_SHA;
+const PERSIST_VERSION = (() => {
+  if (!commitHash) return DEFAULT_PERSIST_VERSION;
+  const parsed = Number.parseInt(commitHash.trim().slice(0, 8), 16);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : DEFAULT_PERSIST_VERSION;
+})();
 
 // Version to represent the current default settings payload (bump when defaults change).
 const CURRENT_SETTINGS_VERSION = SETTINGS_DEFAULT_VERSION;
@@ -103,11 +113,12 @@ const migrateSettings = (state: any) => {
   return state;
 };
 
-// Ensure migration runs on every version bump up to PERSIST_VERSION
-const migrationVersions = [-1, 0, ...Array.from({ length: PERSIST_VERSION }, (_, index) => index + 1)];
-const migrations: MigrationManifest = Object.fromEntries(
-  migrationVersions.map((version) => [version, migrateSettings])
-);
+// Ensure migration runs on version bumps (we reuse the same migration function each time).
+const migrations: MigrationManifest = {
+  [-1]: migrateSettings,
+  0: migrateSettings,
+  [PERSIST_VERSION]: migrateSettings
+};
 
 const persistConfig = {
   key: 'shares',

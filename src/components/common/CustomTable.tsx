@@ -6,6 +6,8 @@ import {
   gridClasses,
   useGridApiRef
 } from '@mui/x-data-grid';
+import useMediaQuery from '@mui/material/useMediaQuery';
+import { useTheme } from '@mui/material/styles';
 import { getVisibleRows } from '@mui/x-data-grid/internals';
 import StyledDataGrid from '@components/styled/StyledDataGrid';
 import { IPaginationModel } from '@objects/interfaces/IPaginationModel';
@@ -42,6 +44,9 @@ const CustomTable = ({
   onVisibleRowChange
 }: CustomTableProps) => {
   const apiRef = useGridApiRef();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const enableFilters = Boolean(filters && !isMobile);
 
   const [highlightedRows, setHighlightedRows] = useState<Record<string | number, boolean>>({});
   const timersRef = useRef<Record<string | number, ReturnType<typeof setTimeout>>>({});
@@ -137,10 +142,10 @@ const CustomTable = ({
           loading={isLoading}
           rows={rows ?? []}
           columns={columns}
-          slots={filters ? { columnMenu: FilterOnlyColumnMenu } : undefined}
+          slots={enableFilters ? { columnMenu: FilterOnlyColumnMenu } : undefined}
           onPaginationModelChange={onPaginationModelChange}
           onStateChange={onVisibleRowChange ? handleStateChange : undefined}
-          disableColumnMenu={!filters}
+          disableColumnMenu={!enableFilters}
           pageSizeOptions={pageSizeOptions ?? [10, 25, 50, 100]}
           checkboxSelectionVisibleOnly={true}
           onRowSelectionModelChange={onRowSelectionModelChange}

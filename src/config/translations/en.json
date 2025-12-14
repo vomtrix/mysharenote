@@ -133,23 +133,23 @@
       },
       {
         "q": "Who submits sharenotes during the Without Breaking Existing Things (WBET) stage?",
-        "a": "Your pool—the work provider—signs and publishes your sharenotes. mySharenote just reads them."
+        "a": "Your pool—the work provider—signs and publishes your sharenotes. myHashboard just reads them."
       },
       {
-        "q": "What is mySharenote?",
-        "a": "mySharenote is the WBET dashboard that watches your sharenotes and shows live shares and payouts."
+        "q": "What is myHashboard?",
+        "a": "myHashboard is the WBET dashboard that watches your sharenotes and shows live shares and payouts."
       },
       {
-        "q": "How do I set up mySharenote?",
-        "a": "Open Settings, paste the setup data from your work provider, and save. mySharenote stays read-only and just watches the sharenotes they publish."
+        "q": "How do I set up myHashboard?",
+        "a": "Open Settings, paste the setup data from your work provider, and save. myHashboard stays read-only and just watches the sharenotes they publish."
       },
       {
-        "q": "Who provides the mySharenote settings?",
+        "q": "Who provides the myHashboard settings?",
         "a": "Your mining pool shares the setup info—just copy it into Settings."
       },
       {
         "q": "Do I need new hardware or a different pool?",
-        "a": "No. The WBET rollout keeps your current miner and pool. mySharenote only monitors the sharenotes they already mint."
+        "a": "No. The WBET rollout keeps your current miner and pool. myHashboard only monitors the sharenotes they already mint."
       },
       {
         "q": "Why is my dashboard empty?",

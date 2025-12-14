@@ -133,23 +133,23 @@
       },
       {
         "q": "在 Without Breaking Existing Things (WBET) 阶段是谁提交 sharenotes？",
-        "a": "您的矿池（工作提供方）会签署并发布您的 sharenotes。mySharenote 仅用于读取它们。"
+        "a": "您的矿池（工作提供方）会签署并发布您的 sharenotes。myHashboard 仅用于读取它们。"
       },
       {
-        "q": "什么是 mySharenote？",
-        "a": "mySharenote 是 WBET 仪表盘，用于监控您的 sharenotes 并显示实时份额和支付情况。"
+        "q": "什么是 myHashboard？",
+        "a": "myHashboard 是 WBET 仪表盘，用于监控您的 sharenotes 并显示实时份额和支付情况。"
       },
       {
-        "q": "如何设置 mySharenote？",
-        "a": "打开设置，粘贴来自工作提供方的配置数据并保存。mySharenote 仅为只读，用于监控他们发布的 sharenotes。"
+        "q": "如何设置 myHashboard？",
+        "a": "打开设置，粘贴来自工作提供方的配置数据并保存。myHashboard 仅为只读，用于监控他们发布的 sharenotes。"
       },
       {
-        "q": "谁提供 mySharenote 的设置？",
+        "q": "谁提供 myHashboard 的设置？",
         "a": "您的矿池会提供相关设置信息——只需复制并粘贴到设置中。"
       },
       {
         "q": "需要新硬件或不同的矿池吗？",
-        "a": "不需要。WBET 阶段保留您当前的矿机和矿池。mySharenote 仅监控他们已经生成的 sharenotes。"
+        "a": "不需要。WBET 阶段保留您当前的矿机和矿池。myHashboard 仅监控他们已经生成的 sharenotes。"
       },
       {
         "q": "为什么我的面板是空的？",

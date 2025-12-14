@@ -74,7 +74,7 @@ export const DEFAULT_CHAIN_EXPLORERS: Record<ChainKey, string> = Object.entries(
 );
 
 export const SOCIAL_URLS: Record<string, string> = {
-  github: 'https://github.com/vomtrix/mysharenote'
+  github: 'https://github.com/qqubow/myHashboard'
 };
 
 export const FAQ_LINKS: Record<string, string> = {

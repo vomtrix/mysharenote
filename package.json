@@ -1,5 +1,5 @@
 {
-  "name": "mysharenote",
+  "name": "myHashboard",
   "version": "0.1.1",
   "scripts": {
     "dev": "next dev",

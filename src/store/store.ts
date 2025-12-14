@@ -9,6 +9,7 @@ import type { ThunkDispatch } from 'redux-thunk';
 import { type Action, configureStore, type ThunkAction } from '@reduxjs/toolkit';
 import { errorMiddleware } from '@middlewares/ErrorMiddleware';
 import app, { initialState as appInitialState } from '@store/app/AppReducer';
+import type { MigrationManifest } from 'redux-persist';
 
 const cloneSettings = (settings: any) => JSON.parse(JSON.stringify(settings));
 
@@ -17,12 +18,16 @@ const cloneSettings = (settings: any) => JSON.parse(JSON.stringify(settings));
 const FORCE_DEFAULT_SETTINGS_UPDATE = true;
 
 // Persist version used by redux-persist migrations. Bump when adding/changing migrations.
-const PERSIST_VERSION = 3;
+const PERSIST_VERSION = 4;
 
-// Snapshot of the previous default settings. When you update defaults, bump the version
-// below and add a new snapshot so users who never changed settings get the new defaults
-// while customized users keep their preferences.
-const DEFAULT_SETTINGS_SNAPSHOT_V0 = cloneSettings(appInitialState.settings);
+// Snapshots of defaults by persist version. When you change defaults, add a new entry with
+// the *old* defaults keyed by the version you are migrating from. This lets us detect
+// whether the user ever customized settings for that version.
+const DEFAULT_SETTINGS_SNAPSHOTS: Record<number, any> = {
+  // v0 (pre-versioned) defaults. Update these entries when defaults change so migration
+  // can tell whether the user customized.
+  0: cloneSettings(appInitialState.settings)
+};
 
 const areSettingsEqualToSnapshot = (settings: any, snapshot: any): boolean => {
   if (!settings || !snapshot) return false;
@@ -45,25 +50,30 @@ const areSettingsEqualToSnapshot = (settings: any, snapshot: any): boolean => {
   return true;
 };
 
-const migrations = {
-  // Migration to apply new defaults only for users who never customized settings.
-  1: (state: any) => {
-    if (!state?.settings) return state;
+// Migration to apply new defaults only for users who never customized settings,
+// unless FORCE_DEFAULT_SETTINGS_UPDATE is enabled.
+const migrateSettings = (state: any) => {
+  if (!state?.settings) return state;
 
-    const userChangedSettings = !areSettingsEqualToSnapshot(
-      state.settings,
-      DEFAULT_SETTINGS_SNAPSHOT_V0
-    );
+  const previousVersion = state?._persist?.version ?? 0;
+  const previousDefaults =
+    DEFAULT_SETTINGS_SNAPSHOTS[previousVersion] ?? DEFAULT_SETTINGS_SNAPSHOTS[0];
+  if (!previousDefaults) return state;
 
-    if (userChangedSettings && !FORCE_DEFAULT_SETTINGS_UPDATE) return state;
+  const userChangedSettings = !areSettingsEqualToSnapshot(state.settings, previousDefaults);
+  if (userChangedSettings && !FORCE_DEFAULT_SETTINGS_UPDATE) return state;
 
-    return {
-      ...state,
-      // Deep clone to avoid mutating the source defaults in future writes
-      settings: cloneSettings(appInitialState.settings)
-    };
-  }
+  return {
+    ...state,
+    // Deep clone to avoid mutating the source defaults in future writes
+    settings: cloneSettings(appInitialState.settings)
+  };
 };
+
+// Ensure migration runs on every version bump up to PERSIST_VERSION
+const migrations: MigrationManifest = Object.fromEntries(
+  Array.from({ length: PERSIST_VERSION }, (_, index) => [index + 1, migrateSettings])
+);
 
 const persistConfig = {
   key: 'shares',

@@ -60,7 +60,7 @@ const migrations = {
 
 const persistConfig = {
   key: 'shares',
-  version: 1,
+  version: 2,
   storage,
   whitelist: ['address', 'settings', 'colorMode'],
   migrate: createMigrate(migrations, { debug: false })

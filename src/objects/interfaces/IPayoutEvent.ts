@@ -8,7 +8,10 @@ export interface IPayoutEvent {
   txBlockHash: string;
   txBlockHeight: string;
   confirmedTx: boolean;
-  shares: number;
-  totalShares: number;
+  shares: number | string;
+  sharesCount?: number;
+  totalShares: number | string;
+  totalSharesCount?: number;
   timestamp: string;
+  chainId?: string;
 }

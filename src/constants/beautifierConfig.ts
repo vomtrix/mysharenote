@@ -5,6 +5,7 @@ interface KeysMap {
 export const beautifierConfig: Record<number, KeysMap> = {
   35502: {
     hash: 'hashrate',
+    all: 'hashrate',
     worker: 'worker',
     a: 'address'
   },
@@ -17,7 +18,8 @@ export const beautifierConfig: Record<number, KeysMap> = {
     shares: 'shares',
     totalshares: 'totalShares',
     eph: 'paymentHeight',
-    timestamp: 'timestamp'
+    timestamp: 'timestamp',
+    chain: 'chain'
   },
   35505: {
     d: 'id',
@@ -27,6 +29,14 @@ export const beautifierConfig: Record<number, KeysMap> = {
     amount: 'amount',
     shares: 'shares',
     totalshares: 'totalShares',
-    timestamp: 'timestamp'
+    timestamp: 'timestamp',
+    chain: 'chainId'
+  },
+  35510: {
+    z: 'zBits',
+    hh: 'heightHash',
+    d: 'headerHash',
+    dd: 'headerHex',
+    a: 'address'
   }
 };

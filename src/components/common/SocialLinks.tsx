@@ -1,6 +1,6 @@
-import styles from '@styles/scss/SocialLinks.module.scss';
 import Image from 'next/image';
 import { SOCIAL_URLS } from '@config/config';
+import styles from '@styles/scss/SocialLinks.module.scss';
 
 const SocialLinks = () => {
   return (

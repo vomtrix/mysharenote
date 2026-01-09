@@ -1,7 +1,19 @@
 import { beautifierConfig } from '@constants/beautifierConfig';
+import { CHAIN_ID_TO_NAME } from '@constants/chainIcons';
+import { noteFromZBits, parseNoteLabel } from '@soprinter/sharenotejs';
+
+const LAST_SHARE_DELAY_SECONDS = 5;
 
 export const beautify = (event: any) => {
   const map = beautifierConfig[event.kind];
+  type AuxBlock = {
+    chain?: string;
+    height?: number;
+    hash?: string;
+    solved?: boolean;
+    blockSharenote?: string;
+    blockSharenoteZBits?: number;
+  };
 
   if (!map) {
     return event;
@@ -11,15 +23,435 @@ export const beautify = (event: any) => {
     id: event.id,
     timestamp: event.created_at
   };
+  const workerHashrates: Record<string, number> = {};
+  const workerDetails: Record<
+    string,
+    {
+      hashrate?: number;
+      sharenote?: string | number;
+      sharenoteZBits?: number;
+      meanSharenote?: string | number;
+      meanSharenoteZBits?: number;
+      meanTime?: number;
+      lastShareTimestamp?: number;
+      shareCount?: number;
+      userAgent?: string;
+    }
+  > = {};
 
-  event.tags.forEach(([tagKey, tagValue1, tagValue2, tagValue3]: any) => {
-    const fieldKey = map[tagKey];
-    if (fieldKey) {
-      result[fieldKey] = isNaN(Number(tagValue1)) ? tagValue1 : Number(tagValue1);
+  const auxBlocks: AuxBlock[] = [];
+  let parentBlock: AuxBlock | undefined;
+  let hasProcessedParentChain = false;
+  const mapChainIdentifierToName = (chain?: string) => {
+    if (!chain) return undefined;
+    const normalized = chain.trim().toLowerCase();
+    if (!normalized) return undefined;
+    const hexNormalized = normalized.startsWith('0x') ? normalized.slice(2) : normalized;
+    const mappedChain =
+      CHAIN_ID_TO_NAME[normalized] ?? CHAIN_ID_TO_NAME[hexNormalized] ?? normalized;
+    return mappedChain;
+  };
+  const toZBits = (value: unknown): number | undefined => {
+    if (value === undefined || value === null) return undefined;
+    const normalized = typeof value === 'string' ? value.trim() : value;
+    if (normalized === '') return undefined;
+
+    if (typeof normalized === 'string') {
+      try {
+        const note = parseNoteLabel(normalized);
+        if (note && Number.isFinite(note.zBits)) return note.zBits;
+      } catch {
+        /* ignore parse errors */
+      }
     }
 
-    if (event.kind === 35505 && tagKey == 'x') {
-      result.txId = tagValue1;
+    const numericValue = Number(normalized as any);
+    if (!Number.isFinite(numericValue)) return undefined;
+    try {
+      const note = noteFromZBits(numericValue);
+      if (note && Number.isFinite(note.zBits)) return note.zBits;
+    } catch {
+      /* ignore conversion errors */
+    }
+    return numericValue;
+  };
+  const applyBlockSharenote = (block: AuxBlock, rawValue: unknown) => {
+    if (rawValue === undefined || rawValue === null) return;
+    const normalized =
+      typeof rawValue === 'string' ? rawValue.trim() : (rawValue as string | number);
+    if (normalized === '') return;
+    block.blockSharenote = String(normalized);
+    const zBitsValue = toZBits(normalized);
+    if (zBitsValue !== undefined) {
+      block.blockSharenoteZBits = zBitsValue;
+    }
+  };
+  const applyMeanSharenote = (
+    detail: {
+      hashrate?: number;
+      sharenote?: string | number;
+      meanSharenote?: string | number;
+      meanSharenoteZBits?: number;
+      meanTime?: number;
+      lastShareTimestamp?: number;
+      shareCount?: number;
+      userAgent?: string;
+    },
+    rawValue: unknown
+  ) => {
+    if (rawValue === undefined || rawValue === null) return;
+    const normalized =
+      typeof rawValue === 'string' ? rawValue.trim() : (rawValue as string | number);
+    if (normalized === '') return;
+    detail.meanSharenote = normalized as string | number;
+    const numeric = Number(normalized);
+    if (Number.isFinite(numeric)) {
+      detail.meanSharenoteZBits = numeric;
+    }
+  };
+  const applySharenoteZBits = (
+    detail: {
+      hashrate?: number;
+      sharenote?: string | number;
+      sharenoteZBits?: number;
+      meanSharenote?: string | number;
+      meanSharenoteZBits?: number;
+      meanTime?: number;
+      lastShareTimestamp?: number;
+      shareCount?: number;
+      userAgent?: string;
+    },
+    rawValue: unknown
+  ) => {
+    if (rawValue === undefined || rawValue === null) return;
+    const normalized =
+      typeof rawValue === 'string' ? rawValue.trim() : (rawValue as string | number);
+    if (normalized === '') return;
+    const zBitsValue = toZBits(normalized);
+    if (zBitsValue !== undefined) {
+      detail.sharenoteZBits = zBitsValue;
+    }
+  };
+  const parseLastShareTimestamp = (rawValue: unknown): number | undefined => {
+    const numericValue = Number(rawValue);
+    if (Number.isNaN(numericValue)) return undefined;
+    const isMillis = numericValue > 1e12;
+    const adjusted = numericValue + LAST_SHARE_DELAY_SECONDS * (isMillis ? 1000 : 1);
+    return Math.max(0, adjusted);
+  };
+
+  event.tags.forEach((tagEntry: any) => {
+    if (!Array.isArray(tagEntry) || tagEntry.length === 0) return;
+    const [tagKey, ...rest] = tagEntry;
+
+    if (event.kind === 35510 && (tagKey === 'w' || tagKey === 'h')) {
+      if (rest.length >= 2) {
+        const [hashRaw, chainOrHeightRaw, heightOrChainRaw, solvedRaw, blockSharenoteRaw] = rest;
+        const auxBlock: AuxBlock = {};
+
+        if (typeof hashRaw === 'string' && hashRaw.trim().length > 0) {
+          auxBlock.hash = hashRaw.trim();
+        }
+
+        const potentialNewFormatHeight = Number(heightOrChainRaw);
+        const potentialLegacyHeight = Number(chainOrHeightRaw);
+        const hasNewFormatHeight = !Number.isNaN(potentialNewFormatHeight);
+        if (hasNewFormatHeight) {
+          auxBlock.height = potentialNewFormatHeight;
+        } else if (!Number.isNaN(potentialLegacyHeight)) {
+          auxBlock.height = potentialLegacyHeight;
+        }
+
+        const chainCandidate = hasNewFormatHeight ? chainOrHeightRaw : heightOrChainRaw;
+        if (
+          (typeof chainCandidate === 'string' || typeof chainCandidate === 'number') &&
+          String(chainCandidate).trim().length > 0
+        ) {
+          const chainString = String(chainCandidate).trim();
+          auxBlock.chain = mapChainIdentifierToName(chainString) ?? chainString;
+        }
+
+        if (typeof solvedRaw === 'string') {
+          const normalizedSolved = solvedRaw.trim().toLowerCase();
+          if (normalizedSolved === 'true') {
+            auxBlock.solved = true;
+          } else if (normalizedSolved === 'false') {
+            auxBlock.solved = false;
+          }
+        }
+
+        applyBlockSharenote(auxBlock, blockSharenoteRaw);
+
+        if (
+          auxBlock.chain ||
+          auxBlock.height !== undefined ||
+          auxBlock.hash ||
+          auxBlock.solved !== undefined
+        ) {
+          if (!hasProcessedParentChain) {
+            hasProcessedParentChain = true;
+            parentBlock = auxBlock;
+            if (auxBlock.height !== undefined) {
+              result.blockHeight = auxBlock.height;
+            }
+            if (auxBlock.solved !== undefined) {
+              result.solved = auxBlock.solved;
+            }
+            return;
+          }
+
+          auxBlocks.push(auxBlock);
+
+          if (result.blockHeight === undefined && auxBlock.height !== undefined) {
+            result.blockHeight = auxBlock.height;
+          }
+          if (result.solved === undefined && auxBlock.solved !== undefined) {
+            result.solved = auxBlock.solved;
+          }
+        }
+      } else {
+        const primaryValue = rest.find(
+          (segment) => typeof segment === 'string' && segment !== '' && !segment.includes(':')
+        );
+        const auxBlock: AuxBlock = {};
+        if (primaryValue !== undefined) {
+          const numericPrimary = Number(primaryValue);
+          if (!Number.isNaN(numericPrimary)) {
+            auxBlock.height = numericPrimary;
+            result.blockHeight = numericPrimary;
+          } else if (typeof primaryValue === 'string') {
+            auxBlock.hash = primaryValue;
+          }
+        }
+        const solvedFlag = rest.find((segment) => segment === 'true' || segment === 'false');
+        if (solvedFlag === 'true') {
+          auxBlock.solved = true;
+          result.solved = true;
+        } else if (solvedFlag === 'false') {
+          auxBlock.solved = false;
+          result.solved = false;
+        }
+
+        if (!hasProcessedParentChain) {
+          hasProcessedParentChain = true;
+          parentBlock = {
+            ...parentBlock,
+            ...auxBlock
+          };
+        } else if (
+          auxBlock.chain ||
+          auxBlock.height !== undefined ||
+          auxBlock.hash ||
+          auxBlock.solved !== undefined
+        ) {
+          auxBlocks.push(auxBlock);
+        }
+      }
+      return;
+    }
+
+    if (
+      event.kind === 35503 &&
+      typeof tagKey === 'string' &&
+      (tagKey === 'chain' || tagKey === 'chainid')
+    ) {
+      const primaryValue = rest.find(
+        (segment) => typeof segment === 'string' && segment !== '' && !segment.includes(':')
+      );
+      if (primaryValue !== undefined) {
+        const chainString = String(primaryValue).trim();
+        if (chainString) {
+          const mappedChain = mapChainIdentifierToName(chainString) ?? chainString;
+          result.chainId = mappedChain;
+        }
+      }
+      return;
+    }
+
+    if (event.kind === 35502 && typeof tagKey === 'string' && tagKey.startsWith('w:')) {
+      const workerId = tagKey.slice(2);
+      if (!workerId) return;
+
+      if (!workerDetails[workerId]) workerDetails[workerId] = {};
+      const detail = workerDetails[workerId];
+
+      const hasKeyValueSegments = rest.some(
+        (segment) => typeof segment === 'string' && segment.includes(':')
+      );
+
+      if (hasKeyValueSegments) {
+        rest.forEach((segment) => {
+          if (typeof segment !== 'string') return;
+          const separatorIndex = segment.indexOf(':');
+          if (separatorIndex === -1) return;
+          const key = segment.slice(0, separatorIndex);
+          const valueRaw = segment.slice(separatorIndex + 1);
+          if (!key) return;
+
+          switch (key) {
+            case 'h': {
+              const numericValue = Number(valueRaw);
+              if (!Number.isNaN(numericValue)) {
+                workerHashrates[workerId] = numericValue;
+                detail.hashrate = numericValue;
+              }
+              break;
+            }
+            case 'sn': {
+              if (valueRaw !== '') {
+                const numericSharenote = Number(valueRaw);
+                detail.sharenote = Number.isNaN(numericSharenote) ? valueRaw : numericSharenote;
+                applySharenoteZBits(detail, valueRaw);
+              }
+              break;
+            }
+            case 'msn': {
+              if (valueRaw !== '') {
+                applyMeanSharenote(detail, valueRaw);
+              }
+              break;
+            }
+            case 'mt': {
+              const meanTimeValue = Number(valueRaw);
+              if (!Number.isNaN(meanTimeValue)) {
+                detail.meanTime = meanTimeValue;
+              }
+              break;
+            }
+            case 'lsn': {
+              const lastShareTimestamp = parseLastShareTimestamp(valueRaw);
+              if (lastShareTimestamp !== undefined) {
+                detail.lastShareTimestamp = lastShareTimestamp;
+              }
+              break;
+            }
+            case 'csn': {
+              const shareCount = Number(valueRaw);
+              if (!Number.isNaN(shareCount)) {
+                detail.shareCount = shareCount;
+              }
+              break;
+            }
+            case 'ua': {
+              if (valueRaw.trim().length > 0) {
+                detail.userAgent = valueRaw.trim();
+              }
+              break;
+            }
+            default:
+              break;
+          }
+        });
+        return;
+      }
+
+      const [tagValue1, tagValue2, tagValue3, tagValue4, tagValue5, tagValue6] = rest;
+
+      const numericValue = Number(tagValue1);
+      const sharenoteRaw = tagValue2;
+      const meanTimeValue = Number(tagValue3);
+      const lastShareTimestamp = parseLastShareTimestamp(tagValue4);
+      const userAgentRaw = tagValue5;
+      const meanSharenoteRaw = tagValue6;
+
+      if (!Number.isNaN(numericValue)) {
+        workerHashrates[workerId] = numericValue;
+        detail.hashrate = numericValue;
+      }
+      if (sharenoteRaw !== undefined && sharenoteRaw !== null && sharenoteRaw !== '') {
+        const numericSharenote = Number(sharenoteRaw);
+        detail.sharenote = Number.isNaN(numericSharenote) ? String(sharenoteRaw) : numericSharenote;
+        applySharenoteZBits(detail, sharenoteRaw);
+      }
+      if (meanSharenoteRaw !== undefined && meanSharenoteRaw !== null && meanSharenoteRaw !== '') {
+        applyMeanSharenote(detail, meanSharenoteRaw);
+      }
+      if (!Number.isNaN(meanTimeValue)) {
+        detail.meanTime = meanTimeValue;
+      }
+      if (lastShareTimestamp !== undefined) {
+        detail.lastShareTimestamp = lastShareTimestamp;
+      }
+      if (typeof userAgentRaw === 'string' && userAgentRaw.trim().length > 0) {
+        detail.userAgent = userAgentRaw.trim();
+      }
+      return;
+    }
+
+    const fieldKey = map[tagKey];
+    if (fieldKey) {
+      const primaryValue = rest.find(
+        (segment) =>
+          (typeof segment === 'string' && segment !== '' && !segment.includes(':')) ||
+          typeof segment === 'number'
+      );
+      if (primaryValue !== undefined) {
+        const numericPrimary = Number(primaryValue);
+        result[fieldKey] = Number.isNaN(numericPrimary) ? primaryValue : numericPrimary;
+      }
+
+      if (fieldKey === 'shares' || fieldKey === 'totalShares') {
+        const countValue = rest
+          .slice(1)
+          .find(
+            (segment) =>
+              (typeof segment === 'string' && segment !== '' && !segment.includes(':')) ||
+              typeof segment === 'number'
+          );
+        const numericCount = Number(countValue);
+        if (Number.isFinite(numericCount)) {
+          const countKey = fieldKey === 'shares' ? 'sharesCount' : 'totalSharesCount';
+          result[countKey] = numericCount;
+        }
+      }
+
+      rest.forEach((segment) => {
+        if (typeof segment !== 'string') return;
+        const separatorIndex = segment.indexOf(':');
+        if (separatorIndex === -1) return;
+        const key = segment.slice(0, separatorIndex);
+        const valueRaw = segment.slice(separatorIndex + 1);
+        if (!key) return;
+
+        switch (key) {
+          case 'msn': {
+            if (valueRaw === '') break;
+            const trimmed = valueRaw.trim();
+            if (trimmed === '') break;
+            const numericValue = Number(trimmed);
+            result.meanSharenote = Number.isNaN(numericValue) ? trimmed : numericValue;
+            break;
+          }
+          case 'mt': {
+            const numericValue = Number(valueRaw);
+            if (!Number.isNaN(numericValue)) {
+              result.meanTime = numericValue;
+            }
+            break;
+          }
+          case 'lsn': {
+            const numericValue = parseLastShareTimestamp(valueRaw);
+            if (numericValue !== undefined) {
+              result.lastShareTimestamp = numericValue;
+            }
+            break;
+          }
+          case 'csn': {
+            const numericValue = Number(valueRaw);
+            if (!Number.isNaN(numericValue)) {
+              result.shareCount = numericValue;
+            }
+            break;
+          }
+          default:
+            break;
+        }
+      });
+    }
+
+    if (event.kind === 35505 && tagKey === 'x') {
+      const [txId, tagValue2, tagValue3] = rest;
+      result.txId = txId;
       if (tagValue2 && tagValue3) {
         result.confirmedTx = true;
         result.txBlockHeight = tagValue2;
@@ -27,6 +459,75 @@ export const beautify = (event: any) => {
       }
     }
   });
+
+  if (event.kind === 35502) {
+    if (Object.keys(workerHashrates).length > 0) {
+      result.workers = workerHashrates;
+    }
+    const detailedWorkers = Object.entries(workerDetails).reduce(
+      (acc, [workerId, detail]) => {
+        if (
+          detail.hashrate !== undefined ||
+          detail.sharenote !== undefined ||
+          detail.sharenoteZBits !== undefined ||
+          detail.meanSharenote !== undefined ||
+          detail.meanSharenoteZBits !== undefined ||
+          detail.meanTime !== undefined ||
+          detail.lastShareTimestamp !== undefined ||
+          detail.shareCount !== undefined ||
+          detail.userAgent !== undefined
+        ) {
+          acc[workerId] = detail;
+        }
+        return acc;
+      },
+      {} as Record<
+        string,
+        {
+          hashrate?: number;
+          sharenote?: string | number;
+          sharenoteZBits?: number;
+          meanSharenote?: string | number;
+          meanSharenoteZBits?: number;
+          meanTime?: number;
+          lastShareTimestamp?: number;
+          shareCount?: number;
+          userAgent?: string;
+        }
+      >
+    );
+    if (Object.keys(detailedWorkers).length > 0) {
+      result.workerDetails = detailedWorkers;
+    }
+  }
+
+  if (event.kind === 35510) {
+    const addressTag = event.tags.find(
+      (tagEntry: any) => Array.isArray(tagEntry) && tagEntry.length > 2 && tagEntry[0] === 'a'
+    );
+    if (addressTag) {
+      const [, addressValue, workerValue] = addressTag;
+      if (addressValue) {
+        result.address = addressValue;
+      }
+      if (workerValue) {
+        result.worker = workerValue;
+      }
+    }
+
+    if (auxBlocks.length > 0) {
+      result.auxBlocks = auxBlocks;
+    }
+    if (parentBlock) {
+      result.parentBlock = parentBlock;
+      if (result.blockHeight === undefined && parentBlock.height !== undefined) {
+        result.blockHeight = parentBlock.height;
+      }
+      if (result.solved === undefined && parentBlock.solved !== undefined) {
+        result.solved = parentBlock.solved;
+      }
+    }
+  }
 
   return result;
 };

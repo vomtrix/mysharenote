@@ -1,7 +1,10 @@
 import { address, networks } from 'flokicoinjs-lib';
+import { noteFromCentZBits, noteFromZBits } from '@soprinter/sharenotejs';
 import { NetworkTypeType } from '@objects/Enums';
 import { IDataPoint } from '@objects/interfaces/IDatapoint';
-import { BlockStatusEnum, IShareEvent } from '@objects/interfaces/IShareEvent';
+
+const LOKI_PER_FLC = 100000000;
+const MUST_CENTZ = 25600;
 
 export const setWidthStyle = (width?: any) => {
   if (width && typeof width === 'number') {
@@ -63,12 +66,47 @@ export const validateAddress = (addr: string, network?: string) => {
 export const getTimeBeforeDaysInSeconds = (days: number): number =>
   Math.ceil(Date.now() / 1000) - days * 24 * 60 * 60;
 
-export const truncateAddress = (addr: string) => {
-  return `${addr.slice(0, 10)}...${addr.slice(-10)}`;
+export const truncateAddress = (addr: string, leading = 10, trailing = 10) => {
+  if (!addr) return '';
+
+  const safeLeading = Math.max(0, leading);
+  const safeTrailing = Math.max(0, trailing);
+  const minLengthWithoutTruncation = safeLeading + safeTrailing + 3;
+
+  if (addr.length <= minLengthWithoutTruncation) {
+    return addr;
+  }
+
+  return `${addr.slice(0, safeLeading)}...${addr.slice(-safeTrailing)}`;
 };
 
-export const lokiToFlc = (amount: number) => (amount / 100000000).toFixed(6);
+export const lokiToFlc = (amount: number) => (amount / LOKI_PER_FLC).toFixed(6);
 export const lokiToFlcNumber = (amount: number) => parseFloat(lokiToFlc(amount));
+
+interface FormatFlcOptions {
+  isLoki?: boolean;
+  includeSymbol?: boolean;
+  minimumFractionDigits?: number;
+  maximumFractionDigits?: number;
+}
+
+export const formatFlcCurrency = (
+  value: number,
+  {
+    isLoki = true,
+    includeSymbol = true,
+    minimumFractionDigits = 2,
+    maximumFractionDigits = 6
+  }: FormatFlcOptions = {}
+) => {
+  const flcAmount = isLoki ? value / LOKI_PER_FLC : value;
+  const formatter = new Intl.NumberFormat(undefined, {
+    minimumFractionDigits,
+    maximumFractionDigits
+  });
+  const formatted = formatter.format(flcAmount);
+  return includeSymbol ? `${formatted} FLC` : formatted;
+};
 
 export const calculateSMA = (data: IDataPoint[], period: number): IDataPoint[] => {
   const smaData: IDataPoint[] = [];
@@ -126,28 +164,6 @@ export const formatK = (v: number | null | undefined): string => {
   return `${v}`;
 };
 
-export const shareChipColor = (status: BlockStatusEnum) => {
-  switch (status) {
-    case BlockStatusEnum.Orphan:
-      return 'error';
-    case BlockStatusEnum.New:
-    case BlockStatusEnum.Valid:
-      return;
-    default:
-      return 'warning';
-  }
-};
-
-export const shareChipVariant = (status: BlockStatusEnum) => {
-  switch (status) {
-    case BlockStatusEnum.New:
-    case BlockStatusEnum.Valid:
-      return;
-    default:
-      return 'outlined';
-  }
-};
-
 export const makeIdsSignature = (ids: any[]): string => {
   const input = ids.join('\u001F');
   const FNV_OFFSET = 0x811c9dc5; // 2166136261
@@ -167,4 +183,82 @@ export const makeIdsSignature = (ids: any[]): string => {
 
   const combined = (BigInt(h1) << 32n) | BigInt(h2);
   return combined.toString(36);
+};
+
+export const beautifyWorkerUserAgent = (userAgent?: string | null): string | undefined => {
+  if (userAgent === undefined || userAgent === null) return undefined;
+
+  const trimmed = userAgent.trim();
+  if (!trimmed) return undefined;
+
+  const withoutMeta = trimmed.split(/\s*\(/)[0].split(';')[0].trim();
+  if (!withoutMeta) return undefined;
+
+  const versionRegex = /v?\d+(?:\.\d+)*(?:[-+][\w.]+)?/i;
+  const versionMatch = withoutMeta.match(versionRegex);
+
+  let versionLabel: string | undefined;
+  let nameCandidate = withoutMeta;
+
+  if (versionMatch && versionMatch.index !== undefined) {
+    const start = versionMatch.index;
+    const end = start + versionMatch[0].length;
+    const before = withoutMeta.slice(0, start);
+    const after = withoutMeta.slice(end);
+    nameCandidate = before.trim() ? before : after;
+    const normalizedVersionBody = versionMatch[0].replace(/^v/i, '');
+    versionLabel = `v${normalizedVersionBody}`;
+  }
+
+  const sanitizedName = nameCandidate
+    .replace(/[/_-]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  const finalName =
+    sanitizedName.length > 0
+      ? sanitizedName
+          .split(' ')
+          .map((chunk) => {
+            if (!chunk) return '';
+            const isAllUpper = chunk === chunk.toUpperCase();
+            const isAllLower = chunk === chunk.toLowerCase();
+            if (isAllLower || isAllUpper) {
+              return chunk.charAt(0).toUpperCase() + chunk.slice(1).toLowerCase();
+            }
+            return chunk;
+          })
+          .join(' ')
+      : undefined;
+
+  if (finalName && versionLabel) return `${finalName} ${versionLabel}`;
+  if (finalName) return finalName;
+  if (versionLabel) return versionLabel;
+
+  const fallback = withoutMeta
+    .replace(/[/_-]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  return fallback || trimmed;
+};
+
+export const formatSharenoteLabel = (value: number | string | null | undefined): string => {
+  if (value === undefined || value === null) return '';
+  if (typeof value === 'string' && value.trim() === '') return '';
+  const numeric = typeof value === 'number' ? value : Number(value);
+  if (!Number.isFinite(numeric)) {
+    return String(value);
+  }
+
+  if (Number.isInteger(numeric) && numeric >= MUST_CENTZ) {
+    return 'Invalid';
+  }
+
+  try {
+    return Number.isInteger(numeric)
+      ? noteFromCentZBits(numeric).label
+      : noteFromZBits(numeric).label;
+  } catch {
+    return String(value);
+  }
 };

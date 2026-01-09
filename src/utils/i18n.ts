@@ -1,11 +1,13 @@
-import i18n from 'i18next';
+import { createInstance } from 'i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
 import { initReactI18next } from 'react-i18next';
 import cn from '@config/translations/cn.json';
 import en from '@config/translations/en.json';
 import ru from '@config/translations/ru.json';
 
-i18n
+const i18nInstance = createInstance();
+
+i18nInstance
   .use(LanguageDetector)
   .use(initReactI18next)
   .init({
@@ -25,4 +27,4 @@ i18n
     }
   });
 
-export default i18n;
+export default i18nInstance;

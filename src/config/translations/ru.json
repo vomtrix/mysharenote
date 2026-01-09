@@ -1,41 +1,42 @@
 {
-  "address": "Введите ваш адрес...",
+  "address": "Введите адрес...",
   "invalidAddressFormat": "Неверный формат адреса",
-  "invalidAddress": "Недействительный адрес",
-  "missingRelayConfig": "Отсутствует конфигурация релея",
-  "addressRequired": "Требуется адрес",
+  "invalidAddress": "Неверный адрес",
+  "missingRelayConfig": "Отсутствует конфигурация relay",
+  "addressRequired": "Адрес обязателен",
   "time": "Время",
   "block": "Блок",
-  "shares": "Sharenotes",
-  "pendingShares": "Ожидающие Sharenotes",
-  "pendingBalance": "Ожидаемый баланс",
-  "totalShares": "Общие Sharenotes",
-  "unconfirmedBalance": "Неподтвержденный баланс",
+  "shares": "Workers notes",
+  "pendingShares": "Ожидающие Notes",
+  "totalShares": "Total notes",
+  "amount": "Сумма",
+  "unconfirmedBalance": "Неподтверждённый баланс",
+  "pendingBalance": "Ожидающий баланс",
   "orphanBlock": "Осиротевший блок",
   "orphanCheck": "Проверка осиротевших блоков",
-  "profit": "Прибыль (FLC)",
-  "fee": "Комиссия (LOKI)",
+  "profit": "Доход",
+  "fee": "Комиссия",
   "settings": {
     "title": "Настройки",
-    "relay": "Релей",
-    "relayUrl": "Введите URL релея",
-    "relayUrlRequired": "Требуется релей",
-    "invalidRelayFormat": "Неверный формат URL релея",
+    "relay": "Relay",
+    "relayUrl": "Введите URL relay",
+    "relayUrlRequired": "Relay обязателен",
+    "invalidRelayFormat": "Неверный формат URL relay",
     "explorer": "Обозреватель",
     "explorerUrl": "Введите URL обозревателя",
-    "explorerUrlRequired": "Требуется обозреватель",
+    "explorerUrlRequired": "Обозреватель обязателен",
     "invalidUrlFormat": "Неверный формат URL",
-    "authorPubKeyRequired": "Требуется открытый ключ автора",
-    "invalidPublicKeyFormat": "Неверный формат открытого ключа",
+    "authorPubKeyRequired": "Требуется публичный ключ автора",
+    "invalidPublicKeyFormat": "Неверный формат публичного ключа",
     "enterNpub": "Введите npub",
     "payerPublicKey": "Плательщик",
     "workProviderPublicKey": "Поставщик работы",
     "network": "Сеть",
-    "networkTypeRequired": "Требуется сеть",
+    "networkTypeRequired": "Сеть обязательна",
     "invalidNetworkType": "Неверная сеть",
-    "mainnet": "Основная сеть",
-    "testnet": "Тестовая сеть",
-    "regtest": "Регтест",
+    "mainnet": "Mainnet",
+    "testnet": "Testnet",
+    "regtest": "Regtest",
     "save": "Сохранить",
     "reset": "Сбросить",
     "goHome": "На главную",
@@ -43,25 +44,66 @@
   },
   "payouts": "Выплаты",
   "payoutsSummary": "Сводка выплат",
-  "sharenotesSummary": "Сводка Sharenotes",
-  "worker": "Воркер",
-
+  "sharenotesSummary": "Сводка sharenotes",
+  "workersProfit": "Доход по работникам",
+  "workersInsights": "Статистика работников",
+  "workersInsights.count_one": "{{count}} работник",
+  "workersInsights.count_few": "{{count}} работника",
+  "workersInsights.count_many": "{{count}} работников",
+  "workersInsights.count_other": "{{count}} работника",
+  "liveSharenotes": "Живые Sharenotes",
+  "liveSharenotes.block": "Блок №{{height}}",
+  "liveSharenotes.sum": "Сумма блока: {{label}}",
+  "liveSharenotes.sumLabel": "Сумма блока",
+  "liveSharenotes.empty": "Нет данных",
+  "liveSharenotes.count": "{{count}}",
+  "liveSharenotes.solved": "Решено",
+  "liveSharenotes.working": "Решение",
+  "liveSharenotes.auxChainsEmpty": "Нет данных по вспомогательным цепочкам",
+  "liveSharenotes.unknownChain": "Неизвестная цепочка",
+  "liveSharenotes.lastBlock": "Последний блок №{{height}}",
+  "liveSharenotes.address": "Адрес: {{value}}",
+  "liveSharenotes.heightHash": "Хэш высоты: {{value}}",
+  "liveSharenotes.headerHash": "Хэш заголовка: {{value}}",
+  "liveSharenotes.headerHex": "Заголовок (hex): {{value}}",
+  "liveSharenotes.id": "ID: {{id}}",
+  "worker": "Работник",
   "info": {
-    "payouts": "Показывает все подтверждённые платежи за созревшие блоки. Каждая запись — это отдельная выплата, включающая вознаграждения от валидных sharenotes ваших майнеров. Используйте этот раздел, чтобы отслеживать завершённые начисления и убедиться, что средства получены после подтверждения блоков.",
-    "payoutsSummary": "Визуальное отображение общей суммы полученных выплат за выбранные периоды. Каждый столбец показывает сумму за период. Помогает контролировать частоту выплат и анализировать динамику дохода.",
-    "sharenotesSummary": "Отображает валидные sharenotes, сгруппированные по часам и разделённые по майнерам. Это ваш вклад в добычу блоков, ожидающих созревания перед выплатой. Удобно для оценки активности майнеров и почасовой производительности.",
-    "pendingShares": "Показывает всех майнеров с валидными sharenotes, участвовавшими в блоках, которые ещё не созрели или не выплачены. Здесь видно, какие вознаграждения стоят в очереди на выплату после подтверждения блоков.",
-    "hashrateChart": "Отображает общий эффективный хэшрейт всех ваших майнеров во времени. Отражает мощность и стабильность майнинга — стабильный хэшрейт означает стабильную работу."
+    "payouts": "Подтверждённые выплаты из созревших блоков, включая вознаграждения за действительные sharenotes. Полезно для отслеживания полученного дохода и проверки зачислений.",
+    "payoutsSummary": "Общая сумма выплаченных вознаграждений по периодам — помогает отслеживать частоту выплат и выявлять тенденции.",
+    "sharenotesSummary": "Действительные sharenotes, сгруппированные по часам и работникам, отражающие текущую майнинговую работу, ожидающую созревания блока.",
+    "workersInsights": "Карточки по каждому работнику с текущим обрабатываемым sharenote, скоростью печати и последним напечатанным sharenote.",
+    "pendingShares": "Данные показывают последние 500 ожидающих sharenotes или за последние 2 дня. Работники с действительными sharenotes из блоков, ещё не созревших или не оплаченных — ожидают будущих выплат после подтверждения.",
+    "workersProfit": "Невыплаченные, несозревшие вознаграждения по работникам во времени — суммы могут измениться после подтверждения блоков.",
+    "hashrateChart": "Хешрейт во времени для всех или выбранных работников с вариантами просмотра в реальном времени и усреднённого значения.",
+    "liveSharenotes": "Живой график, показывающий, сколько sharenotes печатают рабочие для каждого блока родительской цепи."
   },
-
   "pageNotFound": "Страница не найдена",
   "loading": "Загрузка...",
   "hashrateChart": "Хешрейт",
   "hashrate": "Хешрейт (MH/s)",
+  "hashrateFilter": {
+    "all": "Все работники"
+  },
+  "hashrateModes": {
+    "live": "Онлайн",
+    "emaShort": "EMA (Быстро)",
+    "emaLong": "EMA (Медленно)"
+  },
+  "workersInsights.sharenotes": "Sharenote",
+  "workersInsights.meanTime": "Среднее время",
+  "workersInsights.meanSharenote": "Средний sharenote",
+  "workersInsights.meanSharenoteShort": "Средн.",
+  "workersInsights.lastShare": "Последний SN",
+  "workersInsights.unknownWorker": "Без имени",
+  "workersInsights.info": {
+    "sharenotes": "Последний sharenote, напечатанный этим работником.",
+    "meanTime": "Среднее время, которое этот работник тратит на печать sharenote.",
+    "lastShare": "Время, прошедшее с момента последнего напечатанного sharenote."
+  },
   "previous": "Назад",
   "next": "Далее",
-  "paymentHeight": "Оценка.Платеж",
-
+  "paymentHeight": "Ожид. выплата",
   "languages": {
     "en": "English",
     "ru": "Русский",
@@ -71,54 +113,54 @@
     "shareNote": "Как это работает?"
   },
   "footer": {
-    "title": "mySharenote: ваша панель хешрейта"
+    "title": ""
   },
   "faq": {
-    "title": "Частые вопросы",
+    "title": "FAQ",
     "linkLabels": {
       "shareNote": "sharenote.xyz",
       "nostr": "Nostr",
-      "relayGuide": "руководство по релею",
+      "relayGuide": "руководство по relay",
       "templateReview": "каналы обзора шаблонов",
-      "wofPaper": "Документ WoF",
+      "wofPaper": "документ WoF",
       "sharenoteFep": "Sharenote FEP"
     },
     "questions": [
       {
         "q": "Что такое sharenote?",
-        "a": "Sharenote — это контролируемая майнером записка доказательства работы, чеканимая для каждого принятого шара. Подробнее: [[link:shareNote:shareNote]]."
+        "a": "Sharenote — это контролируемая майнером запись proof-of-work, создаваемая для каждой принятой доли. Подробнее на [[link:shareNote:shareNote]]."
       },
       {
-        "q": "Все ли майнинговые пулы публикуют sharenote?",
-        "a": "Нет. Только пулы, следующие Sharenote FEP, публикуют их. Спросите у своего пула, поддерживает ли он [[link:sharenoteFep:sharenoteFep]]."
+        "q": "Все ли майнинг-пулы публикуют sharenotes?",
+        "a": "Нет. Только пулы, поддерживающие стандарт Sharenote FEP. Спросите свой пул, поддерживает ли он [[link:sharenoteFep:sharenoteFep]]."
       },
       {
-        "q": "Кто отправляет sharenote на этапе Without Breaking Existing Things (WBET)?",
-        "a": "Ваш пул — поставщик работы — подписывает и публикует ваши sharenote. mySharenote их только читает."
+        "q": "Кто отправляет sharenotes во время стадии Without Breaking Existing Things (WBET)?",
+        "a": "Ваш пул (поставщик работы) подписывает и публикует ваши sharenotes. myHashboard только читает их."
       },
       {
-        "q": "Что такое mySharenote?",
-        "a": "mySharenote — это панель WBET, которая отслеживает ваши sharenote и показывает в реальном времени шары и выплаты."
+        "q": "Что такое myHashboard?",
+        "a": "myHashboard — это панель WBET, которая отслеживает ваши sharenotes и показывает текущие доли и выплаты."
       },
       {
-        "q": "Как настроить mySharenote?",
-        "a": "Откройте \"Настройки\", вставьте данные настройки от вашего поставщика работы и сохраните. mySharenote остается только для чтения и просто наблюдает за публикуемыми ими sharenote."
+        "q": "Как настроить myHashboard?",
+        "a": "Откройте Настройки, вставьте данные настройки от поставщика работы и сохраните. myHashboard работает только для чтения и просто отслеживает опубликованные sharenotes."
       },
       {
-        "q": "Кто предоставляет настройки mySharenote?",
-        "a": "Ваш майнинговый пул предоставляет данные настройки — просто скопируйте их в \"Настройки\"."
+        "q": "Кто предоставляет настройки myHashboard?",
+        "a": "Ваш майнинг-пул передаёт данные настройки — просто вставьте их в раздел Настройки."
       },
       {
         "q": "Нужно ли новое оборудование или другой пул?",
-        "a": "Нет. В рамках WBET вы продолжаете использовать текущий майнер и пул. mySharenote лишь отслеживает уже чеканимые ими sharenote."
+        "a": "Нет. Переход WBET сохраняет ваш текущий майнер и пул. myHashboard только наблюдает за уже создаваемыми sharenotes."
       },
       {
-        "q": "Почему моя панель пустая?",
-        "a": "Перепроверьте вставленные настройки и убедитесь, что пул разрешает чтение их релея. При необходимости попросите доступ или публичное зеркало."
+        "q": "Почему панель пуста?",
+        "a": "Проверьте вставленные настройки и убедитесь, что ваш пул позволяет читать их relay. Попросите доступ или публичное зеркало при необходимости."
       },
       {
-        "q": "Где можно узнать больше о WoF?",
-        "a": "Начните с [[link:wofPaper:wofPaper]] и следите за [[link:shareNote:shareNote]] для новых внедрений FEP."
+        "q": "Где можно узнать больше о проекте WoF?",
+        "a": "Начните с [[link:wofPaper:wofPaper]] и следите за [[link:shareNote:shareNote]] для новых релизов FEP."
       }
     ]
   }

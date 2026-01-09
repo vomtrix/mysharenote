@@ -1,26 +1,31 @@
 /* Core */
 import { ICustomError } from '@interfaces/ICustomError';
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
-import { NetworkTypeType } from '@objects/Enums';
+import { noteFromZBits, parseNoteLabel } from '@soprinter/sharenotejs';
+import { IDirectMessageEvent } from '@objects/interfaces/IDirectMessageEvent';
 import { IHashrateEvent } from '@objects/interfaces/IHashrateEvent';
+import type { ILiveSharenoteEvent } from '@objects/interfaces/ILiveSharenoteEvent';
 import { IPayoutEvent } from '@objects/interfaces/IPayoutEvent';
 import { ISettings } from '@objects/interfaces/ISettings';
-import { makeIdsSignature } from '@utils/helpers';
-import { BlockStatusEnum, IShareEvent } from '@objects/interfaces/IShareEvent';
+import { IShareEvent } from '@objects/interfaces/IShareEvent';
 import {
   changeRelay,
   connectRelay,
+  getDirectMessages,
   getHashrates,
-  getLastBlockHeight,
+  getLiveSharenotes,
   getPayouts,
   getShares,
+  stopDirectMessages,
   stopHashrates,
-  stopShares,
-  syncBlock
+  stopLiveSharenotes,
+  stopShares
 } from '@store/app/AppThunks';
 import {
   DARK_MODE_DEFAULT,
   DARK_MODE_FORCE,
+  DEFAULT_CHAIN_EXPLORERS,
+  DEFAULT_NETWORK,
   EXPLORER_URL,
   PAYER_PUBLIC_KEY,
   RELAY_URL,
@@ -35,20 +40,28 @@ export interface AppState {
   hashrates: IHashrateEvent[];
   shares: IShareEvent[];
   payouts: IPayoutEvent[];
-  visibleSharesSig?: string | null;
+  liveSharenotes: ILiveSharenoteEvent[];
+  liveSharenotesEoseIndex: number | null;
+  directMessages: IDirectMessageEvent[];
+  directMessagesLastOpenedAt: number | null;
   pendingBalance: number;
   unconfirmedBalance: number;
   settings: ISettings;
+  settingsUserModified: boolean;
+  settingsVersionApplied: number;
   colorMode: 'light' | 'dark';
-  lastBlockHeight: number;
   isHashrateLoading: boolean;
   isSharesLoading: boolean;
-  isSharesSyncLoading: boolean;
   isPayoutsLoading: boolean;
+  isDirectMessagesLoading: boolean;
   skeleton: boolean;
   relayReady?: boolean;
   error?: ICustomError;
+  isLiveSharenotesLoading: boolean;
 }
+
+// Increment when default settings change (e.g., new env-based defaults).
+export const SETTINGS_DEFAULT_VERSION = 2;
 
 const initialColorMode: 'light' | 'dark' = DARK_MODE_FORCE ? 'dark' : DARK_MODE_DEFAULT;
 
@@ -57,25 +70,171 @@ export const initialState: AppState = {
   hashrates: [],
   shares: [],
   payouts: [],
-  visibleSharesSig: null,
+  liveSharenotes: [],
+  liveSharenotesEoseIndex: null,
+  directMessages: [],
+  directMessagesLastOpenedAt: null,
   unconfirmedBalance: 0,
   pendingBalance: 0,
   colorMode: initialColorMode,
   settings: {
     relay: RELAY_URL,
-    network: NetworkTypeType.Mainnet,
+    network: DEFAULT_NETWORK,
     payerPublicKey: PAYER_PUBLIC_KEY,
     workProviderPublicKey: WORK_PROVIDER_PUBLIC_KEY,
-    explorer: EXPLORER_URL
+    explorer: EXPLORER_URL,
+    explorers: { ...DEFAULT_CHAIN_EXPLORERS }
   },
-  lastBlockHeight: 0,
+  settingsUserModified: false,
+  settingsVersionApplied: SETTINGS_DEFAULT_VERSION,
   isHashrateLoading: false,
-  isSharesSyncLoading: false,
   isSharesLoading: false,
   isPayoutsLoading: false,
+  isDirectMessagesLoading: false,
   skeleton: false,
   relayReady: undefined,
-  error: undefined
+  error: undefined,
+  isLiveSharenotesLoading: false
+};
+
+const applyPayoutEvent = (state: AppState, event: IPayoutEvent) => {
+  const eventIndex = state.payouts.findIndex((payout) => payout.id === event.id);
+
+  if (eventIndex !== -1) {
+    const oldEvent = state.payouts[eventIndex];
+    if (!oldEvent.confirmedTx) state.unconfirmedBalance -= event.amount;
+    state.payouts[eventIndex] = event;
+  } else {
+    if (!event.confirmedTx) state.unconfirmedBalance += event.amount;
+    state.payouts.push(event);
+  }
+};
+
+const applyShareEvent = (state: AppState, event: IShareEvent) => {
+  const existingIndex = state.shares.findIndex((share) => share.id === event.id);
+  const newAmount = Number(event.amount) || 0;
+
+  if (existingIndex !== -1) {
+    const previousAmount = Number(state.shares[existingIndex]?.amount) || 0;
+    state.pendingBalance += newAmount - previousAmount;
+    state.shares[existingIndex] = event;
+    return;
+  }
+
+  state.pendingBalance += newAmount;
+  state.shares.push(event);
+};
+
+const normalizeWorkerNotes = (event: IHashrateEvent) => {
+  if (!event.workerDetails) return;
+  const toMs = (value?: number) => {
+    if (typeof value !== 'number' || !Number.isFinite(value)) return undefined;
+    return value > 1e12 ? value : value * 1000;
+  };
+  const toZBits = (value: unknown): number | undefined => {
+    if (value === undefined || value === null) return undefined;
+    const normalized = typeof value === 'string' ? value.trim() : value;
+    if (normalized === '') return undefined;
+
+    if (typeof normalized === 'string') {
+      try {
+        const note = parseNoteLabel(normalized);
+        if (note && Number.isFinite(note.zBits)) return note.zBits;
+      } catch {
+        /* ignore parse errors */
+      }
+    }
+
+    const numericValue = Number(normalized as any);
+    if (!Number.isFinite(numericValue)) return undefined;
+    try {
+      const note = noteFromZBits(numericValue);
+      if (note && Number.isFinite(note.zBits)) return note.zBits;
+    } catch {
+      /* ignore conversion errors */
+    }
+    return numericValue;
+  };
+
+  const entries = Object.entries(event.workerDetails).map(([workerId, detail], index) => {
+    const shareCountSort =
+      typeof detail.shareCount === 'number' && Number.isFinite(detail.shareCount)
+        ? detail.shareCount
+        : -Infinity;
+    if (detail.sharenoteZBits === undefined) {
+      const rawSharenote =
+        typeof detail.sharenote === 'string' ? detail.sharenote.trim() : detail.sharenote;
+      const zBitsValue = toZBits(rawSharenote);
+      if (zBitsValue !== undefined) {
+        detail.sharenoteZBits = zBitsValue;
+      }
+    }
+
+    if (detail.meanSharenoteZBits === undefined) {
+      const rawMean =
+        typeof detail.meanSharenote === 'string'
+          ? detail.meanSharenote.trim()
+          : detail.meanSharenote;
+      if (rawMean !== undefined && rawMean !== null && rawMean !== '') {
+        const numericValue = Number(rawMean);
+        if (Number.isFinite(numericValue)) {
+          detail.meanSharenoteZBits = numericValue;
+        }
+      }
+    }
+
+    return {
+      workerId,
+      detail,
+      sharenoteZBitsSort: Number.isFinite(detail.sharenoteZBits)
+        ? (detail.sharenoteZBits as number)
+        : -Infinity,
+      shareCountSort,
+      lastShareMsSort: toMs(detail.lastShareTimestamp),
+      originalIndex: index
+    };
+  });
+
+  entries.sort((a, b) => {
+    if (a.sharenoteZBitsSort !== b.sharenoteZBitsSort) {
+      return b.sharenoteZBitsSort - a.sharenoteZBitsSort;
+    }
+    if (a.shareCountSort !== b.shareCountSort) {
+      return b.shareCountSort - a.shareCountSort;
+    }
+    const lastA = a.lastShareMsSort ?? -Infinity;
+    const lastB = b.lastShareMsSort ?? -Infinity;
+    if (lastA !== lastB) return lastB - lastA;
+    return a.originalIndex - b.originalIndex;
+  });
+
+  event.workerDetails = Object.fromEntries(
+    entries.map(({ workerId, detail }) => [workerId, detail])
+  );
+};
+
+const applyHashrateEvent = (state: AppState, event: IHashrateEvent) => {
+  const lastHashrate = state.hashrates.at(-1)?.timestamp;
+  if (event.timestamp !== lastHashrate) {
+    normalizeWorkerNotes(event);
+    state.hashrates.push(event);
+  }
+};
+
+const applyLiveSharenoteEvent = (state: AppState, event: ILiveSharenoteEvent) => {
+  state.liveSharenotes.push(event);
+};
+
+const applyDirectMessageEvent = (state: AppState, event: IDirectMessageEvent) => {
+  if (!event?.id) return;
+  const existingIndex = state.directMessages.findIndex((dm) => dm.id === event.id);
+  if (existingIndex !== -1) {
+    state.directMessages[existingIndex] = event;
+    return;
+  }
+
+  state.directMessages.unshift(event);
+  state.directMessages.sort((a, b) => (b.created_at || 0) - (a.created_at || 0));
 };
 
 export const slice = createSlice({
@@ -85,20 +244,29 @@ export const slice = createSlice({
     addAddress: (state: AppState, action: PayloadAction<any>) => {
       state.address = action.payload;
       state.skeleton = false;
+      state.directMessages = [];
+      state.isDirectMessagesLoading = false;
+      state.directMessagesLastOpenedAt = null;
     },
     clearAddress: (state: AppState) => {
       state.address = undefined;
       state.unconfirmedBalance = 0;
       state.pendingBalance = 0;
+      state.directMessages = [];
+      state.isDirectMessagesLoading = false;
+      state.directMessagesLastOpenedAt = null;
     },
     clearSettings: (state: AppState) => {
       state.settings = {
         relay: RELAY_URL,
-        network: NetworkTypeType.Mainnet,
+        network: DEFAULT_NETWORK,
         payerPublicKey: PAYER_PUBLIC_KEY,
         workProviderPublicKey: WORK_PROVIDER_PUBLIC_KEY,
-        explorer: EXPLORER_URL
+        explorer: EXPLORER_URL,
+        explorers: { ...DEFAULT_CHAIN_EXPLORERS }
       };
+      state.settingsUserModified = false;
+      state.settingsVersionApplied = SETTINGS_DEFAULT_VERSION;
     },
     clearHashrates: (state: AppState) => {
       state.hashrates = [];
@@ -109,6 +277,15 @@ export const slice = createSlice({
     clearPayouts: (state: AppState) => {
       state.payouts = [];
     },
+    clearLiveSharenotes: (state: AppState) => {
+      state.liveSharenotes = [];
+      state.liveSharenotesEoseIndex = null;
+    },
+    clearDirectMessages: (state: AppState) => {
+      state.directMessages = [];
+      state.isDirectMessagesLoading = false;
+      state.directMessagesLastOpenedAt = null;
+    },
     setHashratesLoader: (state: AppState, action: PayloadAction<boolean>) => {
       state.isHashrateLoading = action.payload;
     },
@@ -118,8 +295,18 @@ export const slice = createSlice({
     setPayoutLoader: (state: AppState, action: PayloadAction<boolean>) => {
       state.isPayoutsLoading = action.payload;
     },
+    setDirectMessagesLoader: (state: AppState, action: PayloadAction<boolean>) => {
+      state.isDirectMessagesLoading = action.payload;
+    },
+    setDirectMessagesLastOpened: (state: AppState, action: PayloadAction<number | null>) => {
+      const value = action.payload;
+      state.directMessagesLastOpenedAt =
+        typeof value === 'number' && Number.isFinite(value) ? value : null;
+    },
     setSettings: (state: AppState, action: PayloadAction<ISettings>) => {
       state.settings = action.payload;
+      state.settingsUserModified = true;
+      state.settingsVersionApplied = SETTINGS_DEFAULT_VERSION;
     },
     setColorMode: (state: AppState, action: PayloadAction<'light' | 'dark'>) => {
       state.colorMode = action.payload;
@@ -127,49 +314,41 @@ export const slice = createSlice({
     setSkeleton: (state: AppState, action: PayloadAction<boolean>) => {
       state.skeleton = action.payload;
     },
-    setVisibleSharesSig: (state: AppState, action: PayloadAction<string | null>) => {
-      state.visibleSharesSig = action.payload;
+    setLiveSharenotesLoader: (state: AppState, action: PayloadAction<boolean>) => {
+      state.isLiveSharenotesLoading = action.payload;
+    },
+    markLiveSharenotesEose: (state: AppState) => {
+      state.liveSharenotesEoseIndex = state.liveSharenotes.length;
     },
     addPayout: (state: AppState, action: PayloadAction<IPayoutEvent>) => {
-      const event = action.payload;
-      const eventIndex = state.payouts.findIndex((payout) => payout.id === event.id);
-
-      if (eventIndex != -1) {
-        const oldEvent = state.payouts[eventIndex];
-        if (!oldEvent.confirmedTx) state.unconfirmedBalance -= event.amount;
-        state.payouts[eventIndex] = event;
-      } else {
-        if (!event.confirmedTx) state.unconfirmedBalance += event.amount;
-        state.payouts = [...state.payouts, event];
-      }
+      applyPayoutEvent(state, action.payload);
+    },
+    addPayoutsBatch: (state: AppState, action: PayloadAction<IPayoutEvent[]>) => {
+      action.payload.forEach((event) => applyPayoutEvent(state, event));
     },
     addShare: (state: AppState, action: PayloadAction<IShareEvent>) => {
-      const event = action.payload;
-      if (!state.lastBlockHeight || event.blockHeight > state.lastBlockHeight) {
-        state.lastBlockHeight = event.blockHeight;
-      }
-      state.pendingBalance += event.amount;
-      state.shares = [...state.shares, event];
+      applyShareEvent(state, action.payload);
     },
-    updateShare: (
-      state: AppState,
-      action: PayloadAction<Partial<IShareEvent> & { id: string }>
-    ) => {
-      const payload = action.payload;
-      const index = state.shares.findIndex((share) => share.id === payload.id);
-      if (index !== -1) {
-        state.shares[index] = { ...state.shares[index], ...payload };
-        if (state.shares[index].status === BlockStatusEnum.Orphan) {
-          state.pendingBalance -= state.shares[index].amount;
-        }
-      }
+    addSharesBatch: (state: AppState, action: PayloadAction<IShareEvent[]>) => {
+      action.payload.forEach((event) => applyShareEvent(state, event));
     },
     addHashrate: (state: AppState, action: PayloadAction<IHashrateEvent>) => {
-      const event = action.payload;
-      const lastHashrate = state.hashrates.at(-1)?.timestamp;
-      if (event.timestamp !== lastHashrate) {
-        state.hashrates = [...state.hashrates, event];
-      }
+      applyHashrateEvent(state, action.payload);
+    },
+    addHashratesBatch: (state: AppState, action: PayloadAction<IHashrateEvent[]>) => {
+      action.payload.forEach((event) => applyHashrateEvent(state, event));
+    },
+    addLiveSharenote: (state: AppState, action: PayloadAction<ILiveSharenoteEvent>) => {
+      applyLiveSharenoteEvent(state, action.payload);
+    },
+    addLiveSharenotesBatch: (state: AppState, action: PayloadAction<ILiveSharenoteEvent[]>) => {
+      action.payload.forEach((event) => applyLiveSharenoteEvent(state, event));
+    },
+    addDirectMessage: (state: AppState, action: PayloadAction<IDirectMessageEvent>) => {
+      applyDirectMessageEvent(state, action.payload);
+    },
+    addDirectMessagesBatch: (state: AppState, action: PayloadAction<IDirectMessageEvent[]>) => {
+      action.payload.forEach((event) => applyDirectMessageEvent(state, event));
     }
   },
   extraReducers: (builder) => {
@@ -200,6 +379,47 @@ export const slice = createSlice({
         state.error = action.payload;
         state.isSharesLoading = false;
       })
+      .addCase(getLiveSharenotes.pending, (state) => {
+        state.liveSharenotes = [];
+        state.liveSharenotesEoseIndex = null;
+        state.isLiveSharenotesLoading = true;
+      })
+      .addCase(getLiveSharenotes.rejected, (state, action) => {
+        state.error = action.payload;
+        state.isLiveSharenotesLoading = false;
+      })
+      .addCase(stopLiveSharenotes.pending, (state) => {
+        state.error = undefined;
+      })
+      .addCase(stopLiveSharenotes.fulfilled, (state) => {
+        state.liveSharenotes = [];
+        state.liveSharenotesEoseIndex = null;
+        state.isLiveSharenotesLoading = false;
+      })
+      .addCase(stopLiveSharenotes.rejected, (state, action) => {
+        state.error = action.payload;
+        state.isLiveSharenotesLoading = false;
+        state.liveSharenotesEoseIndex = null;
+      })
+      .addCase(getDirectMessages.pending, (state) => {
+        state.directMessages = [];
+        state.isDirectMessagesLoading = true;
+      })
+      .addCase(getDirectMessages.rejected, (state, action) => {
+        state.error = action.payload;
+        state.isDirectMessagesLoading = false;
+      })
+      .addCase(stopDirectMessages.pending, (state) => {
+        state.error = undefined;
+      })
+      .addCase(stopDirectMessages.fulfilled, (state) => {
+        state.directMessages = [];
+        state.isDirectMessagesLoading = false;
+      })
+      .addCase(stopDirectMessages.rejected, (state, action) => {
+        state.error = action.payload;
+        state.isDirectMessagesLoading = false;
+      })
       .addCase(getHashrates.pending, (state) => {
         state.hashrates = [];
         state.isHashrateLoading = true;
@@ -225,9 +445,19 @@ export const slice = createSlice({
         state.payouts = [];
         state.shares = [];
         state.hashrates = [];
+        state.directMessages = [];
+        state.isDirectMessagesLoading = false;
+        state.directMessagesLastOpenedAt = null;
       })
       .addCase(changeRelay.fulfilled, (state, action) => {
-        state.settings = action.payload;
+        const payload = action.payload;
+        state.settings = {
+          ...state.settings,
+          ...payload,
+          explorers: { ...DEFAULT_CHAIN_EXPLORERS, ...(payload?.explorers ?? {}) }
+        };
+        state.settingsUserModified = true;
+        state.settingsVersionApplied = SETTINGS_DEFAULT_VERSION;
         state.error = undefined;
         state.skeleton = false;
         state.relayReady = true;
@@ -243,6 +473,9 @@ export const slice = createSlice({
         state.skeleton = true;
         state.error = undefined;
         state.payouts = [];
+        state.directMessages = [];
+        state.isDirectMessagesLoading = false;
+        state.directMessagesLastOpenedAt = null;
         state.relayReady = undefined;
       })
       .addCase(connectRelay.fulfilled, (state) => {
@@ -256,29 +489,6 @@ export const slice = createSlice({
         state.isSharesLoading = false;
         state.skeleton = true;
         state.relayReady = false;
-      })
-      .addCase(syncBlock.pending, (state, action) => {
-        try {
-          const idsArg: any[] = action?.meta?.arg ?? [];
-          const sig = makeIdsSignature(idsArg);
-          if (sig !== state.visibleSharesSig) {
-            state.isSharesSyncLoading = true;
-          }
-        } catch {
-          state.isSharesSyncLoading = true;
-        }
-      })
-      .addCase(syncBlock.fulfilled, (state) => {
-        state.isSharesSyncLoading = false;
-      })
-      .addCase(syncBlock.rejected, (state, action) => {
-        state.error = action.payload;
-      })
-      .addCase(getLastBlockHeight.fulfilled, (state, action) => {
-        const blockHeight = action.payload;
-        if (!state.lastBlockHeight || blockHeight > state.lastBlockHeight) {
-          state.lastBlockHeight = blockHeight;
-        }
       });
   }
 });
@@ -287,22 +497,33 @@ const { reducer: appReducer } = slice;
 
 export const {
   addHashrate,
+  addHashratesBatch,
   addPayout,
+  addPayoutsBatch,
   addShare,
-  updateShare,
+  addSharesBatch,
+  addLiveSharenote,
+  addLiveSharenotesBatch,
+  addDirectMessage,
+  addDirectMessagesBatch,
   addAddress,
   clearSettings,
   clearAddress,
   clearPayouts,
   clearShares,
+  clearDirectMessages,
+  clearLiveSharenotes,
   clearHashrates,
+  markLiveSharenotesEose,
   setHashratesLoader,
   setPayoutLoader,
   setShareLoader,
+  setDirectMessagesLoader,
+  setDirectMessagesLastOpened,
+  setLiveSharenotesLoader,
   setSettings,
   setColorMode,
-  setSkeleton,
-  setVisibleSharesSig
+  setSkeleton
 } = slice.actions;
 
 export default appReducer;

@@ -1,9 +1,19 @@
-import { gridClasses, useGridApiRef } from '@mui/x-data-grid';
+import { useEffect, useRef, useState } from 'react';
+import {
+  GridColumnMenuContainer,
+  GridFilterPanel,
+  type GridColumnMenuProps,
+  gridClasses,
+  useGridApiRef
+} from '@mui/x-data-grid';
+import useMediaQuery from '@mui/material/useMediaQuery';
+import { useTheme } from '@mui/material/styles';
 import { getVisibleRows } from '@mui/x-data-grid/internals';
 import StyledDataGrid from '@components/styled/StyledDataGrid';
 import { IPaginationModel } from '@objects/interfaces/IPaginationModel';
-import { useState } from 'react';
 import { makeIdsSignature } from '@utils/helpers';
+
+const ROW_HIGHLIGHT_DURATION_MS = 2400;
 
 interface CustomTableProps {
   columns: any;
@@ -34,6 +44,59 @@ const CustomTable = ({
   onVisibleRowChange
 }: CustomTableProps) => {
   const apiRef = useGridApiRef();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const enableFilters = Boolean(filters && !isMobile);
+
+  const [highlightedRows, setHighlightedRows] = useState<Record<string | number, boolean>>({});
+  const timersRef = useRef<Record<string | number, ReturnType<typeof setTimeout>>>({});
+  const previousRowIdsRef = useRef<Set<string | number>>(new Set());
+  const hasInitializedRef = useRef(false);
+
+  useEffect(() => {
+    const safeRows = Array.isArray(rows) ? rows : [];
+    const currentIds = new Set<string | number>(safeRows.map((row: any) => row.id));
+
+    if (!hasInitializedRef.current) {
+      previousRowIdsRef.current = currentIds;
+      hasInitializedRef.current = true;
+      return;
+    }
+
+    const newIds: Array<string | number> = [];
+    currentIds.forEach((id) => {
+      if (!previousRowIdsRef.current.has(id)) {
+        newIds.push(id);
+      }
+    });
+    previousRowIdsRef.current = currentIds;
+
+    if (newIds.length) {
+      setHighlightedRows((prev) => {
+        const next = { ...prev };
+        newIds.forEach((id) => {
+          next[id] = true;
+          if (timersRef.current[id]) clearTimeout(timersRef.current[id]);
+          timersRef.current[id] = setTimeout(() => {
+            setHighlightedRows((current) => {
+              if (!current[id]) return current;
+              const { [id]: _remove, ...rest } = current;
+              return rest;
+            });
+            delete timersRef.current[id];
+          }, ROW_HIGHLIGHT_DURATION_MS);
+        });
+        return next;
+      });
+    }
+  }, [rows]);
+
+  useEffect(() => {
+    return () => {
+      Object.values(timersRef.current).forEach((timer) => clearTimeout(timer));
+      timersRef.current = {};
+    };
+  }, []);
 
   const [lastVisibleSig, setLastVisibleSig] = useState<string | null>(null);
 
@@ -49,6 +112,27 @@ const CustomTable = ({
     }
   };
 
+  const FilterOnlyColumnMenu = (props: GridColumnMenuProps) => {
+    const { hideMenu, colDef, ...other } = props;
+    const hasMultipleOperators = (colDef.filterOperators?.length ?? 0) > 1;
+    return (
+      <GridColumnMenuContainer hideMenu={hideMenu} colDef={colDef} {...other}>
+        <GridFilterPanel
+          columnsSort="asc"
+          logicOperators={[]}
+          disableAddFilterButton
+          disableRemoveAllButton
+          getColumnForNewFilter={() => colDef.field}
+          filterFormProps={{
+            logicOperatorInputProps: { sx: { display: 'none' } },
+            operatorInputProps: { disabled: !hasMultipleOperators },
+            columnInputProps: { disabled: true }
+          }}
+        />
+      </GridColumnMenuContainer>
+    );
+  };
+
   return (
     <>
       {columns && rows && (
@@ -56,11 +140,12 @@ const CustomTable = ({
           apiRef={apiRef}
           pagination
           loading={isLoading}
-          rows={rows}
+          rows={rows ?? []}
           columns={columns}
+          slots={enableFilters ? { columnMenu: FilterOnlyColumnMenu } : undefined}
           onPaginationModelChange={onPaginationModelChange}
           onStateChange={onVisibleRowChange ? handleStateChange : undefined}
-          disableColumnMenu={!filters}
+          disableColumnMenu={!enableFilters}
           pageSizeOptions={pageSizeOptions ?? [10, 25, 50, 100]}
           checkboxSelectionVisibleOnly={true}
           onRowSelectionModelChange={onRowSelectionModelChange}
@@ -91,6 +176,9 @@ const CustomTable = ({
             let classNames = '';
             if (params.row.is_active == false) {
               classNames += 'disabled ';
+            }
+            if (highlightedRows[params.id]) {
+              classNames += 'recently-added ';
             }
             if (stripedRows) {
               classNames += params.indexRelativeToCurrentPage % 2 === 0 ? 'even ' : 'odd ';

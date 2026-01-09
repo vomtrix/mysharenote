@@ -46,6 +46,8 @@ const CustomTooltip = (props: CustomTooltipProps) => {
       placement={placement || 'right'}
       TransitionComponent={Zoom}
       arrow
+      enterTouchDelay={0}
+      leaveTouchDelay={2500}
       PopperProps={{
         sx: {
           '& .MuiTooltip-arrow': {

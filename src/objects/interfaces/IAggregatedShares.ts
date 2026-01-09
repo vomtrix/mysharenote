@@ -3,4 +3,3 @@ export interface IAggregatedShares {
   workers: string[];
   dataByWorker: number[][]; // Amounts in LOKI per bin
 }
-

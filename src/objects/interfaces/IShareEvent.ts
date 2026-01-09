@@ -3,10 +3,13 @@ export interface IShareEvent {
   workerId: string;
   blockHeight: number;
   blockHash: string;
+  chainId?: string;
   paymentHeight: number;
   amount: number;
-  shares: number;
-  totalShares: number;
+  shares: number | string;
+  sharesCount?: number;
+  totalShares: number | string;
+  totalSharesCount?: number;
   timestamp: string;
   status?: BlockStatusEnum;
 }

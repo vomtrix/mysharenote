@@ -1,4 +1,4 @@
-# myHashboard
+# ViaFLC
 
 Dashboard for pools and miners to track sharenotes. Built on the Sharenote Fun Enhancement Proposal (WBET stage compliant) described in [the WoF paper](https://docs.flokicoin.org/wof). For the current Sharenote draft, see [docs.flokicoin.org/wof/sharenote](https://docs.flokicoin.org/wof/sharenote) and the concept overview at [sharenote.xyz](https://sharenote.xyz).
 

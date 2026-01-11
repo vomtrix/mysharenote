@@ -10,22 +10,33 @@ import Connect from '@components/Connect';
 import DirectMessagesCenter from '@components/messages/DirectMessagesCenter';
 import { PRIMARY_WHITE, SECONDARY_COLOR } from '@styles/colors';
 import styles from '@styles/scss/Header.module.scss';
+import Link from 'next/link';
+import Image from 'next/image';
 
 const Header = () => {
   const { t } = useTranslation();
   return (
     <AppBar position="fixed" className={styles.header}>
       <Toolbar disableGutters className={styles.toolbar}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, sm: 1.5 }, flexShrink: 0 }}>
-          <Typography
-            sx={{
-              fontWeight: 700,
-              letterSpacing: -0.5,
-              color: PRIMARY_WHITE,
-              fontSize: { xs: '1.2rem', md: '1.7rem' }
-            }}>
-            myHashboard
-          </Typography>
+        <Box>
+          <Link href="/" passHref>
+            <Image
+              src="/assets/icon.svg"
+              alt="Mobile Logo"
+              className={styles.mobileLogo}
+              width={65}
+              height={50}
+            />
+          </Link>
+          <Link href="/" passHref>
+            <Image
+              src="/assets/logo.svg"
+              alt="Logo"
+              className={styles.logo}
+              width={170}
+              height={64}
+            />
+          </Link>
         </Box>
         <Box className={styles.connectWrapper}>
           <Connect />

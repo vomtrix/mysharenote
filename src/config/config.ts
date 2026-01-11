@@ -65,16 +65,13 @@ export const CHAIN_METADATA: Record<ChainKey, ChainMetadata> = {
 
 export const DEFAULT_CHAIN_EXPLORERS: Record<ChainKey, string> = Object.entries(
   CHAIN_METADATA
-).reduce(
-  (acc, [name, meta]) => {
-    acc[name as ChainKey] = meta.explorerUrl;
-    return acc;
-  },
-  {} as Record<ChainKey, string>
-);
+).reduce((acc, [name, meta]) => {
+  acc[name as ChainKey] = meta.explorerUrl;
+  return acc;
+}, {} as Record<ChainKey, string>);
 
 export const SOCIAL_URLS: Record<string, string> = {
-  github: 'https://github.com/qqubow/myHashboard'
+  github: 'https://github.com/entanglo/viaflc-shares'
 };
 
 export const FAQ_LINKS: Record<string, string> = {
@@ -87,11 +84,11 @@ export const FAQ_LINKS: Record<string, string> = {
 };
 
 // UI/Theme configuration (static values; not env-driven)
-export const THEME_PRIMARY_COLOR: string = '#6F42C1'; // mempool purple accent
-export const THEME_SECONDARY_COLOR: string = '#2ED3A3'; // green-cyan accent
-export const THEME_PRIMARY_COLOR_1: string = '#8C5CF6'; // lighter purple for hover
-export const THEME_PRIMARY_COLOR_2: string = '#A98DFB'; // soft violet tint
-export const THEME_PRIMARY_COLOR_3: string = '#C3B5FF'; // pale lavender glow
+export const THEME_PRIMARY_COLOR: string = '#42a5f5';
+export const THEME_SECONDARY_COLOR: string = '#d19810';
+export const THEME_PRIMARY_COLOR_1: string = '#72b9f3ff';
+export const THEME_PRIMARY_COLOR_2: string = '#90caf9';
+export const THEME_PRIMARY_COLOR_3: string = 'q';
 export const THEME_BADGE_RATIO_FAIL: string = '#FF4D4F'; // error red
 export const THEME_BADGE_RATIO_WARN: string = '#FFB020'; // amber warning
 export const THEME_BADGE_RATIO_SUCCESS: string = '#2ED573'; // mempool green
@@ -125,11 +122,9 @@ export const THEME_TEXT_DARK_PRIMARY: string = '#e0e0e0';
 export const THEME_TEXT_DARK_SECONDARY: string = '#a6a6a6';
 
 // Charts (area gradient colors)
-export const THEME_CHART_AREA_TOP: string = 'rgba(156, 39, 176, 0.4)';
-export const THEME_CHART_AREA_BOTTOM: string = 'rgba(156, 39, 176, 0.0)';
+export const THEME_CHART_AREA_TOP: string = 'rgba(98, 158, 241, 0.4)';
+export const THEME_CHART_AREA_BOTTOM: string = 'rgba(22, 123, 246, 0)';
 
 // App behavior (static option)
-export const HOME_PAGE_ENABLED: boolean = true;
-
-// Loader behavior
+export const HOME_PAGE_ENABLED: boolean = false;
 export const LOADER_IDLE_MS: number = 3000;

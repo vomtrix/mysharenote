@@ -1,6 +1,6 @@
 class CustomError extends Error {
   constructor(err: any) {
-    let message = 'An error occurred';
+    let message =  err.response?.data || 'An error occurred';
     let code = '00.00.00';
     let status = err.response?.status;
 

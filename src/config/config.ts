@@ -24,7 +24,13 @@ export const DEFAULT_NETWORK: NetworkTypeType = (() => {
   }
 })();
 
-export type ChainKey = 'bellscoin' | 'dogecoin' | 'flokicoin' | 'pepecoin';
+export type ChainKey =
+  | 'bellscoin'
+  | 'dogecoin'
+  | 'flokicoin'
+  | 'pepecoin'
+  | 'litecoin'
+  | 'trumpcoin';
 
 export type ChainMetadata = {
   chainIds: string[];
@@ -60,6 +66,18 @@ export const CHAIN_METADATA: Record<ChainKey, ChainMetadata> = {
     currencySymbol: 'DOGE',
     decimals: 8,
     explorerUrl: explorerFromEnv(process.env.NEXT_PUBLIC_DOGECOIN_EXPLORER_URL)
+  },
+  litecoin: {
+    chainIds: ['2', '0x2'],
+    currencySymbol: 'LTC',
+    decimals: 8,
+    explorerUrl: explorerFromEnv(process.env.NEXT_PUBLIC_LITECOIN_EXPLORER_URL)
+  },
+  trumpcoin: {
+    chainIds: ['80', '0x80'],
+    currencySymbol: 'TRUMP',
+    decimals: 8,
+    explorerUrl: explorerFromEnv(process.env.NEXT_PUBLIC_TRUMPCOIN_EXPLORER_URL)
   }
 };
 
@@ -84,7 +102,7 @@ export const FAQ_LINKS: Record<string, string> = {
 };
 
 // UI/Theme configuration (static values; not env-driven)
-export const THEME_PRIMARY_COLOR: string = '#42a5f5';
+export const THEME_PRIMARY_COLOR: string = '#1983daff';
 export const THEME_SECONDARY_COLOR: string = '#d19810';
 export const THEME_PRIMARY_COLOR_1: string = '#72b9f3ff';
 export const THEME_PRIMARY_COLOR_2: string = '#90caf9';
@@ -113,7 +131,7 @@ export const WORKER_COLORS: string[] = [
 
 export const DARK_MODE_ENABLED: boolean = false;
 export const DARK_MODE_FORCE: boolean = false;
-export const DARK_MODE_DEFAULT: 'light' | 'dark' = 'light';
+export const DARK_MODE_DEFAULT: 'light' | 'dark' = 'dark';
 
 // Text colors
 export const THEME_TEXT_LIGHT_PRIMARY: string = '#1f1f1f';

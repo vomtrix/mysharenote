@@ -4,7 +4,9 @@ export const CHAIN_ICONS: Record<string, string> = {
   bellscoin: '/assets/coins/bellscoin.png',
   dogecoin: '/assets/coins/dogecoin.png',
   flokicoin: '/assets/coins/flokicoin.png',
-  pepecoin: '/assets/coins/pepecoin.png'
+  pepecoin: '/assets/coins/pepecoin.png',
+  litecoin: '/assets/coins/litecoin.png',
+  trumpcoin: '/assets/coins/trumpcoin.png'
 };
 
 const normalizeChainIdentifier = (chain?: string) => {

@@ -1,15 +1,17 @@
+import { useTranslation } from 'react-i18next';
+import { FAQ_LINKS } from '@config/config';
+import { Box, Link as MuiLink, Typography } from '@mui/material';
+import AppBar from '@mui/material/AppBar';
+import Toolbar from '@mui/material/Toolbar';
+import MailOutlineIcon from '@mui/icons-material/MailOutline';
 import LanguageSwitcher from '@components/common/LanguageSwitcher';
 import SocialLinks from '@components/common/SocialLinks';
 import Connect from '@components/Connect';
-import { FAQ_LINKS } from '@config/config';
-import { Box, Link as MuiLink } from '@mui/material';
-import AppBar from '@mui/material/AppBar';
-import Toolbar from '@mui/material/Toolbar';
-import { SECONDARY_COLOR } from '@styles/colors';
+import DirectMessagesCenter from '@components/messages/DirectMessagesCenter';
+import { PRIMARY_WHITE, SECONDARY_COLOR } from '@styles/colors';
 import styles from '@styles/scss/Header.module.scss';
-import Image from 'next/image';
 import Link from 'next/link';
-import { useTranslation } from 'react-i18next';
+import Image from 'next/image';
 
 const Header = () => {
   const { t } = useTranslation();
@@ -36,9 +38,11 @@ const Header = () => {
             />
           </Link>
         </Box>
-        <Connect />
+        <Box className={styles.connectWrapper}>
+          <Connect />
+        </Box>
 
-        <div className={styles.rightContent}>
+        <div className={styles.rightContent} style={{ flexShrink: 0 }}>
           <MuiLink
             sx={{ pr: 2, display: { xs: 'none', md: 'block' } }}
             href={FAQ_LINKS.shareNote}
@@ -46,6 +50,7 @@ const Header = () => {
             color={SECONDARY_COLOR}>
             {t('header.shareNote')}
           </MuiLink>
+          <DirectMessagesCenter iconSize="small" />
           <SocialLinks />
           <LanguageSwitcher />
         </div>

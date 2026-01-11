@@ -6,15 +6,16 @@
   "addressRequired": "Address is required",
   "time": "Time",
   "block": "Block",
-  "shares": "Sharenotes",
-  "pendingShares": "Pending Sharenotes",
-  "totalShares": "Total sharenotes",
+  "shares": "Workers notes",
+  "pendingShares": "Pending Notes",
+  "totalShares": "Total notes",
+  "amount": "Amount",
   "unconfirmedBalance": "Unconfirmed balance",
-  "pendingBalance": "Pending balance",
+  "pendingBalance": "Pending profit",
   "orphanBlock": "Orphan block",
   "orphanCheck": "Orphan check",
-  "profit": "Profit (FLC)",
-  "fee": "Fee (LOKI)",
+  "profit": "Profit",
+  "fee": "Fee",
   "settings": {
     "title": "Settings",
     "relay": "Relay",
@@ -38,24 +39,65 @@
     "regtest": "Regtest",
     "save": "Save",
     "reset": "Reset",
-    "goHome": "Go home",
+    "goHome": "Back",
     "configError": "configuration error"
   },
   "payouts": "Payouts",
   "payoutsSummary": "Payouts Summary",
   "sharenotesSummary": "Sharenotes Summary",
+  "workersProfit": "Workers Profit",
+  "workersInsights": "Workers Insights",
+  "workersInsights.count_one": "{{count}} worker",
+  "workersInsights.count_other": "{{count}} workers",
+  "liveSharenotes": "Live Sharenotes",
+  "liveSharenotes.block": "Block #{{height}}",
+  "liveSharenotes.sum": "Sum: {{label}}",
+  "liveSharenotes.sumLabel": "",
+  "liveSharenotes.empty": "No data",
+  "liveSharenotes.count": "{{count}}",
+  "liveSharenotes.solved": "Solved",
+  "liveSharenotes.working": "Solving",
+  "liveSharenotes.auxChainsEmpty": "No auxiliary chains yet",
+  "liveSharenotes.unknownChain": "Unknown chain",
+  "liveSharenotes.address": "Address: {{value}}",
+  "liveSharenotes.heightHash": "Height hash: {{value}}",
+  "liveSharenotes.headerHash": "Header hash: {{value}}",
+  "liveSharenotes.headerHex": "Header hex: {{value}}",
+  "liveSharenotes.id": "ID: {{id}}",
   "worker": "Worker",
- "info": {
-    "payouts": "Shows all confirmed payments from matured blocks. Each entry represents one payout that includes rewards from your workers’ valid sharenotes. Use this view to track completed earnings and verify funds once blocks are confirmed and paid.",
-    "payoutsSummary": "Visual overview of your total paid rewards over time. Each bar shows how much you’ve received in a given period. Helps you monitor payout frequency and spot earning trends.",
-    "sharenotesSummary": "Displays valid sharenotes grouped by hour and stacked by worker. These represent your contribution to mining work that’s waiting for block maturity before payment. Useful for spotting worker activity and hourly performance.",
-    "pendingShares": "Lists all workers with valid sharenotes that contributed to blocks not yet matured or paid. Shows what’s queued for future payouts once confirmations are complete.",
-    "hashrateChart": "Shows your total effective hashrate across all workers over time. Reflects your mining power and stability — steady hashrate means consistent performance."
+  "info": {
+    "payouts": "Confirmed payments from matured blocks, including rewards from valid sharenotes. Useful for tracking completed earnings and verifying received funds.",
+    "payoutsSummary": "Total paid rewards over time, grouped by period to help track payout frequency and spot trends.",
+    "sharenotesSummary": "Valid sharenotes grouped by hour and worker, representing ongoing mining work awaiting block maturity.",
+    "workersInsights": "Per-worker overview highlighting the current sharenote in progress, printing speed, and latest printed sharenote.",
+    "pendingShares": "Data shows last 500 pending sharenotes or last 2 days. Workers with valid sharenotes from blocks still awaiting maturity or payment, queued for future payouts once confirmations complete.",
+    "workersProfit": "Unpaid, immature rewards by worker over time — amounts may change once blocks confirm.",
+    "hashrateChart": "Hashrate over time for all or selected workers, with live and averaged view options.",
+    "liveSharenotes": "A live chart showing how many sharenotes workers print for each block on the parent chain."
   },
   "pageNotFound": "This page could not be found",
   "loading": "Loading...",
   "hashrateChart": "Hashrate",
   "hashrate": "Hashrate (MH/s)",
+  "hashrateFilter": {
+    "all": "All Workers"
+  },
+  "hashrateModes": {
+    "live": "Live",
+    "emaShort": "EMA (Fast)",
+    "emaLong": "EMA (Slow)"
+  },
+  "workersInsights.sharenotes": "Sharenote",
+  "workersInsights.meanTime": "Avg time",
+  "workersInsights.meanSharenote": "Avg sharenote",
+  "workersInsights.meanSharenoteShort": "Avg",
+  "workersInsights.lastShare": "Last Sharenote",
+  "workersInsights.unknownWorker": "Unnamed worker",
+  "workersInsights.info": {
+    "sharenotes": "Most recent sharenote printed by this worker.",
+    "meanTime": "Average time this worker takes to print a sharenote.",
+    "lastShare": "Elapsed time since this worker last printed a sharenote."
+  },
   "previous": "Previous",
   "next": "Next",
   "paymentHeight": "EST.Payment",
@@ -91,23 +133,23 @@
       },
       {
         "q": "Who submits sharenotes during the Without Breaking Existing Things (WBET) stage?",
-        "a": "Your pool—the work provider—signs and publishes your sharenotes. mySharenote just reads them."
+        "a": "Your pool—the work provider—signs and publishes your sharenotes. myHashboard just reads them."
       },
       {
-        "q": "What is mySharenote?",
-        "a": "mySharenote is the WBET dashboard that watches your sharenotes and shows live shares and payouts."
+        "q": "What is myHashboard?",
+        "a": "myHashboard is the WBET dashboard that watches your sharenotes and shows live shares and payouts."
       },
       {
-        "q": "How do I set up mySharenote?",
-        "a": "Open Settings, paste the setup data from your work provider, and save. mySharenote stays read-only and just watches the sharenotes they publish."
+        "q": "How do I set up myHashboard?",
+        "a": "Open Settings, paste the setup data from your work provider, and save. myHashboard stays read-only and just watches the sharenotes they publish."
       },
       {
-        "q": "Who provides the mySharenote settings?",
+        "q": "Who provides the myHashboard settings?",
         "a": "Your mining pool shares the setup info—just copy it into Settings."
       },
       {
         "q": "Do I need new hardware or a different pool?",
-        "a": "No. The WBET rollout keeps your current miner and pool. mySharenote only monitors the sharenotes they already mint."
+        "a": "No. The WBET rollout keeps your current miner and pool. myHashboard only monitors the sharenotes they already mint."
       },
       {
         "q": "Why is my dashboard empty?",

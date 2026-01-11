@@ -1,5 +1,6 @@
+import { ReactNode } from 'react';
 import { UseFormRegisterReturn } from 'react-hook-form';
-import { FormControl, TextField, TextFieldProps } from '@mui/material';
+import { FormControl, InputAdornment, TextField, TextFieldProps } from '@mui/material';
 import { PRIMARY_RED, SECONDARY_GREY_1 } from '@styles/colors';
 import CustomTooltip from './CustomTooltip';
 
@@ -14,6 +15,8 @@ interface CustomInputProps {
   type?: string;
   register: UseFormRegisterReturn;
   error?: any;
+  startAdornment?: ReactNode;
+  inputProps?: TextFieldProps['InputProps'];
 }
 
 const CustomInput = (props: CustomInputProps) => {
@@ -27,8 +30,22 @@ const CustomInput = (props: CustomInputProps) => {
     placeholder,
     required,
     disabled,
-    variant
+    variant,
+    startAdornment,
+    inputProps
   } = props;
+
+  const computedInputProps: TextFieldProps['InputProps'] = {
+    ...inputProps
+  };
+
+  if (startAdornment) {
+    computedInputProps.startAdornment = (
+      <InputAdornment position="start" sx={{ color: 'text.secondary' }}>
+        {startAdornment}
+      </InputAdornment>
+    );
+  }
 
   return (
     <CustomTooltip
@@ -37,7 +54,7 @@ const CustomInput = (props: CustomInputProps) => {
       textColor={PRIMARY_RED}
       backgroundColor={SECONDARY_GREY_1}
       open={!!error}>
-      <div>
+      <div style={{ width: '100%' }}>
         <FormControl fullWidth error={!!error}>
           <TextField
             disabled={disabled}
@@ -51,6 +68,7 @@ const CustomInput = (props: CustomInputProps) => {
             {...register}
             error={!!error}
             InputLabelProps={{ shrink: true }}
+            InputProps={computedInputProps}
             size="small"
             maxRows={Infinity}
           />

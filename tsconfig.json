@@ -28,9 +28,11 @@
       "@constants/*": ["./src/constants/*"],
       "@config/*": ["./src/config/*"],
       "@interfaces/*": ["./src/objects/interfaces/*"],
-      "@styles/*": ["./src/styles/*"]
+      "@styles/*": ["./src/styles/*"],
+      "@soprinter/sharenotejs": ["../soprinter/sharenotejs/index.ts"],
+      "@soprinter/sharenotejs/*": ["../soprinter/sharenotejs/*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "src/store/app/AppThunks.ts.skip"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "src/store/app/AppThunks.ts.skip", "src/types/**/*.d.ts"],
   "exclude": ["node_modules", ".next", "dist"]
 }

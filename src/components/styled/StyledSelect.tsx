@@ -1,5 +1,5 @@
 import { Select } from '@mui/material';
-import { styled, alpha } from '@mui/material/styles';
+import { alpha, styled } from '@mui/material/styles';
 import { PRIMARY_WHITE } from '@styles/colors';
 
 export const StyledSelect = styled(Select)(() => ({

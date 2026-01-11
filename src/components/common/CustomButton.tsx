@@ -1,8 +1,8 @@
 import { ReactElement } from 'react';
 import { getIcon } from '@constants/iconsMap';
 import { Button } from '@mui/material';
-import { PRIMARY_BLACK, PRIMARY_GREY, PRIMARY_WHITE } from '@styles/colors';
 import { useTheme } from '@mui/material/styles';
+import { PRIMARY_BLACK, PRIMARY_GREY, PRIMARY_WHITE } from '@styles/colors';
 import { setWidthStyle } from '@utils/helpers';
 
 interface CustomButtonProps {

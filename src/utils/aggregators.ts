@@ -1,7 +1,6 @@
-import { toSeconds, fromEpoch } from '@utils/time';
-import type { IShareEvent } from '@objects/interfaces/IShareEvent';
-import { BlockStatusEnum } from '@objects/interfaces/IShareEvent';
 import type { IAggregatedShares } from '@objects/interfaces/IAggregatedShares';
+import type { IShareEvent } from '@objects/interfaces/IShareEvent';
+import { fromEpoch, toSeconds } from '@utils/time';
 
 export const aggregateSharesByInterval = (
   shares: IShareEvent[],
@@ -19,15 +18,15 @@ export const aggregateSharesByInterval = (
 
   for (let i = 0; i < shares.length; i++) {
     const s = shares[i];
-    if (s.status === BlockStatusEnum.Orphan) continue;
     const sec = toSeconds(s.timestamp);
     if (sec === null || sec < start || sec > now) continue;
     const idxRaw = Math.floor((sec - start) / intervalSec);
     const idx = Math.min(bins - 1, Math.max(0, idxRaw));
-    let arr = perWorker.get(s.workerId);
+    const workerKey = String(s.workerId ?? '');
+    let arr = perWorker.get(workerKey);
     if (!arr) {
       arr = new Float64Array(bins);
-      perWorker.set(s.workerId, arr);
+      perWorker.set(workerKey, arr);
     }
     const amt = s.amount || 0;
     arr[idx] += amt;
@@ -41,12 +40,13 @@ export const aggregateSharesByInterval = (
       let latest = -Infinity;
       for (let i = 0; i < shares.length; i++) {
         const s = shares[i];
-        if (s.status === BlockStatusEnum.Orphan) continue;
         const sec = toSeconds(s.timestamp);
         if (sec !== null && sec > latest) latest = sec;
       }
       if (Number.isFinite(latest)) {
-        return aggregateSharesByInterval(shares, intervalSec, windowSec, latest, { fallbackToLatest: false });
+        return aggregateSharesByInterval(shares, intervalSec, windowSec, latest, {
+          fallbackToLatest: false
+        });
       }
     }
     return { xLabels: [], workers: [], dataByWorker: [] };

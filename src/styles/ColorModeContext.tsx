@@ -7,4 +7,3 @@ export const ColorModeContext = React.createContext<{
   toggle: () => void;
   setMode: (m: ColorMode) => void;
 }>({ mode: 'light', toggle: () => {}, setMode: () => {} });
-

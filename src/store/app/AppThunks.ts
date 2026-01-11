@@ -1,23 +1,30 @@
 import { Container } from 'typedi';
+import { IDirectMessageEvent } from '@objects/interfaces/IDirectMessageEvent';
+import { IHashrateEvent } from '@objects/interfaces/IHashrateEvent';
+import type { ILiveSharenoteEvent } from '@objects/interfaces/ILiveSharenoteEvent';
+import { IPayoutEvent } from '@objects/interfaces/IPayoutEvent';
 import { ISettings } from '@objects/interfaces/ISettings';
-import { BlockStatusEnum } from '@objects/interfaces/IShareEvent';
-import { ElectrumService } from '@services/api/ElectrumService';
+import { IShareEvent } from '@objects/interfaces/IShareEvent';
 import { RelayService } from '@services/api/RelayService';
 import { createAppAsyncThunk } from '@store/createAppAsyncThunk';
 import { beautify } from '@utils/beautifierUtils';
-import { makeIdsSignature } from '@utils/helpers';
+import { toHexPublicKey } from '@utils/nostr';
 import {
-  addHashrate,
-  addPayout,
-  addShare,
+  addHashratesBatch,
+  addLiveSharenotesBatch,
+  addPayoutsBatch,
+  addSharesBatch,
+  addDirectMessagesBatch,
+  markLiveSharenotesEose,
   setHashratesLoader,
+  setLiveSharenotesLoader,
   setPayoutLoader,
   setShareLoader,
-  setSkeleton,
-  updateShare,
-  setVisibleSharesSig
+  setDirectMessagesLoader,
+  setSkeleton
 } from './AppReducer';
-import { ORHAN_BLOCK_MATURITY } from '@config/config';
+
+const BATCH_FLUSH_DEBOUNCE_MS = 750;
 
 export const getPayouts = createAppAsyncThunk(
   'relay/getPayouts',
@@ -25,7 +32,28 @@ export const getPayouts = createAppAsyncThunk(
     try {
       const { settings } = getState();
       const relayService: any = Container.get(RelayService);
+      const payerPublicKeyHex = toHexPublicKey(settings.payerPublicKey);
       let timeoutId: NodeJS.Timeout | undefined;
+      const payoutBuffer: IPayoutEvent[] = [];
+      let flushHandle: NodeJS.Timeout | undefined;
+
+      const flushPayouts = () => {
+        if (!payoutBuffer.length) return;
+        const batch = payoutBuffer.splice(0, payoutBuffer.length);
+        dispatch(addPayoutsBatch(batch));
+        if (flushHandle) {
+          clearTimeout(flushHandle);
+          flushHandle = undefined;
+        }
+      };
+
+      const scheduleFlush = () => {
+        if (flushHandle) clearTimeout(flushHandle);
+        flushHandle = setTimeout(() => {
+          flushHandle = undefined;
+          flushPayouts();
+        }, BATCH_FLUSH_DEBOUNCE_MS);
+      };
 
       const resetTimeout = () => {
         if (timeoutId) clearTimeout(timeoutId);
@@ -35,11 +63,16 @@ export const getPayouts = createAppAsyncThunk(
         }, 5000);
       };
 
-      relayService.subscribePayouts(address, settings.payerPublicKey, {
+      relayService.subscribePayouts(address, payerPublicKeyHex, {
         onevent: (event: any) => {
-          const payoutEvent = beautify(event);
-          dispatch(addPayout(payoutEvent));
+          payoutBuffer.push(beautify(event) as IPayoutEvent);
+          scheduleFlush();
           resetTimeout();
+        },
+        oneose: () => {
+          flushPayouts();
+          if (timeoutId) clearTimeout(timeoutId);
+          dispatch(setPayoutLoader(false));
         }
       });
 
@@ -54,58 +87,34 @@ export const getPayouts = createAppAsyncThunk(
   }
 );
 
-export const syncBlock = createAppAsyncThunk(
-  'electrum/syncBlock',
-  async (ids: any[], { rejectWithValue, dispatch, getState }) => {
-    try {
-      const { shares, visibleSharesSig, lastBlockHeight } = getState();
-      const sig = makeIdsSignature(ids ?? []);
-      if (sig === visibleSharesSig) return;
-
-      dispatch(setVisibleSharesSig(sig));
-      const idSet = new Set(ids ?? []);
-      const orphanBlockHeightMaturity = lastBlockHeight - ORHAN_BLOCK_MATURITY;
-      const sharesToSync = shares.filter(
-        (share: any) =>
-          idSet.has(share.id) &&
-          share.blockHeight <= orphanBlockHeightMaturity &&
-          [BlockStatusEnum.New, BlockStatusEnum.Checked].includes(share.status)
-      );
-
-      const electrumService: any = Container.get(ElectrumService);
-      const results = await Promise.allSettled(
-        sharesToSync.map((share) => electrumService.getBlock(share.blockHash))
-      );
-
-      results.forEach(({ status, value, reason }: any, index: number) => {
-        const targetShare = sharesToSync[index];
-        if (!targetShare) return;
-
-        if (status === 'rejected' && (reason?.message === 'Failed to get block' || reason?.message === 'Block not found')) {
-          dispatch(updateShare({ id: targetShare.id, status: BlockStatusEnum.Orphan }));
-        } else if (status === 'fulfilled' && value?.id) {
-          dispatch(updateShare({ id: targetShare.id, status: BlockStatusEnum.Valid }));
-        } else {
-          dispatch(updateShare({ id: targetShare.id, status: BlockStatusEnum.Checked }));
-        }
-      });
-    } catch (err: any) {
-      return rejectWithValue({
-        message: err?.message || err,
-        code: err.code,
-        status: err.status
-      });
-    }
-  }
-);
-
 export const getShares = createAppAsyncThunk(
   'relay/getShares',
   async (address: string, { rejectWithValue, dispatch, getState }) => {
     try {
       const { settings } = getState();
       const relayService: any = Container.get(RelayService);
+      const workProviderPublicKeyHex = toHexPublicKey(settings.workProviderPublicKey);
       let timeoutId: NodeJS.Timeout | undefined;
+      const shareBuffer: IShareEvent[] = [];
+      let flushHandle: NodeJS.Timeout | undefined;
+
+      const flushShares = () => {
+        if (!shareBuffer.length) return;
+        const batch = shareBuffer.splice(0, shareBuffer.length);
+        dispatch(addSharesBatch(batch));
+        if (flushHandle) {
+          clearTimeout(flushHandle);
+          flushHandle = undefined;
+        }
+      };
+
+      const scheduleFlush = () => {
+        if (flushHandle) clearTimeout(flushHandle);
+        flushHandle = setTimeout(() => {
+          flushHandle = undefined;
+          flushShares();
+        }, BATCH_FLUSH_DEBOUNCE_MS);
+      };
 
       const resetTimeout = () => {
         if (timeoutId) clearTimeout(timeoutId);
@@ -114,13 +123,15 @@ export const getShares = createAppAsyncThunk(
         }, 5000);
       };
 
-      relayService.subscribeShares(address, settings.workProviderPublicKey, {
+      relayService.subscribeShares(address, workProviderPublicKeyHex, {
         onevent: (event: any) => {
-          const shareEvent = beautify(event);
-          dispatch(addShare({ ...shareEvent, status: BlockStatusEnum.New }));
+          const shareEvent = beautify(event) as IShareEvent;
+          shareBuffer.push(shareEvent);
+          scheduleFlush();
           resetTimeout();
         },
         oneose: () => {
+          flushShares();
           if (timeoutId) clearTimeout(timeoutId);
           dispatch(setShareLoader(false));
         }
@@ -137,13 +148,225 @@ export const getShares = createAppAsyncThunk(
   }
 );
 
+export const getLiveSharenotes = createAppAsyncThunk(
+  'relay/getLiveSharenotes',
+  async (address: string, { rejectWithValue, dispatch, getState }) => {
+    try {
+      const { settings } = getState();
+      const relayService: any = Container.get(RelayService);
+      const workProviderPublicKeyHex = toHexPublicKey(settings.workProviderPublicKey);
+      let timeoutId: NodeJS.Timeout | undefined;
+      const liveBuffer: ILiveSharenoteEvent[] = [];
+      let flushHandle: NodeJS.Timeout | undefined;
+      let hasLoaded = false;
+
+      const flushLive = () => {
+        if (!liveBuffer.length) return;
+        const batch = liveBuffer.splice(0, liveBuffer.length);
+        dispatch(addLiveSharenotesBatch(batch));
+        if (!hasLoaded) {
+          hasLoaded = true;
+          dispatch(setLiveSharenotesLoader(false));
+        }
+        if (flushHandle) {
+          clearTimeout(flushHandle);
+          flushHandle = undefined;
+        }
+      };
+
+      const scheduleFlush = () => {
+        if (flushHandle) clearTimeout(flushHandle);
+        flushHandle = setTimeout(() => {
+          flushHandle = undefined;
+          flushLive();
+        }, BATCH_FLUSH_DEBOUNCE_MS);
+      };
+
+      const resetTimeout = () => {
+        if (timeoutId) clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => {
+          if (!hasLoaded) {
+            hasLoaded = true;
+            dispatch(setLiveSharenotesLoader(false));
+          }
+        }, 5000);
+      };
+
+      relayService.subscribeLiveSharenotes(address, workProviderPublicKeyHex, {
+        onevent: (event: any) => {
+          const liveEvent = beautify(event) as ILiveSharenoteEvent;
+          liveBuffer.push(liveEvent);
+          scheduleFlush();
+          resetTimeout();
+        },
+        oneose: () => {
+          flushLive();
+          dispatch(markLiveSharenotesEose());
+          if (timeoutId) clearTimeout(timeoutId);
+          if (!hasLoaded) {
+            hasLoaded = true;
+            dispatch(setLiveSharenotesLoader(false));
+          }
+        }
+      });
+
+      resetTimeout();
+    } catch (err: any) {
+      return rejectWithValue({
+        message: err?.message,
+        code: err.code,
+        status: err.status
+      });
+    }
+  }
+);
+
+export const getDirectMessages = createAppAsyncThunk(
+  'relay/getDirectMessages',
+  async (address: string | undefined, { rejectWithValue, dispatch, getState }) => {
+    try {
+      const { settings } = getState();
+      const relayService: any = Container.get(RelayService);
+      const workProviderPublicKeyHex = toHexPublicKey(settings.workProviderPublicKey);
+      let timeoutId: NodeJS.Timeout | undefined;
+      const buffer: IDirectMessageEvent[] = [];
+      let flushHandle: NodeJS.Timeout | undefined;
+      let hasLoaded = false;
+
+      const flush = () => {
+        if (!buffer.length) return;
+        const batch = buffer.splice(0, buffer.length);
+        dispatch(addDirectMessagesBatch(batch));
+        if (!hasLoaded) {
+          hasLoaded = true;
+          dispatch(setDirectMessagesLoader(false));
+        }
+        if (flushHandle) {
+          clearTimeout(flushHandle);
+          flushHandle = undefined;
+        }
+      };
+
+      const scheduleFlush = () => {
+        if (flushHandle) clearTimeout(flushHandle);
+        flushHandle = setTimeout(() => {
+          flushHandle = undefined;
+          flush();
+        }, BATCH_FLUSH_DEBOUNCE_MS);
+      };
+
+      const resetTimeout = () => {
+        if (timeoutId) clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => {
+          if (!hasLoaded) {
+            hasLoaded = true;
+            dispatch(setDirectMessagesLoader(false));
+          }
+        }, 5000);
+      };
+
+      relayService.subscribeDirectMessages(workProviderPublicKeyHex, {
+        onevent: (event: any) => {
+          const taggedAddress =
+            Array.isArray(event.tags) &&
+            event.tags
+              .find((tag: any) => Array.isArray(tag) && tag[0] === 'a' && typeof tag[1] === 'string')
+              ?.[1];
+          const normalized: IDirectMessageEvent = {
+            id: event.id,
+            content: event.content ?? '',
+            tags: Array.isArray(event.tags) ? event.tags : [],
+            created_at: event.created_at,
+            timestamp: event.created_at,
+            pubkey: event.pubkey,
+            kind: event.kind,
+            address: taggedAddress || address
+          };
+          buffer.push(normalized);
+          scheduleFlush();
+          resetTimeout();
+        },
+        oneose: () => {
+          flush();
+          if (timeoutId) clearTimeout(timeoutId);
+          if (!hasLoaded) {
+            hasLoaded = true;
+            dispatch(setDirectMessagesLoader(false));
+          }
+        }
+      }, address);
+
+      resetTimeout();
+    } catch (err: any) {
+      return rejectWithValue({
+        message: err?.message,
+        code: err.code,
+        status: err.status
+      });
+    }
+  }
+);
+
+export const stopLiveSharenotes = createAppAsyncThunk(
+  'relay/stopLiveSharenotes',
+  async (_, { rejectWithValue }) => {
+    try {
+      const relayService: any = Container.get(RelayService);
+      await relayService.stopLiveSharenotes();
+    } catch (err: any) {
+      return rejectWithValue({
+        message: err?.message,
+        code: err.code,
+        status: err.status
+      });
+    }
+  }
+);
+
+export const stopDirectMessages = createAppAsyncThunk(
+  'relay/stopDirectMessages',
+  async (_, { rejectWithValue }) => {
+    try {
+      const relayService: any = Container.get(RelayService);
+      await relayService.stopDirectMessages();
+    } catch (err: any) {
+      return rejectWithValue({
+        message: err?.message,
+        code: err.code,
+        status: err.status
+      });
+    }
+  }
+);
+
 export const getHashrates = createAppAsyncThunk(
   'relay/getHashrates',
   async (address: string, { rejectWithValue, dispatch, getState }) => {
     try {
       const { settings } = getState();
       const relayService: any = Container.get(RelayService);
+      const workProviderPublicKeyHex = toHexPublicKey(settings.workProviderPublicKey);
       let timeoutId: NodeJS.Timeout | undefined;
+      const hashrateBuffer: IHashrateEvent[] = [];
+      let flushHandle: NodeJS.Timeout | undefined;
+
+      const flushHashrates = () => {
+        if (!hashrateBuffer.length) return;
+        const batch = hashrateBuffer.splice(0, hashrateBuffer.length);
+        dispatch(addHashratesBatch(batch));
+        if (flushHandle) {
+          clearTimeout(flushHandle);
+          flushHandle = undefined;
+        }
+      };
+
+      const scheduleFlush = () => {
+        if (flushHandle) clearTimeout(flushHandle);
+        flushHandle = setTimeout(() => {
+          flushHandle = undefined;
+          flushHashrates();
+        }, BATCH_FLUSH_DEBOUNCE_MS);
+      };
 
       const resetTimeout = () => {
         if (timeoutId) clearTimeout(timeoutId);
@@ -152,13 +375,14 @@ export const getHashrates = createAppAsyncThunk(
         }, 2000);
       };
 
-      relayService.subscribeHashrates(address, settings.workProviderPublicKey, {
+      relayService.subscribeHashrates(address, workProviderPublicKeyHex, {
         onevent: (event: any) => {
-          const hashrateEvent = beautify(event);
-          dispatch(addHashrate(hashrateEvent));
+          hashrateBuffer.push(beautify(event) as IHashrateEvent);
+          scheduleFlush();
           resetTimeout();
         },
         oneose: () => {
+          flushHashrates();
           if (timeoutId) clearTimeout(timeoutId);
           dispatch(setHashratesLoader(false));
         }
@@ -252,22 +476,6 @@ export const changeRelay = createAppAsyncThunk(
       return settings;
     } catch (err: any) {
       dispatch(setSkeleton(true));
-      return rejectWithValue({
-        message: err?.message || err,
-        code: err.code,
-        status: err.status
-      });
-    }
-  }
-);
-
-export const getLastBlockHeight = createAppAsyncThunk(
-  'electrum/getLastBlockHeight',
-  async (_, { rejectWithValue, dispatch }) => {
-    try {
-      const electrumService: any = Container.get(ElectrumService);
-      return await electrumService.getLastBlockHeight();
-    } catch (err: any) {
       return rejectWithValue({
         message: err?.message || err,
         code: err.code,

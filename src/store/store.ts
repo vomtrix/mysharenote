@@ -121,7 +121,7 @@ const migrations: MigrationManifest = {
 };
 
 const persistConfig = {
-  key: 'shares',
+  key: 'hashboard',
   version: PERSIST_VERSION,
   storage,
   whitelist: ['address', 'settings', 'settingsUserModified', 'settingsVersionApplied', 'colorMode'],

@@ -74,7 +74,7 @@ export const CHAIN_METADATA: Record<ChainKey, ChainMetadata> = {
     explorerUrl: explorerFromEnv(process.env.NEXT_PUBLIC_LITECOIN_EXPLORER_URL)
   },
   trumpcoin: {
-    chainIds: ['80', '0x80'],
+    chainIds: ['a8', '0x80'],
     currencySymbol: 'TRUMP',
     decimals: 8,
     explorerUrl: explorerFromEnv(process.env.NEXT_PUBLIC_TRUMPCOIN_EXPLORER_URL)

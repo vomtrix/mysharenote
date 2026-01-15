@@ -131,7 +131,7 @@ export const WORKER_COLORS: string[] = [
 
 export const DARK_MODE_ENABLED: boolean = false;
 export const DARK_MODE_FORCE: boolean = false;
-export const DARK_MODE_DEFAULT: 'light' | 'dark' = 'dark';
+export const DARK_MODE_DEFAULT: 'light' | 'dark' = 'light';
 
 // Text colors
 export const THEME_TEXT_LIGHT_PRIMARY: string = '#1f1f1f';
